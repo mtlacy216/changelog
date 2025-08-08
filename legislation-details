@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comprehensive Legistar Widget</title>
+<!-- IMPORTANT: Ensure this viewport meta tag is present for proper mobile responsiveness -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<title>Nashville Legislation Details - Enhanced UI</title>
 <style>
 * {
   margin: 0;
@@ -11,55 +12,55 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f8fafc;
-  color: #1a202c;
+  color: #1a1a1a;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-width: 320px;
 }
 
-/* Main Widget Container */
-#main-widget-container {
-  max-width: 72rem;
-  margin: 2rem auto;
-  background: white;
-  border-radius: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+/* Hero Header */
+.hero-header {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  padding: 3rem 0 2rem;
   position: relative;
+  overflow: hidden;
 }
 
-/* Gradient top bar */
-.gradient-bar {
+.hero-header::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-  opacity: 0.8;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
   z-index: 1;
-  border-radius: 1.5rem 1.5rem 0 0;
 }
 
-/* Legislation Details Section */
-#legislation-widget {
-  padding: 2rem;
-}
-
-/* Header */
-.widget-header {
-  margin-bottom: 2rem;
-}
-
-.widget-header h2 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #2d3748;
-  letter-spacing: -0.025em;
-  margin-bottom: 0.5rem;
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
 }
 
 .matter-badge {
@@ -67,12 +68,13 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.875rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  margin-bottom: 1rem;
 }
 
 .matter-badge svg {
@@ -80,84 +82,89 @@ body {
   height: 16px;
 }
 
-/* Community Header */
-.community-header {
+.hero-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Live Activity Bar */
+.activity-bar {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.live-indicator {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1rem;
 }
 
-.community-header h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d3748;
-}
-
-.discussion-icon {
-  width: 32px;
-  height: 32px;
-  background: #f0f4ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #667eea;
-}
-
-.discussion-subtitle {
-  color: #718096;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Discussion Status */
-.discussion-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #718096;
-  margin-bottom: 1.5rem;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background: #48bb78;
-  border-radius: 50%;
-}
-
-/* Activity indicator */
-.activity-indicator {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.activity-pulse {
+.pulse-container {
   position: relative;
   width: 10px;
   height: 10px;
-}
-
-.pulse-ring {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #3b82f6;
-  border-radius: 50%;
-  animation: pulse-ring 2s infinite;
 }
 
 .pulse-dot {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: #3b82f6;
+  background: #22c55e;
   border-radius: 50%;
   animation: pulse 2s infinite;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #22c55e;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
 .activity-stats {
@@ -166,551 +173,138 @@ body {
   font-size: 0.875rem;
 }
 
-.stat-item {
+.stat {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+/* Main Container */
+.main-container {
+  max-width: 1200px;
+  margin: -2rem auto 2rem;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem;
+  display: flex;
   gap: 0.25rem;
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-/* Comment Box */
-.comment-section {
-  display: flex;
-  flex-direction: column;
   margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f1f5f9;
 }
 
-.comment-as {
-  font-size: 0.8125rem;
-  color: #718096;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.nav-tabs::-webkit-scrollbar {
+  height: 6px;
 }
 
-.user-avatar {
-  width: 24px;
-  height: 24px;
-  background: #e2e8f0;
-  color: #718096;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 600;
+.nav-tabs::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
 }
 
-.user-avatar-authenticated {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.nav-tabs::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
 }
 
-.comment-textarea {
-  width: 100%;
-  min-height: 120px;
-  padding: 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.comment-textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.comment-textarea::placeholder {
-  color: #a0aec0;
-}
-
-.comment-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.anonymous-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #4a5568;
-  cursor: pointer;
-}
-
-.anonymous-checkbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.char-count {
-  font-size: 0.75rem;
-  color: #a0aec0;
-}
-
-.comment-button {
-  padding: 0.625rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  border-radius: 12px;
   font-weight: 500;
+  color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.comment-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.comment-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Comments Section */
-.comments-section {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.comments-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.comments-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.comments-count {
-  font-size: 0.875rem;
-  color: #718096;
-}
-
-.no-comments {
-  text-align: center;
-  padding: 2rem;
-  color: #a0aec0;
-  font-size: 0.875rem;
-}
-
-/* Comment Item */
-.comment-item {
-  padding: 1rem 0;
-  border-bottom: 1px solid #e2e8f0;
-  animation: commentFadeIn 0.3s ease-out;
-}
-
-@keyframes commentFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.comment-item:first-child {
-  padding-top: 0;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.comment-header {
-  margin-bottom: 0.5rem;
-}
-
-.comment-author {
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  min-height: 44px; /* Better touch target */
 }
 
-.comment-avatar {
+.tab-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+}
+
+.tab-btn .badge {
+  padding: 0.125rem 0.375rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tab-btn.active .badge {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2rem;
+}
+
+/* Main Content Area */
+.main-content {
+  min-width: 0;
+}
+
+/* Content Card */
+.content-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #1e293b;
+}
+
+.card-icon {
   width: 32px;
   height: 32px;
-  background: #e2e8f0;
-  color: #718096;
-  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.comment-avatar-user {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-}
-
-.comment-name {
-  font-weight: 600;
-  color: #2d3748;
-  font-size: 0.875rem;
-}
-
-.comment-time {
-  font-size: 0.75rem;
-  color: #a0aec0;
-  margin-left: 0.25rem;
-}
-
-.comment-text {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: #4a5568;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-}
-
-/* Reply functionality styles */
-.comment-footer {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.reply-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
-  background: transparent;
-  color: #667eea;
-  border: 1px solid transparent;
-  border-radius: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.reply-button:hover {
-  background: #f0f4ff;
-  border-color: #e0e7ff;
-}
-
-.reply-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Reaction picker */
-.reaction-picker {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.reaction-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.125rem;
-  padding: 0.25rem 0.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 9999px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  transition: all 0.2s;
-}
-
-.reaction-btn:hover {
-  background: #f8fafc;
-}
-
-
-.reaction-btn.active {
-  background: #eff6ff;
-  border-color: var(--reaction-color, #3b82f6);
-  color: var(--reaction-color, #3b82f6);
-}
-
-.reaction-emoji {
-  line-height: 1;
-}
-
-.reaction-count {
-  font-weight: 600;
-}
-
-/* Reply form */
-.reply-form {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.reply-form-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.replying-to {
-  font-size: 0.8125rem;
-  color: #718096;
-}
-
-.cancel-reply {
-  font-size: 0.8125rem;
-  color: #718096;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.cancel-reply:hover {
-  color: #4a5568;
-  text-decoration: underline;
-}
-
-.reply-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.reply-textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.reply-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.75rem;
-}
-
-.reply-submit {
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.reply-submit:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.reply-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Nested replies */
-.comment-replies {
-  margin-left: 2.5rem;
-  margin-top: 1rem;
-  padding-left: 1rem;
-  border-left: 2px solid #e2e8f0;
-}
-
-.comment-replies .comment-item {
-  padding: 0.75rem 0;
-}
-
-.comment-replies .comment-avatar {
-  width: 28px;
-  height: 28px;
-  font-size: 0.8125rem;
-}
-
-/* Show replies toggle */
-.show-replies-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background: transparent;
-  color: #667eea;
-  border: none;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.show-replies-toggle:hover {
-  background: #f0f4ff;
-  border-radius: 0.375rem;
-}
-
-.show-replies-toggle svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.2s;
-}
-
-.show-replies-toggle.expanded svg {
-  transform: rotate(180deg);
-}
-
-/* Status */
-.status-message {
-  font-size: 0.875rem;
-  color: #718096;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 1.5rem;
-}
-
-.status-icon {
-  width: 16px;
-  height: 16px;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Matter Info Section */
-.matter-info {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.info-item.full-width {
-  grid-column: 1 / -1;
-}
-
-.info-item.full-width .info-value {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: #1a202c;
-}
-
-.info-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #718096;
-}
-
-.info-value {
-  font-size: 0.875rem;
-  color: #2d3748;
-  font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
-}
-
-/* Tab Navigation */
-.tab-nav {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  overflow-x: auto;
-}
-
-.tab-button {
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #718096;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-}
-
-.tab-button:hover {
-  color: #4a5568;
-}
-
-.tab-button.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
+  font-size: 1.25rem;
 }
 
 /* Content Section */
@@ -734,82 +328,144 @@ body {
   }
 }
 
-/* Content Container */
-.content-container {
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  padding: 1rem;
   background: #f8fafc;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  max-height: 600px;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Full Text Section */
+.full-text {
+  padding: 1.5rem;
+  background: #fafafa;
+  border-radius: 12px;
+  margin-top: 1.5rem;
+  max-height: 400px;
   overflow-y: auto;
 }
 
-.content-container::-webkit-scrollbar {
+.full-text::-webkit-scrollbar {
   width: 8px;
 }
 
-.content-container::-webkit-scrollbar-track {
+.full-text::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 4px;
 }
 
-.content-container::-webkit-scrollbar-thumb {
+.full-text::-webkit-scrollbar-thumb {
   background: #cbd5e0;
   border-radius: 4px;
 }
 
-.content-container::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
-
-.content-container h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
+.full-text h4 {
   margin-bottom: 1rem;
-  color: #2d3748;
+  color: #334155;
 }
 
-.content-container p {
+.full-text p {
+  line-height: 1.7;
+  color: #475569;
   margin-bottom: 1rem;
-  font-size: 0.875rem;
-  line-height: 1.8;
-  color: #2d3748;
-}
-
-/* Comments tab container */
-#content-comments .content-container {
-  background: white;
-  border: none;
-  padding: 0;
-  max-height: none;
+  font-size: 0.95rem;
 }
 
 /* Sponsors Grid */
 .sponsors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
-a.sponsor-card {
-  background: white;
+.sponsor-card {
+  padding: 1.25rem;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  padding-right: 2.5rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: block;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
   text-decoration: none;
   color: inherit;
-  cursor: pointer;
   position: relative;
+  min-height: 80px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-a.sponsor-card svg {
+.sponsor-card:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
+}
+
+.sponsor-card:active {
+  transform: translateY(0);
+}
+
+.sponsor-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.sponsor-info {
+  flex: 1;
+}
+
+.sponsor-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #1e293b;
+}
+
+.sponsor-type {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.sponsor-card svg {
   position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  transform: translateY(-50%);
+  right: 1.25rem;
   width: 16px;
   height: 16px;
   color: #cbd5e0;
@@ -817,132 +473,121 @@ a.sponsor-card svg {
   transition: all 0.2s;
 }
 
-a.sponsor-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e0;
-  text-decoration: none;
-}
-
-a.sponsor-card:hover svg {
+.sponsor-card:hover svg {
   opacity: 1;
-  transform: translateY(-50%) translateX(2px);
-  color: #667eea;
+  transform: translateX(2px);
+  color: #6366f1;
 }
 
-.sponsor-name {
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 0.25rem;
-}
-
-.sponsor-type {
-  font-size: 0.75rem;
-  color: #667eea;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Attachments List */
-.attachments-list {
+/* Documents List */
+.documents-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.attachment-item {
-  background: white;
+.document-item {
+  padding: 1.25rem;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1rem 1.25rem;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s;
   position: relative;
   overflow: hidden;
 }
 
-.attachment-item::before {
+.document-item::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(180deg, #3b82f6, #6366f1);
   transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s;
 }
 
-.attachment-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e0;
+.document-item:hover {
+  background: white;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.attachment-item:hover::before {
+.document-item:hover::before {
   transform: translateX(0);
 }
 
-.attachment-info {
+.document-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   flex: 1;
   min-width: 0;
 }
 
-.file-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 0.5rem;
+.doc-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
   flex-shrink: 0;
 }
 
-.file-icon svg {
-  width: 18px;
-  height: 18px;
-  color: white;
+.doc-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
-.attachment-name {
-  font-weight: 500;
-  color: #2d3748;
+.doc-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #1e293b;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.action-button {
+.doc-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.5rem 1rem;
-  background: white;
-  color: #667eea;
-  border: 1px solid #667eea;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.action-button:hover {
-  background: #667eea;
-  color: white;
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e0;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.action-button svg {
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary svg {
   width: 16px;
   height: 16px;
 }
@@ -955,86 +600,314 @@ a.sponsor-card:hover svg {
 }
 
 .history-item {
-  padding: 1rem;
-  background: white;
+  padding: 1.25rem;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
+  border-radius: 12px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.history-item:hover {
+  background: white;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .history-action {
   font-weight: 600;
-  color: #2d3748;
+  color: #1e293b;
   margin-bottom: 0.25rem;
+  font-size: 1rem;
 }
 
 .history-date {
   font-size: 0.8125rem;
-  color: #718096;
+  color: #64748b;
   margin-bottom: 0.5rem;
 }
 
 .history-text {
   font-size: 0.875rem;
-  color: #4a5568;
+  color: #475569;
+  line-height: 1.5;
 }
 
 .history-body {
   font-size: 0.8125rem;
-  color: #718096;
+  color: #64748b;
   margin-top: 0.25rem;
 }
 
 .history-status {
   font-size: 0.8125rem;
-  color: #667eea;
+  color: #6366f1;
   margin-top: 0.25rem;
   font-weight: 500;
 }
 
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #718096;
+/* Discussion Section */
+.discussion-section {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
-.empty-state svg {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 1rem;
-  opacity: 0.5;
+/* Sidebar Discussion Section */
+.sidebar .discussion-section {
+  padding: 1.5rem;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  position: sticky;
+  top: 2rem;
+  overflow-x: hidden;
 }
 
-.empty-state p {
+.sidebar .discussion-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar .discussion-section::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.sidebar .discussion-section::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.sidebar .comment-input-section {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  overflow: visible;
+}
+
+.sidebar .input-footer {
+  gap: 0.5rem;
+}
+
+.sidebar .footer-right {
+  flex-wrap: nowrap;
+}
+
+.sidebar #comments-list {
+  max-height: 400px;
+}
+
+.discussion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.discussion-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.discussion-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
   font-size: 0.875rem;
 }
 
-/* Loading Skeleton */
-.loading-skeleton {
+.discussion-stats .pulse-dot {
+  position: static;
+  margin: 0;
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+}
+
+/* Comment Input */
+.comment-input-section {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(99,102,241,0.05));
+  border: 2px solid transparent;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+}
+
+.comment-input-section:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.skeleton-item {
-  background: linear-gradient(90deg, #f7fafc 25%, #e2e8f0 50%, #f7fafc 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 0.5rem;
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #e2e8f0;
+  color: #718096;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.skeleton-line {
-  height: 1rem;
+.user-avatar-authenticated {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.input-title {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.input-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.125rem;
+}
+
+.comment-textarea {
   width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 16px; /* Prevents zoom on iOS */
+  transition: all 0.2s;
+  -webkit-appearance: none;
 }
 
-.skeleton-line:nth-child(2) { width: 90%; }
-.skeleton-line:nth-child(3) { width: 95%; }
-.skeleton-line:nth-child(4) { width: 85%; }
+@media (min-width: 768px) {
+  .comment-textarea {
+    font-size: 0.95rem;
+  }
+}
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.comment-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-btn {
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tool-btn:hover {
+  background: #f8fafc;
+  transform: scale(1.1);
+}
+
+.anonymous-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #475569;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 1;
+}
+
+.anonymous-toggle input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.post-btn {
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.post-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.post-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.post-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Comment Success Message */
@@ -1045,21 +918,54 @@ a.sponsor-card:hover svg {
   padding: 0.75rem 1rem;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   color: #22c55e;
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 0.75rem;
   animation: slideDown 0.3s ease-out;
-  transition: all 0.3s ease;
 }
 
-.comment-success svg {
-  flex-shrink: 0;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* Comments Section */
+.comments-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.comments-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.comments-count {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Comments List */
 #comments-list {
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
@@ -1078,14 +984,379 @@ a.sponsor-card:hover svg {
   border-radius: 3px;
 }
 
-#comments-list::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+.comment-item {
+  padding: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  animation: commentFadeIn 0.3s ease-out;
 }
 
+@keyframes commentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-item:hover {
+  background: #fafafa;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.comment-avatar-user {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.comment-text {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #334155;
+  font-size: 0.9rem;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Reactions Bar */
+.comment-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.625rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reaction-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.reaction-btn:active {
+  transform: translateY(0);
+}
+
+.reaction-btn.active {
+  background: #eff6ff;
+  border-color: var(--reaction-color, #3b82f6);
+  color: var(--reaction-color, #3b82f6);
+}
+
+.reaction-emoji {
+  line-height: 1;
+}
+
+.reaction-count {
+  font-weight: 600;
+  color: #475569;
+}
+
+.reply-button {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reply-button:hover {
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.reply-button:active {
+  transform: scale(0.98);
+}
+
+.reply-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Reply Form */
+.reply-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  animation: slideDown 0.2s ease-out;
+}
+
+.reply-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.replying-to {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.cancel-reply {
+  font-size: 0.8125rem;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.cancel-reply:hover {
+  color: #475569;
+  text-decoration: underline;
+}
+
+.reply-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 16px; /* Prevents zoom on iOS */
+  line-height: 1.5;
+  transition: all 0.2s;
+  -webkit-appearance: none;
+}
+
+@media (min-width: 768px) {
+  .reply-textarea {
+    font-size: 0.875rem;
+  }
+}
+
+.reply-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.reply-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.reply-submit {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reply-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.reply-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.reply-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Nested Replies */
+.comment-replies {
+  margin-left: 2.5rem;
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid #e2e8f0;
+}
+
+.comment-replies .comment-item {
+  padding: 0.75rem 0;
+}
+
+.comment-replies .comment-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8125rem;
+}
+
+/* Sidebar */
+.sidebar {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+/* Related Content */
+#related-content {
+  padding: 1rem;
+}
+
+#related-content p {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  padding: 2rem;
+}
+
+/* Status Message */
+.status-message {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.status-icon {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Loading Skeleton */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f7fafc 25%, #e2e8f0 50%, #f7fafc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-line {
+  height: 1rem;
+  width: 100%;
+}
+
+.skeleton-line:nth-child(2) { width: 90%; }
+.skeleton-line:nth-child(3) { width: 95%; }
+.skeleton-line:nth-child(4) { width: 85%; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error State */
 .error-state {
   background: #fff5f5;
   border: 1px solid #feb2b2;
-  border-radius: 0.75rem;
+  border-radius: 12px;
   padding: 1.5rem;
   display: flex;
   align-items: start;
@@ -1095,38 +1366,14 @@ a.sponsor-card:hover svg {
 .error-state svg {
   width: 20px;
   height: 20px;
-  color: #c53030;
+  color: #dc2626;
   flex-shrink: 0;
 }
 
 .error-state p {
-  color: #c53030;
+  color: #dc2626;
   font-size: 0.875rem;
-}
-
-/* Softr User Status */
-.softr-user-status {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  font-size: 0.8125rem;
-  color: #718096;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.softr-user-status.authenticated {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #22c55e;
-}
-
-.softr-user-status svg {
-  width: 16px;
-  height: 16px;
+  margin: 0;
 }
 
 /* Modal for PDF Preview */
@@ -1154,7 +1401,7 @@ a.sponsor-card:hover svg {
 
 .modal-content {
   background: white;
-  border-radius: 1rem;
+  border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 56rem;
@@ -1178,12 +1425,12 @@ a.sponsor-card:hover svg {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
-  border-radius: 1rem 1rem 0 0;
+  border-radius: 16px 16px 0 0;
 }
 
 #pdf-title {
   font-weight: 600;
-  color: #2d3748;
+  color: #1e293b;
   font-size: 1.125rem;
   display: flex;
   align-items: center;
@@ -1193,20 +1440,27 @@ a.sponsor-card:hover svg {
 .modal-close {
   width: 2rem;
   height: 2rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #718096;
+  color: #64748b;
   transition: all 0.2s;
+  min-width: 44px;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .modal-close:hover {
   background: #e2e8f0;
-  color: #2d3748;
+  color: #1e293b;
+}
+
+.modal-close:active {
+  transform: scale(0.95);
 }
 
 #pdf-frame {
@@ -1223,7 +1477,7 @@ a.sponsor-card:hover svg {
   padding: 1.25rem 1.5rem;
   border-top: 1px solid #e2e8f0;
   background: #f8fafc;
-  border-radius: 0 0 1rem 1rem;
+  border-radius: 0 0 16px 16px;
 }
 
 .download-button {
@@ -1231,28 +1485,28 @@ a.sponsor-card:hover svg {
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
   color: white;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s;
 }
 
 .download-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .close-button {
   padding: 0.625rem 1.25rem;
   background: white;
-  color: #4a5568;
+  color: #475569;
   border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1266,104 +1520,256 @@ a.sponsor-card:hover svg {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  #main-widget-container {
-    margin: 1rem;
+  .content-grid {
+    grid-template-columns: 1fr;
   }
   
-  #legislation-widget {
-    padding: 1.5rem;
-  }
-  
-  .widget-header h2 {
-    font-size: 1.5rem;
+  .hero-title {
+    font-size: 1.75rem;
   }
   
   .info-grid {
     grid-template-columns: 1fr;
   }
   
-  .sponsors-grid {
-    grid-template-columns: 1fr;
+  .sidebar {
+    position: static;
+    margin-top: 2rem;
+  }
+  
+  .sidebar .discussion-section {
+    position: static;
+    max-height: none;
+  }
+  
+  .hero-meta {
+    gap: 1rem;
+  }
+  
+  .activity-stats {
+    display: none;
+  }
+  
+  .nav-tabs {
+    gap: 0;
+  }
+  
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .main-container {
+    padding: 0 1rem;
+  }
+  
+  .content-card {
+    padding: 1.5rem;
+  }
+  
+  .discussion-section {
+    padding: 1.5rem;
   }
   
   .comment-replies {
     margin-left: 1.5rem;
     padding-left: 0.5rem;
   }
-  
-  .tab-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.8125rem;
-  }
-  
-  .content-container {
-    padding: 1rem;
-  }
 }
 
-@media (max-width: 640px) {
-  #main-widget-container {
-    margin: 0.5rem;
-  }
-  
-  #legislation-widget {
-    padding: 1rem;
-  }
-  
-  .widget-header h2 {
-    font-size: 1.25rem;
-  }
-  
-  .comment-replies {
-    margin-left: 1rem;
-    padding-left: 0.5rem;
-  }
+/* No comments state */
+.no-comments {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+}
+
+.no-comments p {
+  font-size: 0.875rem;
 }
 </style>
 </head>
 <body>
 
-<!-- Main Widget Container -->
-<div id="main-widget-container">
-  <div class="gradient-bar"></div>
-  
-  <!-- Legislation Details Section -->
-  <div id="legislation-widget">
-    <div class="widget-header">
-      <h2>Legislation Details</h2>
-      <span class="matter-badge">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <span class="matter-id">Loading...</span>
-      </span>
+<!-- Hero Header with Legislation Details -->
+<div class="hero-header">
+  <div class="hero-content">
+    <div class="breadcrumb">
+      <span>Nashville</span>
+      <span>›</span>
+      <span>Legislation</span>
+      <span>›</span>
+      <span id="breadcrumb-file">Loading...</span>
+    </div>
+    
+    <div class="matter-badge">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span class="matter-file-number">Loading...</span>
+    </div>
+    
+    <h1 class="hero-title" id="hero-title">Loading legislation details...</h1>
+    
+    <div class="hero-meta" id="hero-meta">
+      <div class="meta-item">
+        <span class="meta-label">Status</span>
+        <span class="meta-value" id="meta-status">Loading...</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Type</span>
+        <span class="meta-value" id="meta-type">Loading...</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Introduced</span>
+        <span class="meta-value" id="meta-introduced">Loading...</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Last Action</span>
+        <span class="meta-value" id="meta-action">Loading...</span>
+      </div>
+    </div>
+    
+    <!-- Live Activity Bar -->
+    <div class="activity-bar">
+      <div class="live-indicator">
+        <div class="pulse-container">
+          <span class="pulse-ring"></span>
+          <span class="pulse-dot"></span>
+        </div>
+        <span style="font-weight: 600;">Live Activity</span>
+      </div>
+      
+      <div class="activity-stats">
+        <div class="stat">
+          <span>💬</span>
+          <span style="font-weight: 600;" id="comments-today">0</span>
+          <span>comments</span>
+        </div>
+      </div>
     </div>
     
     <div class="status-message">
       <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
       </svg>
-      <span>Loading legislation details...</span>
+      <span id="status-text">Loading legislation data...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="main-container">
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs" id="nav-tabs">
+    <button class="tab-btn active" data-tab="overview">
+      <span>📊</span>
+      <span>Overview</span>
+    </button>
+    <button class="tab-btn" data-tab="sponsors">
+      <span>👥</span>
+      <span>Sponsors</span>
+      <span class="badge" id="sponsors-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="documents">
+      <span>📎</span>
+      <span>Documents</span>
+      <span class="badge" id="documents-count">0</span>
+    </button>
+    <button class="tab-btn" data-tab="history">
+      <span>📜</span>
+      <span>History</span>
+    </button>
+  </div>
+  
+  <!-- Content Grid -->
+  <div class="content-grid">
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div id="content-container">
+        <div class="content-card">
+          <div class="loading-skeleton">
+            <div class="skeleton-item skeleton-line"></div>
+            <div class="skeleton-item skeleton-line"></div>
+            <div class="skeleton-item skeleton-line"></div>
+            <div class="skeleton-item skeleton-line"></div>
+          </div>
+        </div>
+      </div>
     </div>
     
-    <div id="matter-info" class="matter-info" style="display: none;">
-      <!-- Content will be dynamically generated -->
-    </div>
-    
-    <div class="tab-nav" id="tab-nav" style="display: none;">
-      <button class="tab-button active" data-tab="overview">Overview</button>
-      <button class="tab-button" data-tab="sponsors">Sponsors</button>
-      <button class="tab-button" data-tab="documents">Documents</button>
-      <button class="tab-button" data-tab="history">History</button>
-      <button class="tab-button" data-tab="comments">Comments</button>
-    </div>
-    
-    <div id="content-container">
-      <div class="loading-skeleton">
-        <div class="skeleton-item skeleton-line"></div>
-        <div class="skeleton-item skeleton-line"></div>
-        <div class="skeleton-item skeleton-line"></div>
-        <div class="skeleton-item skeleton-line"></div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Discussion Section in Sidebar -->
+      <div class="discussion-section" style="margin-bottom: 0;">
+        <div class="discussion-header">
+          <div class="discussion-title">
+            <span>💬</span>
+            <span>Community Discussion</span>
+          </div>
+          <div class="discussion-stats">
+            <span class="pulse-dot"></span>
+            <span><strong id="active-discussions">0</strong> comments</span>
+          </div>
+        </div>
+
+        <div class="comment-input-section">
+          <div class="input-header">
+            <div class="user-avatar" id="comment-user-avatar">?</div>
+            <div style="flex: 1;">
+              <div class="input-title">Join the conversation</div>
+              <div class="input-subtitle">Commenting as <strong id="comment-user-name">Anonymous</strong></div>
+            </div>
+          </div>
+
+          <div id="comment-success" class="comment-success" style="display: none;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Comment posted successfully!</span>
+          </div>
+
+          <textarea
+            class="comment-textarea"
+            id="comment-input"
+            placeholder="What's your perspective on this proposal?"
+            maxlength="1000"
+          ></textarea>
+
+          <div class="input-footer">
+            <div class="input-tools">
+              <button class="tool-btn" type="button">😊</button>
+              <button class="tool-btn" type="button">📎</button>
+              <button class="tool-btn" type="button">@</button>
+              <label class="anonymous-toggle">
+                <input type="checkbox" id="post-anonymous" checked>
+                Post anonymously
+              </label>
+            </div>
+            <div class="footer-right">
+              <span class="char-count"><span id="char-count">0</span>/1000</span>
+              <button class="post-btn" id="comment-btn">Post Comment</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="comments-section">
+          <div class="comments-header">
+            <h4 class="comments-title">Community Comments</h4>
+            <span class="comments-count">0 comments</span>
+          </div>
+          <div id="comments-list">
+            <div class="no-comments">
+              <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1467,46 +1873,17 @@ a.sponsor-card:hover svg {
     });
   }
   
-  // ========================================
-  // XANO SETUP INSTRUCTIONS:
-  // 1. API URL is configured: https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO
-  // 2. Create a GET /comment endpoint in Xano:
-  //    - Add a query parameter filter for session_id
-  //    - Return comments where session_id matches
-  // 3. The POST /comment endpoint is configured
-  // 4. Session ID format: matter_${matterId}_comments
-  //    This creates a unique session for each matter's comments
-  // 5. IP Address: Configure your Xano API to automatically capture
-  //    the client IP instead of accepting it from frontend
-  // 6. Email field: Now using real Softr user emails when available
-  // 7. CORS: Ensure your Xano API allows requests from your domain
-  // 
-  // To create the GET endpoint in Xano:
-  // - Go to your API dashboard
-  // - Create new endpoint: GET /comment
-  // - Add Query Input: session_id (text)
-  // - Query all records from comment table
-  // - Add filter: session_id = input.session_id
-  // - Sort by created_at descending
-  // - Return the filtered results
-  // ========================================
-  
   // Configuration
   const CONFIG = {
     softrDomain: 'https://eonashville.softr.app',
-    // Add sponsor ID mapping here if needed
-    // Format: { legistarId: softrRecordId }
-    sponsorIdMapping: {
-      // Example mappings - update these with your actual IDs:
-      // 207: 186,  // Jennifer Gamble
-      // 209: 187,  // Sean Parker
-      // Add more mappings as needed
-    }
+    sponsorIdMapping: {}
   };
   
   // Extract matterId from URL parameter 'recordId'
   const urlParams = new URLSearchParams(window.location.search);
   const matterId = urlParams.get('recordId') || '7447605';
+  
+  console.log('Matter ID extracted from URL:', matterId);
   
   // API endpoints
   const baseUrl = 'https://webapi.legistar.com/v1/nashville';
@@ -1521,18 +1898,17 @@ a.sponsor-card:hover svg {
   };
   
   // DOM elements
-  const statusEl = document.querySelector('.status-message span');
-  const matterIdEl = document.querySelector('.matter-id');
+  const statusEl = document.getElementById('status-text');
+  const matterFileEl = document.querySelector('.matter-file-number');
+  const breadcrumbFileEl = document.getElementById('breadcrumb-file');
   const contentContainer = document.getElementById('content-container');
-  const matterInfoEl = document.getElementById('matter-info');
-  const tabNavEl = document.getElementById('tab-nav');
   const modalEl = document.getElementById('pdf-modal');
   const frameEl = document.getElementById('pdf-frame');
   const downloadEl = document.getElementById('download-link');
   const titleTextEl = document.querySelector('.title-text');
   
-  // Update matter badge
-  matterIdEl.textContent = `Matter #${matterId}`;
+  // Initial status
+  statusEl.textContent = 'Loading legislation data...';
   
   // Data storage
   let matterData = null;
@@ -1543,7 +1919,7 @@ a.sponsor-card:hover svg {
   // Comment functionality
   let commentsData = [];
   let currentUserName = 'Anonymous';
-  let activeReplyForm = null; // Track active reply form
+  let activeReplyForm = null;
   
   // Configuration for Xano API
   const XANO_CONFIG = {
@@ -1563,32 +1939,22 @@ a.sponsor-card:hover svg {
     '👏': { name: 'applause', color: '#10b981' }
   };
   
-  // Generate consistent session ID for this matter
-  function generateSessionId(matterId) {
-    // Create a consistent session ID based on the matter ID
-    // This ensures all comments for a matter share the same session
-    return `matter_${matterId}_comments`;
-  }
-  
   // Structure comments into a tree
   function structureComments(flatComments) {
     const commentMap = new Map();
     const rootComments = [];
     
-    // First pass: create map of all comments
     flatComments.forEach(comment => {
       comment.replies = [];
       commentMap.set(comment.id, comment);
     });
     
-    // Second pass: organize into tree structure
     flatComments.forEach(comment => {
       if (comment.parent_comment_id && comment.parent_comment_id !== 0) {
         const parent = commentMap.get(comment.parent_comment_id);
         if (parent) {
           parent.replies.push(comment);
         } else {
-          // If parent not found, treat as root comment
           rootComments.push(comment);
         }
       } else {
@@ -1596,10 +1962,8 @@ a.sponsor-card:hover svg {
       }
     });
     
-    // Sort root comments by newest first
     rootComments.sort((a, b) => b.timestamp - a.timestamp);
     
-    // Sort replies by oldest first (conversation order)
     const sortReplies = (comments) => {
       comments.forEach(comment => {
         if (comment.replies && comment.replies.length > 0) {
@@ -1617,16 +1981,12 @@ a.sponsor-card:hover svg {
   // Load comments from Xano
   async function loadCommentsFromXano() {
     try {
-      const sessionId = generateSessionId(matterId);
+      console.log('Loading comments for matter:', matterId);
       
-      console.log('Loading comments for session:', sessionId);
-      
-      // Fetch comments for this matter/session from Xano
-      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}?session_id=${sessionId}`, {
+      // Fetch comments for this matter from Xano using matterId query parameter
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}?matterId=${matterId}`, {
         headers: {
-          'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${XANO_CONFIG.AUTH_TOKEN}`
+          'Content-Type': 'application/json'
         }
       });
       
@@ -1638,25 +1998,37 @@ a.sponsor-card:hover svg {
       
       console.log('Xano response:', xanoComments);
       
-      // Handle both array response and object with items/data property
+      // Also load votes
+      const votesResponse = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.VOTES}?matterId=${matterId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      let votes = [];
+      if (votesResponse.ok) {
+        const votesData = await votesResponse.json();
+        votes = Array.isArray(votesData) ? votesData : (votesData.items || votesData.data || []);
+      }
+      
       const commentsArray = Array.isArray(xanoComments) 
         ? xanoComments 
         : (xanoComments.items || xanoComments.data || xanoComments.comment || []);
       
-      // Transform Xano comments to match our format
       const allComments = commentsArray
-        .filter(comment => !comment.is_deleted) // Filter out deleted comments
+        .filter(comment => !comment.is_deleted)
         .map(comment => {
-          // Extract name from email or use Anonymous
           let authorName = 'Anonymous';
           if (!comment.is_anonymous && comment.user_email) {
-            // Extract name from email (before @) and format it
             const emailName = comment.user_email.split('@')[0];
             authorName = emailName
               .split(/[._-]/)
               .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
               .join(' ');
           }
+          
+          // Get votes for this comment
+          const commentVotes = votes.filter(v => v.comment_id === comment.id);
           
           return {
             id: comment.id,
@@ -1666,7 +2038,7 @@ a.sponsor-card:hover svg {
             isAnonymous: comment.is_anonymous || false,
             upvotes: comment.upvotes || 0,
             downvotes: comment.downvotes || 0,
-            votes: comment.votes || [],
+            votes: commentVotes || [],
             parent_comment_id: comment.parent_comment_id || 0,
             replies: []
           };
@@ -1674,38 +2046,28 @@ a.sponsor-card:hover svg {
       
       console.log('Loaded comments from Xano:', allComments.length);
       
-      // Structure comments into tree
       commentsData = structureComments(allComments);
-      
-      // Update UI
       renderComments();
       
     } catch (error) {
       console.error('Error loading comments:', error);
-      console.log('Make sure you have a GET /comment endpoint in Xano with session_id query parameter');
-      
-      // Show empty state instead of sample comments
       commentsData = [];
       renderComments();
     }
   }
   
-  // Initialize comments when comments tab is activated
+  // Initialize comments
   async function initializeComments() {
     console.log('Initializing comments for matter:', matterId);
-    console.log('Session ID will be:', generateSessionId(matterId));
     
-    // Detect Softr user first
     await detectSoftrUser();
     
-    // Update the UI to show user status
     if (isSoftrUserAuthenticated && softrUserEmail) {
       console.log('Authenticated Softr user:', softrUserName);
       currentUserName = softrUserName;
       updateCommentAsDisplay();
     }
     
-    // Load comments
     loadCommentsFromXano();
   }
   
@@ -1714,48 +2076,39 @@ a.sponsor-card:hover svg {
     const isAnonymous = parentCommentId ? true : document.getElementById('post-anonymous').checked;
     const timestamp = new Date();
     
-    // Use real Softr user email if authenticated and not anonymous
     let userEmail = 'anonymous@example.com';
     
     if (!isAnonymous && isSoftrUserAuthenticated && softrUserEmail) {
       userEmail = softrUserEmail;
       currentUserName = softrUserName;
     } else if (!isAnonymous) {
-      // Fallback for non-authenticated users
       userEmail = `${currentUserName.toLowerCase().replace(/\s+/g, '.')}@example.com`;
     }
     
-    // Disable button while submitting
     const submitBtn = parentCommentId ? document.querySelector(`#reply-form-${parentCommentId} .reply-submit`) : document.getElementById('comment-btn');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Posting...';
     
     try {
-      // Prepare data for Xano - matching your exact field names
       const commentData = {
         matterId: matterId,
         comment_text: text,
-        user_email: userEmail, // Now using real email when available
+        user_email: userEmail,
         is_anonymous: isAnonymous,
         upvotes: 0,
         downvotes: 0,
-        session_id: generateSessionId(matterId), // Consistent session ID
-        parent_comment_id: parentCommentId || 0, // 0 for top-level comments
+        parent_comment_id: parentCommentId || 0,
         is_deleted: false,
-        ip_address: 'client-ip', // This should be set by your backend
-        // created_at, updated_at, edited_at will be handled by Xano
+        ip_address: 'client-ip'
       };
       
       console.log('Sending comment to Xano:', JSON.stringify(commentData, null, 2));
       
-      // Send to Xano API
       const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${XANO_CONFIG.AUTH_TOKEN}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(commentData)
       });
@@ -1767,12 +2120,9 @@ a.sponsor-card:hover svg {
       }
       
       const savedComment = await response.json();
-      
       console.log('Comment saved to Xano:', savedComment);
       
-      // Clear input
       if (parentCommentId) {
-        // Close reply form
         const replyForm = document.getElementById(`reply-form-${parentCommentId}`);
         if (replyForm) {
           replyForm.remove();
@@ -1782,27 +2132,23 @@ a.sponsor-card:hover svg {
         const commentInput = document.getElementById('comment-input');
         commentInput.value = '';
         document.getElementById('char-count').textContent = '0';
-        document.getElementById('char-count').style.color = '#a0aec0';
+        document.getElementById('char-count').style.color = '#94a3b8';
       }
       
-      // Show success message
       const successEl = document.getElementById('comment-success');
       successEl.style.display = 'flex';
       setTimeout(() => {
         successEl.style.display = 'none';
       }, 3000);
       
-      // Reload comments to show the new one
       await loadCommentsFromXano();
       
-      // Scroll to the new comment if it's a reply
       if (parentCommentId) {
         const parentElement = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
         if (parentElement) {
           parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       } else {
-        // Scroll to top for new root comments
         const commentsList = document.getElementById('comments-list');
         commentsList.scrollTop = 0;
       }
@@ -1810,7 +2156,6 @@ a.sponsor-card:hover svg {
     } catch (error) {
       console.error('Error posting comment:', error);
       
-      // Show error message with helpful details
       const successEl = document.getElementById('comment-success');
       let errorMessage = 'Failed to post comment. ';
       
@@ -1849,7 +2194,6 @@ a.sponsor-card:hover svg {
       }, 3000);
       
     } finally {
-      // Reset button
       submitBtn.textContent = originalText;
       if (!parentCommentId) {
         const commentInput = document.getElementById('comment-input');
@@ -1876,7 +2220,6 @@ a.sponsor-card:hover svg {
       });
 
       if (response.ok) {
-        animateReaction(commentId, emoji);
         await loadCommentsFromXano();
       }
     } catch (error) {
@@ -1895,42 +2238,12 @@ a.sponsor-card:hover svg {
     return false;
   }
 
-  function animateReaction(commentId, emoji) {
-    // Placeholder for reaction animation
-  }
-
   function generateAnonymousId() {
     return `anon_${Math.random().toString(36).slice(2, 10)}`;
-  }
-
-  function createActivityIndicator() {
-    return `
-      <div class="activity-indicator">
-        <div class="activity-pulse">
-          <span class="pulse-ring"></span>
-          <span class="pulse-dot"></span>
-        </div>
-        <div class="activity-stats">
-          <span class="stat-item">
-            <svg class="w-4 h-4"></svg>
-            <span id="viewer-count">12</span> viewing
-          </span>
-          <span class="stat-item">
-            <svg class="w-4 h-4"></svg>
-            <span id="active-discussions">${commentsData.length}</span> comments
-          </span>
-          <span class="stat-item">
-            <svg class="w-4 h-4"></svg>
-            <span id="engagement-score">Hot</span>
-          </span>
-        </div>
-      </div>
-    `;
   }
   
   // Show reply form
   window.showReplyForm = function(parentId, parentAuthor) {
-    // Remove any existing reply form
     if (activeReplyForm) {
       activeReplyForm.remove();
     }
@@ -1961,13 +2274,11 @@ a.sponsor-card:hover svg {
       </div>
     `;
     
-    // Insert after the comment footer (which contains the reply button)
     const commentFooter = parentElement.querySelector('.comment-footer');
     commentFooter.parentNode.insertBefore(replyForm, commentFooter.nextSibling);
     
     activeReplyForm = replyForm;
     
-    // Set up the reply textarea
     const replyTextarea = document.getElementById(`reply-input-${parentId}`);
     const replySubmitBtn = replyForm.querySelector('.reply-submit');
     
@@ -1977,7 +2288,6 @@ a.sponsor-card:hover svg {
       replySubmitBtn.disabled = this.value.trim().length === 0;
     });
     
-    // Handle Enter key to submit
     replyTextarea.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -2017,7 +2327,6 @@ a.sponsor-card:hover svg {
       repliesContainer.style.display = isHidden ? 'block' : 'none';
       toggleBtn.classList.toggle('expanded', isHidden);
       
-      // Update button text
       const replyCount = repliesContainer.querySelectorAll('.comment-item').length;
       toggleBtn.innerHTML = `
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2036,20 +2345,23 @@ a.sponsor-card:hover svg {
         <div class="comment-header">
           <div class="comment-author">
             <div class="comment-avatar${!comment.isAnonymous ? ' comment-avatar-user' : ''}">${comment.isAnonymous ? '?' : comment.author[0].toUpperCase()}</div>
-            <span class="comment-name">${comment.author}</span>
-            <span class="comment-time">${getTimeAgo(comment.timestamp)}</span>
+            <div class="author-info">
+              <span class="comment-name">${comment.author}</span>
+              <span class="comment-time">${getTimeAgo(comment.timestamp)}</span>
+            </div>
           </div>
         </div>
         <div class="comment-text">${escapeHtml(comment.text)}</div>
         <div class="comment-footer">
-          <div class="reaction-picker">
-            ${Object.entries(REACTIONS).map(([emoji, data]) => `
+          ${Object.entries(REACTIONS).map(([emoji, data]) => {
+            const count = reactions[emoji] || 0;
+            return count > 0 ? `
               <button class="reaction-btn ${hasUserReacted(comment.id, emoji) ? 'active' : ''}" onclick="addReaction(${comment.id}, '${emoji}')" style="--reaction-color: ${data.color}">
                 <span class="reaction-emoji">${emoji}</span>
-                <span class="reaction-count">${reactions[emoji] || ''}</span>
+                <span class="reaction-count">${count}</span>
               </button>
-            `).join('')}
-          </div>
+            ` : '';
+          }).join('')}
           <button class="reply-button" onclick="showReplyForm(${comment.id}, '${escapeHtml(comment.author).replace(/'/g, "\\'")}')">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -2067,11 +2379,10 @@ a.sponsor-card:hover svg {
     const commentsList = document.getElementById('comments-list');
     const commentsCount = document.querySelector('.comments-count');
     
-    // Count total comments including replies
     const countAllComments = (comments) => {
       let count = 0;
       comments.forEach(comment => {
-        count++; // Count the comment itself
+        count++;
         if (comment.replies && comment.replies.length > 0) {
           count += countAllComments(comment.replies);
         }
@@ -2081,8 +2392,13 @@ a.sponsor-card:hover svg {
     
     const totalCount = countAllComments(commentsData);
     
-    // Update count
-    commentsCount.textContent = `${totalCount} comment${totalCount !== 1 ? 's' : ''}`;
+    // Update counts across UI
+    if (commentsCount) commentsCount.textContent = `${totalCount} comment${totalCount !== 1 ? 's' : ''}`;
+    document.getElementById('comments-today').textContent = totalCount;
+    const activeDiscussions = document.getElementById('active-discussions');
+    if (activeDiscussions) activeDiscussions.textContent = totalCount;
+    
+    if (!commentsList) return;
     
     if (commentsData.length === 0) {
       commentsList.innerHTML = `
@@ -2093,33 +2409,24 @@ a.sponsor-card:hover svg {
       return;
     }
     
-    let commentsHTML = commentsData.map(comment => renderComment(comment)).join('');
-
-    commentsList.innerHTML = commentsHTML;
-
-    const activityContainer = document.getElementById('activity-indicator-container');
-    if (activityContainer) {
-      activityContainer.innerHTML = createActivityIndicator();
-    }
+    commentsList.innerHTML = commentsData.map(comment => renderComment(comment)).join('');
   }
   
   // Update comment as display
   function updateCommentAsDisplay() {
-    const commentAsDisplay = document.querySelector('.comment-as');
+    const avatarEl = document.getElementById('comment-user-avatar');
+    const nameEl = document.getElementById('comment-user-name');
     const anonymousCheckbox = document.getElementById('post-anonymous');
-    
-    if (!commentAsDisplay) return; // Element might not exist yet
-    
+
+    if (!avatarEl || !nameEl) return;
+
     const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : true;
     const displayName = isAnonymous ? 'Anonymous' : currentUserName;
-    const avatar = isAnonymous ? '?' : displayName[0].toUpperCase();
-    const avatarClass = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
-    
-    commentAsDisplay.innerHTML = `
-      <span>Comment as</span>
-      <div class="${avatarClass}">${avatar}</div>
-      <strong>${displayName}</strong>
-    `;
+    const avatarChar = isAnonymous ? '?' : displayName[0].toUpperCase();
+
+    avatarEl.textContent = avatarChar;
+    avatarEl.className = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
+    nameEl.textContent = displayName;
   }
   
   // Get time ago string
@@ -2181,17 +2488,12 @@ a.sponsor-card:hover svg {
   
   // Tab functionality
   function setupTabs() {
-    const tabs = document.querySelectorAll('.tab-button');
+    const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         showContent(tab.dataset.tab);
-        
-        // Initialize comments when comments tab is clicked for the first time
-        if (tab.dataset.tab === 'comments' && commentsData.length === 0) {
-          initializeComments();
-        }
       });
     });
   }
@@ -2246,54 +2548,79 @@ a.sponsor-card:hover svg {
     }
   }
   
-  // Display matter details
+  // Display matter details - complete function with all content
   function displayMatterDetails(data) {
-    // Get the title, preferring MatterTitle over MatterName
-    const fullTitle = data.MatterTitle || data.MatterName || 'N/A';
+    // Update hero header
+    const fileNumber = data.MatterFile || `Matter #${matterId}`;
+    document.getElementById('hero-title').textContent = data.MatterTitle || data.MatterName || 'Untitled Legislation';
+    document.getElementById('meta-status').textContent = data.MatterStatusName || 'Unknown';
+    document.getElementById('meta-type').textContent = data.MatterTypeName || 'N/A';
+    document.getElementById('meta-introduced').textContent = formatDate(data.MatterIntroDate);
+    document.getElementById('meta-action').textContent = formatDate(data.MatterAgendaDate);
     
-    // Create a 300 character preview of the title
-    const titlePreview = fullTitle.length > 300 
-      ? fullTitle.substring(0, 297) + '...' 
-      : fullTitle;
+    // Update file number displays
+    if (matterFileEl) matterFileEl.textContent = fileNumber;
+    if (breadcrumbFileEl) breadcrumbFileEl.textContent = fileNumber;
     
-    // Update the HTML structure for info grid
-    document.getElementById('matter-info').innerHTML = `
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="info-label">File Number</span>
-          <span class="info-value">${data.MatterFile || 'N/A'}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Type</span>
-          <span class="info-value">${data.MatterTypeName || 'N/A'}</span>
-        </div>
-        <div class="info-item full-width">
-          <span class="info-label">Title</span>
-          <span class="info-value">${titlePreview}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Status</span>
-          <span class="info-value">${data.MatterStatusName || 'N/A'}</span>
-        </div>
-      </div>
-    `;
-    
-    // Build content sections
+    // Build content HTML
     let contentHTML = '';
     
     // Overview section
     contentHTML += `
       <div id="content-overview" class="content-section active">
-        <div class="content-container">
-          <h3>Matter Overview</h3>
-          <p><strong>Title:</strong> ${fullTitle}</p>
-          <p><strong>Introduction Date:</strong> ${formatDate(data.MatterIntroDate)}</p>
-          <p><strong>Agenda Date:</strong> ${formatDate(data.MatterAgendaDate)}</p>
-          <p><strong>Passed Date:</strong> ${formatDate(data.MatterPassedDate)}</p>
-          <p><strong>Enactment Date:</strong> ${formatDate(data.MatterEnactmentDate)}</p>
-          <p><strong>Enactment Number:</strong> ${data.MatterEnactmentNumber || 'N/A'}</p>
-          ${data.MatterRequester ? `<p><strong>Requester:</strong> ${data.MatterRequester}</p>` : ''}
-          ${data.MatterNotes ? `<p><strong>Notes:</strong> ${data.MatterNotes}</p>` : ''}
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">📊</div>
+              <span>Legislation Overview</span>
+            </div>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">File Number</span>
+              <span class="info-value">${data.MatterFile || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Type</span>
+              <span class="info-value">${data.MatterTypeName || 'N/A'}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">Title</span>
+              <span class="info-value">${data.MatterTitle || data.MatterName || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Status</span>
+              <span class="info-value">${data.MatterStatusName || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Agenda Date</span>
+              <span class="info-value">${formatDate(data.MatterAgendaDate)}</span>
+            </div>
+          </div>
+          
+          <div class="full-text">
+            <h4>Matter Details</h4>
+            <p><strong>Introduction Date:</strong> ${formatDate(data.MatterIntroDate)}</p>
+            <p><strong>Passed Date:</strong> ${formatDate(data.MatterPassedDate)}</p>
+            <p><strong>Enactment Date:</strong> ${formatDate(data.MatterEnactmentDate)}</p>
+            <p><strong>Enactment Number:</strong> ${data.MatterEnactmentNumber || 'N/A'}</p>
+            ${data.MatterRequester ? `<p><strong>Requester:</strong> ${data.MatterRequester}</p>` : ''}
+            ${data.MatterNotes ? `<p><strong>Notes:</strong> ${data.MatterNotes}</p>` : ''}
+          </div>
+        </div>
+        
+        <!-- Related Legislation -->
+        <div class="content-card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">🔗</div>
+              <span>Related Legislation</span>
+            </div>
+          </div>
+          <div id="related-content">
+            <p style="color: #64748b; font-size: 0.875rem;">Loading related items...</p>
+          </div>
         </div>
       </div>
     `;
@@ -2301,8 +2628,13 @@ a.sponsor-card:hover svg {
     // Sponsors section
     contentHTML += `
       <div id="content-sponsors" class="content-section">
-        <div class="content-container">
-          <h3>Sponsors</h3>
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">👥</div>
+              <span>Sponsors</span>
+            </div>
+          </div>
           <div id="sponsors-content">
             <div class="loading-skeleton">
               <div class="skeleton-item skeleton-line"></div>
@@ -2316,8 +2648,13 @@ a.sponsor-card:hover svg {
     // Documents section
     contentHTML += `
       <div id="content-documents" class="content-section">
-        <div class="content-container">
-          <h3>Documents & Attachments</h3>
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">📎</div>
+              <span>Documents & Attachments</span>
+            </div>
+          </div>
           <div id="documents-content">
             <div class="loading-skeleton">
               <div class="skeleton-item skeleton-line"></div>
@@ -2331,8 +2668,13 @@ a.sponsor-card:hover svg {
     // History section
     contentHTML += `
       <div id="content-history" class="content-section">
-        <div class="content-container">
-          <h3>Legislative History</h3>
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">📜</div>
+              <span>Legislative History</span>
+            </div>
+          </div>
           <div id="history-content">
             <div class="loading-skeleton">
               <div class="skeleton-item skeleton-line"></div>
@@ -2343,93 +2685,14 @@ a.sponsor-card:hover svg {
       </div>
     `;
     
-    // Comments section
-    contentHTML += `
-      <div id="content-comments" class="content-section">
-        <div class="content-container">
-          <div class="community-header">
-            <div class="discussion-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
-            </div>
-            <h3>Community Discussion</h3>
-          </div>
-          
-          <p class="discussion-subtitle">Share your thoughts on this legislation</p>
-          
-          <div class="discussion-status">
-            <span class="status-dot"></span>
-            <span>Discussing: <span>${data.MatterFile || `Matter #${matterId}`}</span></span>
-          </div>
-
-          <div id="activity-indicator-container"></div>
-          
-          <div id="softr-user-status" class="softr-user-status" style="display: none;">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span id="softr-status-text">Checking authentication...</span>
-          </div>
-          
-          <div class="comment-section">
-            <div class="comment-as">
-              <span>Comment as</span>
-              <div class="user-avatar">?</div>
-              <strong>Anonymous</strong>
-            </div>
-            
-            <div id="comment-success" class="comment-success" style="display: none;">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span>Comment posted successfully!</span>
-            </div>
-            
-            <textarea 
-              class="comment-textarea" 
-              placeholder="What are your thoughts? (Press Enter to submit, Shift+Enter for new line)"
-              id="comment-input"
-              maxlength="1000"
-            ></textarea>
-            
-            <div class="comment-actions">
-              <label class="anonymous-checkbox">
-                <input type="checkbox" id="post-anonymous" checked>
-                <span>Post anonymously</span>
-              </label>
-              
-              <div style="display: flex; align-items: center; gap: 1rem;">
-                <span class="char-count"><span id="char-count">0</span>/1000</span>
-                <button class="comment-button" id="comment-btn">Comment</button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="comments-section">
-            <div class="comments-header">
-              <h4 class="comments-title">Community Comments</h4>
-              <span class="comments-count">0 comments</span>
-            </div>
-            <div id="comments-list">
-              <div class="no-comments">
-                <p>No comments yet. Be the first to share your thoughts!</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
     contentContainer.innerHTML = contentHTML;
     
-    // Set up comment functionality
+    // Set up comment functionality for sidebar
     const commentInput = document.getElementById('comment-input');
     const charCountEl = document.getElementById('char-count');
     const commentBtn = document.getElementById('comment-btn');
     const anonymousCheckbox = document.getElementById('post-anonymous');
     
-    // Update comment as display on checkbox change
     anonymousCheckbox.addEventListener('change', updateCommentAsDisplay);
     updateCommentAsDisplay();
     
@@ -2438,21 +2701,18 @@ a.sponsor-card:hover svg {
       charCountEl.textContent = length;
       
       if (length > 900) {
-        charCountEl.style.color = '#e53e3e';
+        charCountEl.style.color = '#dc2626';
       } else if (length > 800) {
-        charCountEl.style.color = '#ed8936';
+        charCountEl.style.color = '#f59e0b';
       } else {
-        charCountEl.style.color = '#a0aec0';
+        charCountEl.style.color = '#94a3b8';
       }
       
-      // Enable/disable button based on content
       commentBtn.disabled = this.value.trim().length === 0;
     });
     
-    // Initially disable the button
     commentBtn.disabled = true;
     
-    // Handle Enter key to submit (Shift+Enter for new line)
     commentInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -2470,55 +2730,33 @@ a.sponsor-card:hover svg {
       }
     });
     
-    // Show elements
-    matterInfoEl.style.display = 'block';
-    tabNavEl.style.display = 'flex';
-    
-    // Setup tabs
     setupTabs();
-    
-    // Load additional data
     loadSponsors();
     loadAttachments();
     loadHistory();
     
-    // Update Softr user status when comments tab is shown
-    const commentsTab = document.querySelector('[data-tab="comments"]');
-    if (commentsTab) {
-      commentsTab.addEventListener('click', async () => {
-        const statusEl = document.getElementById('softr-user-status');
-        const statusTextEl = document.getElementById('softr-status-text');
-        
-        if (statusEl) {
-          statusEl.style.display = 'flex';
-          
-          if (isSoftrUserAuthenticated && softrUserEmail) {
-            statusEl.classList.add('authenticated');
-            statusTextEl.textContent = `Authenticated as: ${softrUserName}`;
-          } else {
-            statusEl.classList.remove('authenticated');
-            statusTextEl.textContent = 'Not authenticated - comments will be posted anonymously';
-          }
-        }
-      });
-    }
+    // Initialize comments immediately since it's always visible in sidebar
+    initializeComments();
   }
   
   // Load sponsors
   function loadSponsors() {
-    console.log('Loading sponsors from:', corsProxy + encodeURIComponent(endpoints.sponsors));
+    console.log('Loading sponsors...');
     
     fetch(corsProxy + encodeURIComponent(endpoints.sponsors))
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(data => {
-        console.log('Raw sponsors data received:', data);
         sponsorsData = data;
         displaySponsors(data);
+        
+        // Update sponsor count
+        const sponsorCount = Array.isArray(data) ? data.length : 0;
+        document.getElementById('sponsors-count').textContent = sponsorCount;
       })
       .catch(err => {
         console.error('Error loading sponsors:', err);
         document.getElementById('sponsors-content').innerHTML = `
-          <p style="color: #718096; font-size: 0.875rem;">Failed to load sponsors: ${err.message}</p>
+          <p style="color: #64748b; font-size: 0.875rem;">Failed to load sponsors: ${err.message}</p>
         `;
       });
   }
@@ -2528,36 +2766,28 @@ a.sponsor-card:hover svg {
     const sponsorsContent = document.getElementById('sponsors-content');
     
     if (!Array.isArray(data) || data.length === 0) {
-      sponsorsContent.innerHTML = '<p style="color: #718096;">No sponsors found.</p>';
+      sponsorsContent.innerHTML = '<p style="color: #64748b;">No sponsors found.</p>';
       return;
     }
     
     let sponsorsHTML = '<div class="sponsors-grid">';
     
     data.forEach(sponsor => {
-      const legistarId = sponsor.MatterSponsorNameId;
       const sponsorName = sponsor.MatterSponsorName || 'Unknown';
       const sponsorType = sponsor.MatterSponsorTypeName || 'Sponsor';
-      
-      // Use ID mapping if available, otherwise use the Legistar ID
-      const softrRecordId = CONFIG.sponsorIdMapping[legistarId] || legistarId;
-      
-      console.log(`Sponsor: ${sponsorName}, Legistar ID: ${legistarId}, Softr Record ID: ${softrRecordId}`);
-      
-      // Build URL using the Softr person-details page format
-      let sponsorUrl = '#';
-      if (softrRecordId) {
-        sponsorUrl = `https://eonashville.softr.app/person-details?recordId=${softrRecordId}`;
-      }
+      const initials = sponsorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
       
       sponsorsHTML += `
-        <a href="${sponsorUrl}" class="sponsor-card" style="text-decoration: none; color: inherit;">
-          <div class="sponsor-name">${sponsorName}</div>
-          <div class="sponsor-type">${sponsorType}</div>
+        <div class="sponsor-card">
+          <div class="sponsor-avatar">${initials}</div>
+          <div class="sponsor-info">
+            <div class="sponsor-name">${sponsorName}</div>
+            <div class="sponsor-type">${sponsorType}</div>
+          </div>
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
-        </a>
+        </div>
       `;
     });
     
@@ -2572,10 +2802,14 @@ a.sponsor-card:hover svg {
       .then(data => {
         attachmentsData = data;
         displayAttachments(data);
+        
+        // Update document count
+        const docCount = Array.isArray(data) ? data.length : 0;
+        document.getElementById('documents-count').textContent = docCount;
       })
       .catch(err => {
         document.getElementById('documents-content').innerHTML = `
-          <p style="color: #718096; font-size: 0.875rem;">Failed to load attachments: ${err.message}</p>
+          <p style="color: #64748b; font-size: 0.875rem;">Failed to load attachments: ${err.message}</p>
         `;
       });
   }
@@ -2591,13 +2825,12 @@ a.sponsor-card:hover svg {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
           <p>No documents or attachments found.</p>
-          <p>The full legislative text may be stored elsewhere.</p>
         </div>
       `;
       return;
     }
     
-    let attachmentsHTML = '<div class="attachments-list">';
+    let attachmentsHTML = '<div class="documents-list">';
     
     data.forEach((att, index) => {
       const href = buildHref(att);
@@ -2605,16 +2838,16 @@ a.sponsor-card:hover svg {
       
       if (!href) {
         attachmentsHTML += `
-          <div class="attachment-item" style="opacity: 0.6;">
-            <div class="attachment-info">
-              <div class="file-icon">
+          <div class="document-item" style="opacity: 0.6;">
+            <div class="document-info">
+              <div class="doc-icon">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </div>
-              <span class="attachment-name">${name}</span>
+              <div class="doc-name">${name}</div>
             </div>
-            <span style="color: #a0aec0; font-size: 0.875rem;">No link available</span>
+            <span style="color: #94a3b8; font-size: 0.875rem;">No link available</span>
           </div>
         `;
         return;
@@ -2622,31 +2855,34 @@ a.sponsor-card:hover svg {
       
       const previewable = isPreviewable(href);
       const actionHtml = previewable
-        ? `<button class="action-button" onclick="openModal('${name.replace(/'/g, "\\'")}', '${href}')">
+        ? `<button class="btn-secondary" onclick="openModal('${name.replace(/'/g, "\\'")}', '${href}')">
              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
              </svg>
              Preview
            </button>`
-        : `<a class="action-button" href="${href}" target="_blank" rel="noopener">
-             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-             </svg>
-             Open
-           </a>`;
+        : '';
       
       attachmentsHTML += `
-        <div class="attachment-item">
-          <div class="attachment-info">
-            <div class="file-icon">
+        <div class="document-item">
+          <div class="document-info">
+            <div class="doc-icon">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
-            <span class="attachment-name" title="${name}">${name}</span>
+            <div class="doc-name" title="${name}">${name}</div>
           </div>
-          ${actionHtml}
+          <div class="doc-actions">
+            ${actionHtml}
+            <a class="btn-secondary" href="${href}" target="_blank" rel="noopener">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+              Open
+            </a>
+          </div>
         </div>
       `;
     });
@@ -2665,7 +2901,7 @@ a.sponsor-card:hover svg {
       })
       .catch(err => {
         document.getElementById('history-content').innerHTML = `
-          <p style="color: #718096; font-size: 0.875rem;">Failed to load history: ${err.message}</p>
+          <p style="color: #64748b; font-size: 0.875rem;">Failed to load history: ${err.message}</p>
         `;
       });
   }
@@ -2675,7 +2911,7 @@ a.sponsor-card:hover svg {
     const historyContent = document.getElementById('history-content');
     
     if (!Array.isArray(data) || data.length === 0) {
-      historyContent.innerHTML = '<p style="color: #718096;">No history records found.</p>';
+      historyContent.innerHTML = '<p style="color: #64748b;">No history records found.</p>';
       return;
     }
     
@@ -2706,6 +2942,8 @@ a.sponsor-card:hover svg {
   });
   
   // Fetch matter data
+  console.log('Fetching matter data from:', corsProxy + encodeURIComponent(endpoints.matter));
+  
   fetch(corsProxy + encodeURIComponent(endpoints.matter))
     .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
     .then(data => {
@@ -2714,18 +2952,24 @@ a.sponsor-card:hover svg {
       displayMatterDetails(data);
     })
     .catch(err => {
+      console.error('Error loading matter:', err);
       statusEl.textContent = 'Failed to load matter';
       contentContainer.innerHTML = `
-        <div class="error-state">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <div>
-            <p>Failed to load matter details: ${err.message}</p>
-            <p style="margin-top: 0.5rem; font-size: 0.8125rem;">Make sure the record ID is correct and try refreshing the page.</p>
+        <div class="content-card">
+          <div class="error-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p>Failed to load matter details: ${err.message}</p>
+              <p style="margin-top: 0.5rem; font-size: 0.8125rem;">Make sure the record ID (${matterId}) is valid and try refreshing the page.</p>
+            </div>
           </div>
         </div>
       `;
+      // Still update with placeholder text
+      if (matterFileEl) matterFileEl.textContent = `Matter #${matterId}`;
+      if (breadcrumbFileEl) breadcrumbFileEl.textContent = matterId;
     });
 })();
 </script>
