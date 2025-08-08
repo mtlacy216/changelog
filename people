@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>People Directory</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f7f8f9;
+  color: #2d3748;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header */
+.header {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+/* Cache Status */
+.cache-status {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-top: 0.5rem;
+}
+
+.cache-status button {
+  color: #667eea;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.75rem;
+}
+
+/* Search and Filters */
+.controls {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #a0aec0;
+}
+
+.filter-select {
+  padding: 0.625rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Table */
+.table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.people-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.people-table thead {
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.people-table th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4a5568;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+}
+
+.people-table th:hover {
+  color: #2d3748;
+}
+
+.people-table th.sortable::after {
+  content: ' ↕';
+  opacity: 0.4;
+  font-size: 0.7rem;
+}
+
+.people-table th.sorted-asc::after {
+  content: ' ↑';
+  opacity: 1;
+}
+
+.people-table th.sorted-desc::after {
+  content: ' ↓';
+  opacity: 1;
+}
+
+.people-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f7fafc;
+  font-size: 0.875rem;
+}
+
+.people-table tbody tr {
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.people-table tbody tr:hover {
+  background: #f7fafc;
+  transform: translateX(2px);
+}
+
+/* Person Cell */
+.person-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.person-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.person-avatar.loading {
+  background: #e2e8f0;
+}
+
+.person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-name {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+/* Email */
+.email-link {
+  color: #667eea;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.email-link:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: #f0fdf4;
+  color: #22c55e;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge.inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Type Badge */
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #f0f4ff;
+  color: #667eea;
+  border: 1px solid #e0e7ff;
+}
+
+.type-badge.system {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #fde68a;
+}
+
+.type-badge.district {
+  background: #e0e7ff;
+  color: #4c1d95;
+  border-color: #c7d2fe;
+}
+
+/* Website Link */
+.website-link {
+  color: #718096;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  transition: all 0.2s;
+  word-break: break-all;
+}
+
+.website-link:hover {
+  color: #667eea;
+  text-decoration: underline;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: #718096;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  color: #718096;
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+/* Error State */
+.error-state {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+}
+
+.error-state svg {
+  width: 20px;
+  height: 20px;
+  color: #c53030;
+  flex-shrink: 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Initial Load Progress */
+.initial-load {
+  background: #f0f4ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header, .controls, .table-container {
+    border-radius: 8px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .controls {
+    padding: 1rem;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .people-table {
+    font-size: 0.8125rem;
+  }
+  
+  .people-table th,
+  .people-table td {
+    padding: 0.75rem 1rem;
+  }
+  
+  .person-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Hide some columns on mobile */
+  .people-table th:nth-child(4),
+  .people-table td:nth-child(4),
+  .people-table th:nth-child(5),
+  .people-table td:nth-child(5) {
+    display: none;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div>
+        <h1 class="title">People Directory</h1>
+        <div class="cache-status" id="cache-status"></div>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-value" id="total-count">0</span>
+          <span class="stat-label">Total People</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="active-count">0</span>
+          <span class="stat-label">Active Members</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Search and Filters -->
+  <div class="controls">
+    <div class="search-box">
+      <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" class="search-input" id="search-input" placeholder="Search by name or email...">
+    </div>
+    
+    <select class="filter-select" id="type-filter">
+      <option value="">All People</option>
+      <option value="council">Council Members Only</option>
+      <option value="district">District Members</option>
+      <option value="atlarge">At-Large Members</option>
+      <option value="leadership">Mayor & Vice Mayor</option>
+    </select>
+    
+    <select class="filter-select" id="status-filter" title="Active = Has a council title/position from PersonWWW URL">
+      <option value="active">Active Only</option>
+      <option value="">All Status</option>
+      <option value="inactive">Inactive Only</option>
+    </select>
+    
+    <select class="filter-select" id="sort-select">
+      <option value="lastName">Sort by Last Name</option>
+      <option value="firstName">Sort by First Name</option>
+      <option value="district">Sort by District</option>
+      <option value="email">Sort by Email</option>
+      <option value="lastModified">Sort by Last Modified</option>
+    </select>
+  </div>
+  
+  <!-- Table -->
+  <div class="table-container">
+    <div id="table-content">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading people directory...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Configuration
+  const CONFIG = {
+    baseUrl: 'https://webapi.legistar.com/v1/nashville',
+    corsProxy: 'https://corsproxy.io/?',
+    pageSize: 50,
+    cacheKey: 'nashville_people_cache_v2',
+    cacheExpiry: 3600000, // 1 hour
+    softrDomain: 'https://eonashville.preview.softr.app',
+    debugMode: false
+  };
+  
+  // System user patterns to identify non-council members
+  const SYSTEM_PATTERNS = [
+    'system', 'administrator', 'admin', 'granicus', 'legistar', 
+    'daystar', 'view only', 'test', 'user', 'import', 'approver',
+    'drafter', 'ba', 'training', 'qa', 'dev', 'developer',
+    'support', 'service', 'demo', 'sample', 'example'
+  ];
+  
+  // State
+  let allPeople = [];
+  let filteredPeople = [];
+  let currentPage = 1;
+  let sortField = 'lastName';  // Default to last name
+  let sortDirection = 'asc';
+  let photosLoaded = new Set();
+  
+  // DOM Elements
+  const searchInput = document.getElementById('search-input');
+  const typeFilter = document.getElementById('type-filter');
+  const statusFilter = document.getElementById('status-filter');
+  const sortSelect = document.getElementById('sort-select');
+  const tableContent = document.getElementById('table-content');
+  const totalCountEl = document.getElementById('total-count');
+  const cacheStatusEl = document.getElementById('cache-status');
+  
+  // Initialize
+  init();
+  
+  function init() {
+    loadPeople();
+    setupEventListeners();
+  }
+  
+  // Event Listeners
+  function setupEventListeners() {
+    searchInput.addEventListener('input', debounce(handleSearch, 300));
+    typeFilter.addEventListener('change', handleFilter);
+    statusFilter.addEventListener('change', handleFilter);
+    sortSelect.addEventListener('change', handleSortChange);
+  }
+  
+  // Debounce helper
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+  
+  // Get initials from name
+  function getInitials(firstName, lastName) {
+    const f = firstName ? firstName[0] : '';
+    const l = lastName ? lastName[0] : '';
+    return (f + l).toUpperCase() || '?';
+  }
+  
+  // Extract district/title from PersonWWW URL
+  function extractDistrictInfo(url1, url2) {
+    // Try first URL
+    let district = extractFromUrl(url1);
+    if (district) return district;
+    
+    // Try second URL
+    return extractFromUrl(url2);
+  }
+  
+  function extractFromUrl(personWWW) {
+    if (!personWWW) return null;
+    
+    // Ignore non-council URLs
+    if (!personWWW.toLowerCase().includes('council') && 
+        !personWWW.toLowerCase().includes('mayor')) {
+      return null;
+    }
+    
+    // Try to extract district number from URL
+    const districtMatch = personWWW.match(/District-(\d+)/i);
+    if (districtMatch) {
+      return `District ${districtMatch[1]}`;
+    }
+    
+    // Try to extract At-Large
+    if (personWWW.toLowerCase().includes('at-large')) {
+      return 'At-Large';
+    }
+    
+    // Try to extract Vice Mayor
+    if (personWWW.toLowerCase().includes('vice-mayor')) {
+      return 'Vice Mayor';
+    }
+    
+    // Try to extract Mayor
+    if (personWWW.toLowerCase().includes('mayor') && !personWWW.toLowerCase().includes('vice')) {
+      return 'Mayor';
+    }
+    
+    // Try to extract other council positions
+    if (personWWW.toLowerCase().includes('council-member')) {
+      return 'Council Member';
+    }
+    
+    // Try to extract other titles from URL
+    const titleMatch = personWWW.match(/Metro-Council-Members\/([^\/]+?)(?:\.aspx)?$/i);
+    if (titleMatch) {
+      return titleMatch[1].replace(/-/g, ' ').replace(/Council Member/i, '').trim();
+    }
+    
+    // If it's a council URL but no specific title found
+    if (personWWW.toLowerCase().includes('council')) {
+      return 'Council';
+    }
+    
+    return null;
+  }
+  
+  // Check if person is likely a system user
+  function isSystemUser(person) {
+    const fullName = (person.PersonFullName || '').toLowerCase();
+    const email = (person.PersonEmail || '').toLowerCase();
+    const firstName = (person.PersonFirstName || '').toLowerCase();
+    const lastName = (person.PersonLastName || '').toLowerCase();
+    
+    // Check for missing names
+    if (!person.PersonFirstName && !person.PersonLastName) {
+      return true;
+    }
+    
+    // Check for single word names (like "Daystar")
+    if (!person.PersonFirstName && person.PersonLastName && SYSTEM_PATTERNS.includes(lastName)) {
+      return true;
+    }
+    
+    // Check for single letter first names (system users like GA, GT, etc)
+    if (firstName && firstName.length <= 2 && firstName.match(/^[a-z]{1,2}$/)) {
+      return true;
+    }
+    
+    // Check for specific system user names
+    if ((firstName === 'view' && lastName === 'only') ||
+        (firstName === 'legistar' && lastName === 'system') ||
+        (firstName === 'system' && lastName === 'administrator') ||
+        (firstName === 'granicus')) {
+      return true;
+    }
+    
+    // Check for empty email or Legistar@granicus.com email
+    if (!person.PersonEmail || email === 'legistar@granicus.com') {
+      return true;
+    }
+    
+    // Check for granicus.com domain
+    if (email.includes('@granicus.com')) {
+      return true;
+    }
+    
+    // Check for "Granicus [Role]" pattern in full name
+    if (fullName.startsWith('granicus ')) {
+      return true;
+    }
+    
+    // Check PersonCanViewFlag - 0 often indicates system users
+    if (person.PersonCanViewFlag === 0 && !person.PersonUsedSponsorFlag) {
+      return true;
+    }
+    
+    // Check for system patterns in names
+    return SYSTEM_PATTERNS.some(pattern => 
+      fullName === pattern || 
+      email.includes(pattern) ||
+      firstName === pattern ||
+      lastName === pattern
+    );
+  }
+  
+  // Check if person is likely a council member
+  function isLikelyCouncilMember(person) {
+    // First check if it's a system user
+    if (isSystemUser(person)) {
+      return false;
+    }
+    
+    // Has real email (not granicus.com, bonus for nashville.gov)
+    const hasRealEmail = person.PersonEmail && 
+      !person.PersonEmail.toLowerCase().includes('granicus.com') &&
+      !person.PersonEmail.toLowerCase().includes('legistar.com');
+    
+    const hasNashvilleEmail = person.PersonEmail && 
+      person.PersonEmail.toLowerCase().includes('@nashville.gov');
+    
+    // Has address info
+    const hasAddress = person.PersonAddress1 || person.PersonCity1;
+    
+    // Active flag from API
+    const hasActiveFlag = person.PersonActiveFlag === 1;
+    
+    // Has been used as sponsor
+    const usedAsSponsor = person.PersonUsedSponsorFlag === 1;
+    
+    // Has a district URL (will be checked after extraction)
+    const hasDistrict = person.district !== null && person.district !== undefined;
+    
+    // Can view flag (0 might indicate system user)
+    const canView = person.PersonCanViewFlag === 1;
+    
+    // Score based on criteria
+    let score = 0;
+    if (hasRealEmail) score += 3;
+    if (hasNashvilleEmail) score += 5;
+    if (hasAddress) score += 2;
+    if (hasActiveFlag) score += 1;
+    if (usedAsSponsor) score += 5;
+    if (hasDistrict) score += 10; // Strong indicator
+    if (canView) score += 1;
+    
+    return score >= 5;
+  }
+  
+  // Load from cache
+  function loadFromCache() {
+    try {
+      const cached = localStorage.getItem(CONFIG.cacheKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        const age = Date.now() - data.timestamp;
+        
+        if (age < CONFIG.cacheExpiry) {
+          updateCacheStatus(age);
+          return data.people;
+        }
+      }
+    } catch (err) {
+      console.error('Cache read error:', err);
+    }
+    return null;
+  }
+  
+  // Save to cache
+  function saveToCache(people) {
+    try {
+      const data = {
+        people: people,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(CONFIG.cacheKey, JSON.stringify(data));
+    } catch (err) {
+      console.error('Cache write error:', err);
+    }
+  }
+  
+  // Update cache status display
+  function updateCacheStatus(age) {
+    const minutes = Math.floor(age / 60000);
+    cacheStatusEl.innerHTML = `
+      Data cached ${minutes} minutes ago 
+      <button onclick="clearCacheAndReload()">Refresh</button>
+    `;
+  }
+  
+  // Load people from API or cache
+  async function loadPeople() {
+    try {
+      // Try cache first
+      const cached = loadFromCache();
+      if (cached) {
+        allPeople = cached;
+        console.log('Loaded from cache:', allPeople.length);
+        processAndDisplay();
+        return;
+      }
+      
+      // Show loading message
+      tableContent.innerHTML = `
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading people directory...</p>
+          <p style="font-size: 0.875rem; color: #718096; margin-top: 0.5rem;">
+            Fetching data from Legistar API...
+          </p>
+        </div>
+      `;
+      
+      // Fetch from API
+      const response = await fetch(CONFIG.corsProxy + encodeURIComponent(CONFIG.baseUrl + '/persons'));
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      allPeople = await response.json();
+      
+      if (CONFIG.debugMode) {
+        console.log('Loaded people:', allPeople.length);
+      }
+      
+      // Save to cache
+      saveToCache(allPeople);
+      cacheStatusEl.innerHTML = 'Data loaded from API';
+      
+      // Process and display
+      processAndDisplay();
+      
+    } catch (error) {
+      console.error('Error loading people:', error);
+      showError('Failed to load people directory. Please try again later.');
+    }
+  }
+  
+  // Process and display people
+  function processAndDisplay() {
+    // First pass: enrich with basic metadata and district
+    allPeople.forEach(person => {
+      person.isSystemUser = isSystemUser(person);
+      person.lastModifiedDate = new Date(person.PersonLastModifiedUtc || 0);
+      person.district = extractDistrictInfo(person.PersonWWW, person.PersonWWW2);
+    });
+    
+    // Filter out system users by default
+    allPeople = allPeople.filter(person => !person.isSystemUser);
+    
+    // Second pass: calculate isLikelyCouncil after district is set
+    allPeople.forEach(person => {
+      person.isLikelyCouncil = isLikelyCouncilMember(person);
+    });
+    
+    // Set default filter to active
+    statusFilter.value = 'active';
+    
+    // Apply filters and display
+    applyFiltersAndSort();
+    updateStats();
+  }
+  
+  // Lazy load photo
+  async function loadPhoto(personId, personGuid, fullName) {
+    if (photosLoaded.has(personId)) return;
+    
+    try {
+      photosLoaded.add(personId);
+      
+      // Try Legistar photo
+      const legistarURL = `https://nashville.legistar.com/View.ashx?M=P&ID=${personId}&GUID=${personGuid}`;
+      const img = new Image();
+      
+      img.onload = function() {
+        if (img.naturalWidth > 5) { // Valid image
+          const avatarEl = document.querySelector(`[data-person-id="${personId}"] .person-avatar`);
+          if (avatarEl) {
+            avatarEl.innerHTML = `<img src="${legistarURL}" alt="${fullName}">`;
+          }
+        }
+      };
+      
+      img.src = legistarURL;
+    } catch (err) {
+      console.error('Error loading photo:', err);
+    }
+  }
+  
+  // Apply filters and sort
+  function applyFiltersAndSort() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const typeValue = typeFilter.value;
+    const statusValue = statusFilter.value;
+    
+    // Filter
+    filteredPeople = allPeople.filter(person => {
+      // Search filter
+      const matchesSearch = !searchTerm || 
+        (person.PersonFirstName || '').toLowerCase().includes(searchTerm) ||
+        (person.PersonLastName || '').toLowerCase().includes(searchTerm) ||
+        (person.PersonEmail || '').toLowerCase().includes(searchTerm) ||
+        (person.PersonFullName || '').toLowerCase().includes(searchTerm) ||
+        (person.district || '').toLowerCase().includes(searchTerm);
+      
+      // Type filter
+      let matchesType = true;
+      if (typeValue === 'council') {
+        matchesType = person.isLikelyCouncil;
+      } else if (typeValue === 'district') {
+        matchesType = person.district && person.district.includes('District');
+      } else if (typeValue === 'atlarge') {
+        matchesType = person.district && person.district.includes('At-Large');
+      } else if (typeValue === 'leadership') {
+        matchesType = person.district && (person.district.includes('Mayor') || person.district.includes('Vice Mayor'));
+      }
+      
+      // Status filter - Active means has a title/district
+      const hasTitle = person.district !== null;
+      const matchesStatus = !statusValue || 
+        (statusValue === 'active' && hasTitle) ||
+        (statusValue === 'inactive' && !hasTitle);
+      
+      return matchesSearch && matchesType && matchesStatus;
+    });
+    
+    // Sort
+    filteredPeople.sort((a, b) => {
+      let result = 0;
+      
+      switch (sortField) {
+        case 'firstName':
+          result = (a.PersonFirstName || '').localeCompare(b.PersonFirstName || '');
+          break;
+          
+        case 'lastName':
+          result = (a.PersonLastName || '').localeCompare(b.PersonLastName || '');
+          break;
+          
+        case 'email':
+          result = (a.PersonEmail || '').localeCompare(b.PersonEmail || '');
+          break;
+          
+        case 'district':
+          // Special handling for district numbers to sort numerically
+          const aDistrictNum = a.district ? parseInt(a.district.match(/\d+/)?.[0] || '999') : 999;
+          const bDistrictNum = b.district ? parseInt(b.district.match(/\d+/)?.[0] || '999') : 999;
+          if (aDistrictNum !== bDistrictNum) {
+            result = aDistrictNum - bDistrictNum;
+          } else {
+            result = (a.district || 'ZZZ').localeCompare(b.district || 'ZZZ');
+          }
+          break;
+          
+        case 'lastModified':
+          result = b.lastModifiedDate - a.lastModifiedDate;
+          break;
+      }
+      
+      return sortDirection === 'asc' ? result : -result;
+    });
+    
+    // Reset to first page and display
+    currentPage = 1;
+    displayPeople();
+  }
+  
+  // Display people table
+  function displayPeople() {
+    if (filteredPeople.length === 0) {
+      showEmptyState();
+      return;
+    }
+    
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * CONFIG.pageSize;
+    const endIndex = Math.min(startIndex + CONFIG.pageSize, filteredPeople.length);
+    const peoplePage = filteredPeople.slice(startIndex, endIndex);
+    
+    let html = `
+      <table class="people-table">
+        <thead>
+          <tr>
+            <th class="sortable ${sortField === 'lastName' ? 'sorted-' + sortDirection : ''}" onclick="handleSort('lastName')">
+              Person
+            </th>
+            <th class="sortable ${sortField === 'district' ? 'sorted-' + sortDirection : ''}" onclick="handleSort('district')">
+              Title/District
+            </th>
+            <th class="sortable ${sortField === 'email' ? 'sorted-' + sortDirection : ''}" onclick="handleSort('email')">
+              Email
+            </th>
+            <th>Status</th>
+            <th class="sortable ${sortField === 'lastModified' ? 'sorted-' + sortDirection : ''}" onclick="handleSort('lastModified')">
+              Last Modified
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    peoplePage.forEach(person => {
+      const hasTitle = person.district !== null;
+      const initials = getInitials(person.PersonFirstName, person.PersonLastName);
+      const fullName = person.PersonFullName || `${person.PersonFirstName || ''} ${person.PersonLastName || ''}`.trim();
+      const personUrl = `${CONFIG.softrDomain}/person-details?recordId=${person.PersonId}`;
+      
+      // Use title for active status display
+      const displayActive = hasTitle || person.PersonActiveFlag === 1;
+      
+      html += `
+        <tr data-person-id="${person.PersonId}" onclick="window.open('${personUrl}', '_blank')">
+          <td>
+            <div class="person-cell">
+              <div class="person-avatar loading">
+                <span>${initials}</span>
+              </div>
+              <div>
+                <div class="person-name">${fullName}</div>
+                ${person.PersonPhone ? `<div style="font-size: 0.75rem; color: #718096;">${person.PersonPhone}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td>
+            ${person.district 
+              ? `<span class="type-badge ${person.district.includes('District') ? 'district' : ''}">${person.district}</span>`
+              : '<span style="color: #a0aec0;">—</span>'
+            }
+          </td>
+          <td>
+            ${person.PersonEmail 
+              ? `<a href="mailto:${person.PersonEmail}" class="email-link" onclick="event.stopPropagation()">${person.PersonEmail}</a>`
+              : '<span style="color: #a0aec0;">—</span>'
+            }
+          </td>
+          <td>
+            <span class="status-badge ${displayActive ? 'active' : 'inactive'}">
+              <span class="status-dot"></span>
+              ${displayActive ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td style="font-size: 0.8125rem; color: #718096;">
+            ${formatDate(person.PersonLastModifiedUtc)}
+          </td>
+        </tr>
+      `;
+      
+      // Queue photo loading
+      if (person.PersonGuid) {
+        setTimeout(() => {
+          loadPhoto(person.PersonId, person.PersonGuid, fullName);
+        }, 100);
+      }
+    });
+    
+    html += `
+        </tbody>
+      </table>
+    `;
+    
+    // Add pagination
+    if (filteredPeople.length > CONFIG.pageSize) {
+      const totalPages = Math.ceil(filteredPeople.length / CONFIG.pageSize);
+      
+      html += `
+        <div class="pagination">
+          <div class="pagination-info">
+            Showing ${startIndex + 1}-${endIndex} of ${filteredPeople.length} people
+          </div>
+          <div class="pagination-controls">
+            <button class="pagination-button" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+              Previous
+            </button>
+      `;
+      
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `
+            <button class="pagination-button ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+              ${i}
+            </button>
+          `;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span style="padding: 0 0.5rem; color: #a0aec0;">...</span>`;
+        }
+      }
+      
+      html += `
+            <button class="pagination-button" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+              Next
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    tableContent.innerHTML = html;
+  }
+  
+  // Format date
+  function formatDate(dateString) {
+    if (!dateString) return '—';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diff = now - date;
+      
+      // Less than 24 hours
+      if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return hours === 0 ? 'Just now' : `${hours}h ago`;
+      }
+      
+      // Less than 7 days
+      if (diff < 604800000) {
+        const days = Math.floor(diff / 86400000);
+        return `${days}d ago`;
+      }
+      
+      // Less than 30 days
+      if (diff < 2592000000) {
+        const weeks = Math.floor(diff / 604800000);
+        return `${weeks}w ago`;
+      }
+      
+      // Otherwise show date
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  }
+  
+  // Update statistics
+  function updateStats() {
+    const activeCount = allPeople.filter(p => p.district !== null).length;
+    totalCountEl.textContent = allPeople.length;
+    document.getElementById('active-count').textContent = activeCount;
+  }
+  
+  // Show empty state
+  function showEmptyState() {
+    tableContent.innerHTML = `
+      <div class="empty-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+        </svg>
+        <p>No people found matching your search criteria.</p>
+      </div>
+    `;
+  }
+  
+  // Show error state
+  function showError(message) {
+    tableContent.innerHTML = `
+      <div class="error-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <p>${message}</p>
+          <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+            <button onclick="location.reload()" style="color: #667eea; text-decoration: underline; background: none; border: none; cursor: pointer;">
+              Refresh page
+            </button>
+          </p>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Event Handlers
+  function handleSearch() {
+    applyFiltersAndSort();
+  }
+  
+  function handleFilter() {
+    applyFiltersAndSort();
+  }
+  
+  function handleSortChange() {
+    sortField = sortSelect.value;
+    sortDirection = 'asc';
+    applyFiltersAndSort();
+  }
+  
+  // Make functions globally available
+  window.handleSort = function(field) {
+    if (sortField === field) {
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortField = field;
+      sortDirection = 'asc';
+    }
+    sortSelect.value = field;
+    applyFiltersAndSort();
+  };
+  
+  window.changePage = function(page) {
+    currentPage = page;
+    displayPeople();
+    // Scroll to top of table
+    document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  
+  window.clearCacheAndReload = function() {
+    localStorage.removeItem(CONFIG.cacheKey);
+    location.reload();
+  };
+  
+})();
+</script>
+
+</body>
+</html>
