@@ -80,54 +80,76 @@ body {
   height: 16px;
 }
 
-/* Community Header */
-.community-header {
+/* Discussion Header */
+.discussion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.discussion-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.community-header h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #2d3748;
 }
 
-.discussion-icon {
-  width: 32px;
-  height: 32px;
-  background: #f0f4ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #667eea;
-}
-
-.discussion-subtitle {
-  color: #718096;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Discussion Status */
-.discussion-status {
+.discussion-stats {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9999px;
   font-size: 0.875rem;
-  color: #718096;
-  margin-bottom: 1.5rem;
+  color: #2d3748;
 }
 
-.status-dot {
+.discussion-stats .pulse-dot {
+  position: static;
   width: 8px;
   height: 8px;
-  background: #48bb78;
-  border-radius: 50%;
+  background: #22c55e;
 }
 
+/* Activity indicator */
+.activity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pulse {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+.pulse-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.activity-stats {
+=======
 /* Activity indicator */
 .activity-indicator {
   display: flex;
@@ -185,30 +207,61 @@ body {
 
 /* Comment Box */
 .comment-section {
+
   display: flex;
-  flex-direction: column;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  font-size: 0.875rem;
 }
 
-.comment-as {
-  font-size: 0.8125rem;
-  color: #718096;
-  margin-bottom: 0.5rem;
+.stat-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Comment Input */
+.comment-input-section {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(99,102,241,0.05));
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+}
+
+.comment-input-section:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.input-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .user-avatar {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   background: #e2e8f0;
   color: #718096;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -217,57 +270,75 @@ body {
   color: white;
 }
 
+.input-title {
+  font-weight: 600;
+}
+
+.input-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
 .comment-textarea {
   width: 100%;
-  min-height: 120px;
-  padding: 1rem;
+  min-height: 80px;
+  padding: 0.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   resize: vertical;
   font-family: inherit;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 0.95rem;
 }
 
 .comment-textarea:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
 }
 
-.comment-textarea::placeholder {
-  color: #a0aec0;
-}
-
-.comment-actions {
+.input-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 1rem;
 }
 
-.anonymous-checkbox {
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tool-btn {
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: #f8fafc;
+  transform: scale(1.1);
+}
+
+.anonymous-toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
   color: #4a5568;
-  cursor: pointer;
 }
 
-.anonymous-checkbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.char-count {
-  font-size: 0.75rem;
-  color: #a0aec0;
-}
-
-.comment-button {
+.post-btn {
   padding: 0.625rem 1.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -279,15 +350,20 @@ body {
   transition: all 0.2s;
 }
 
-.comment-button:hover {
+.post-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(102,126,234,0.4);
 }
 
-.comment-button:disabled {
+.post-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: #a0aec0;
 }
 
 /* Comments Section */
@@ -2083,6 +2159,10 @@ a.sponsor-card:hover svg {
     
     // Update count
     commentsCount.textContent = `${totalCount} comment${totalCount !== 1 ? 's' : ''}`;
+    const activeDiscussionEl = document.getElementById('active-discussions');
+    if (activeDiscussionEl) {
+      activeDiscussionEl.textContent = totalCount;
+    }
     
     if (commentsData.length === 0) {
       commentsList.innerHTML = `
@@ -2105,21 +2185,19 @@ a.sponsor-card:hover svg {
   
   // Update comment as display
   function updateCommentAsDisplay() {
-    const commentAsDisplay = document.querySelector('.comment-as');
+    const avatarEl = document.getElementById('comment-user-avatar');
+    const nameEl = document.getElementById('comment-user-name');
     const anonymousCheckbox = document.getElementById('post-anonymous');
-    
-    if (!commentAsDisplay) return; // Element might not exist yet
-    
+
+    if (!avatarEl || !nameEl) return;
+
     const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : true;
     const displayName = isAnonymous ? 'Anonymous' : currentUserName;
-    const avatar = isAnonymous ? '?' : displayName[0].toUpperCase();
-    const avatarClass = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
-    
-    commentAsDisplay.innerHTML = `
-      <span>Comment as</span>
-      <div class="${avatarClass}">${avatar}</div>
-      <strong>${displayName}</strong>
-    `;
+    const avatarChar = isAnonymous ? '?' : displayName[0].toUpperCase();
+
+    avatarEl.textContent = avatarChar;
+    avatarEl.className = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
+    nameEl.textContent = displayName;
   }
   
   // Get time ago string
@@ -2347,65 +2425,66 @@ a.sponsor-card:hover svg {
     contentHTML += `
       <div id="content-comments" class="content-section">
         <div class="content-container">
-          <div class="community-header">
-            <div class="discussion-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
+          <div class="discussion-header">
+            <div class="discussion-title">
+              <span>💬</span>
+              <span>Community Discussion</span>
             </div>
-            <h3>Community Discussion</h3>
-          </div>
-          
-          <p class="discussion-subtitle">Share your thoughts on this legislation</p>
-          
-          <div class="discussion-status">
-            <span class="status-dot"></span>
-            <span>Discussing: <span>${data.MatterFile || `Matter #${matterId}`}</span></span>
+            <div class="discussion-stats">
+              <span class="pulse-dot"></span>
+              <span><strong id="active-discussions">0</strong> comments</span>
+            </div>
           </div>
 
           <div id="activity-indicator-container"></div>
-          
+
           <div id="softr-user-status" class="softr-user-status" style="display: none;">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 018 0z"/>
             </svg>
             <span id="softr-status-text">Checking authentication...</span>
           </div>
-          
-          <div class="comment-section">
-            <div class="comment-as">
-              <span>Comment as</span>
-              <div class="user-avatar">?</div>
-              <strong>Anonymous</strong>
+
+          <div class="comment-input-section">
+            <div class="input-header">
+              <div class="user-avatar" id="comment-user-avatar">?</div>
+              <div>
+                <div class="input-title">Join the conversation</div>
+                <div class="input-subtitle">Commenting as <strong id="comment-user-name">Anonymous</strong></div>
+              </div>
             </div>
-            
+
             <div id="comment-success" class="comment-success" style="display: none;">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
               <span>Comment posted successfully!</span>
             </div>
-            
-            <textarea 
-              class="comment-textarea" 
-              placeholder="What are your thoughts? (Press Enter to submit, Shift+Enter for new line)"
+
+            <textarea
+              class="comment-textarea"
               id="comment-input"
+              placeholder="What's your perspective on this proposal?"
               maxlength="1000"
             ></textarea>
-            
-            <div class="comment-actions">
-              <label class="anonymous-checkbox">
-                <input type="checkbox" id="post-anonymous" checked>
-                <span>Post anonymously</span>
-              </label>
-              
-              <div style="display: flex; align-items: center; gap: 1rem;">
+
+            <div class="input-footer">
+              <div class="input-tools">
+                <button class="tool-btn" type="button">😊</button>
+                <button class="tool-btn" type="button">📎</button>
+                <button class="tool-btn" type="button">@</button>
+                <label class="anonymous-toggle">
+                  <input type="checkbox" id="post-anonymous" checked>
+                  Post anonymously
+                </label>
+              </div>
+              <div class="footer-right">
                 <span class="char-count"><span id="char-count">0</span>/1000</span>
-                <button class="comment-button" id="comment-btn">Comment</button>
+                <button class="post-btn" id="comment-btn">Post Comment</button>
               </div>
             </div>
           </div>
-          
+
           <div class="comments-section">
             <div class="comments-header">
               <h4 class="comments-title">Community Comments</h4>
