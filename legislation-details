@@ -149,6 +149,65 @@ body {
 }
 
 .activity-stats {
+=======
+/* Activity indicator */
+.activity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pulse {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+.pulse-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.activity-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Comment Box */
+.comment-section {
+
   display: flex;
   gap: 1.5rem;
   font-size: 0.875rem;
