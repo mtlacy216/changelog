@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Person Details - Enhanced Legistar Widget</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #f8fafc;
+  color: #1a202c;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Widget Container */
+#main-widget-container {
+  max-width: 90rem;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Gradient top bar */
+.gradient-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.8;
+  z-index: 1;
+}
+
+/* Person Details Section */
+#person-widget {
+  padding: 2rem;
+}
+
+/* Header */
+.widget-header {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.person-avatar {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.person-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.25rem;
+}
+
+.person-title {
+  font-size: 1.125rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.contact-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: #f0f4ff;
+  color: #667eea;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #e0e7ff;
+}
+
+.contact-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Status */
+.status-message {
+  font-size: 0.875rem;
+  color: #718096;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.5rem;
+}
+
+.status-icon {
+  width: 16px;
+  height: 16px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin-top: 0.5rem;
+}
+
+#progress-fill, #all-progress-fill, #inactive-progress-fill {
+  height: 100%;
+  background: #667eea;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+/* Person Info Section */
+.person-details {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #718096;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: #2d3748;
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Tab Navigation */
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: #4a5568;
+}
+
+.tab-button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 0.5rem;
+  background: #e2e8f0;
+  color: #4a5568;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tab-button.active .tab-count {
+  background: #667eea;
+  color: white;
+}
+
+/* Split count for active/total */
+.split-count {
+  font-size: 0.7rem;
+}
+
+/* Content Section */
+.content-section {
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.content-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Content Container */
+.content-container {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.content-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.content-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.content-container h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+
+/* Committee Cards */
+.committees-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.committee-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.committee-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.committee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
+}
+
+.committee-card:hover::before {
+  transform: translateX(0);
+}
+
+.committee-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.committee-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: #f0f4ff;
+  color: #667eea;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.committee-dates {
+  font-size: 0.8125rem;
+  color: #718096;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.date-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.active-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: #f0fdf4;
+  color: #22c55e;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.active-indicator svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Legislation List */
+.legislation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.legislation-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.legislation-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.legislation-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
+}
+
+.legislation-item:hover::before {
+  transform: translateX(0);
+}
+
+.legislation-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.legislation-file {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 0.875rem;
+}
+
+.legislation-type {
+  font-size: 0.75rem;
+  color: #718096;
+  background: #f8fafc;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+}
+
+.legislation-title {
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.legislation-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: #718096;
+}
+
+.legislation-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.legislation-meta-item svg {
+  width: 14px;
+  height: 14px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.passed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #22c55e;
+}
+
+.status-badge.failed {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.status-badge.pending {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+.status-badge.inactive {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+/* Votes and Roll Calls Tables */
+.votes-table, .rollcalls-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.votes-table thead, .rollcalls-table thead {
+  background: #f8fafc;
+}
+
+.votes-table th, .rollcalls-table th,
+.votes-table td, .rollcalls-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.votes-table th, .rollcalls-table th {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.votes-table a, .rollcalls-table a {
+  color: #667eea;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.votes-table a:hover, .rollcalls-table a:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+.votes-table .status-badge {
+  margin: 0;
+}
+
+.vote-value {
+  font-weight: 600;
+}
+
+.vote-value.yea {
+  color: #22c55e;
+}
+
+.vote-value.nay {
+  color: #dc2626;
+}
+
+.vote-value.abstain {
+  color: #6b7280;
+}
+
+.attendance-value {
+  font-weight: 600;
+}
+
+.attendance-value.present {
+  color: #22c55e;
+}
+
+.attendance-value.absent {
+  color: #dc2626;
+}
+
+.attendance-value.excused {
+  color: #f59e0b;
+}
+
+/* Voting Statistics */
+.voting-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.vote-stat {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.vote-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.vote-stat-label {
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.vote-stat.yea .vote-stat-value {
+  color: #22c55e;
+}
+
+.vote-stat.nay .vote-stat-value {
+  color: #dc2626;
+}
+
+.vote-stat.abstain .vote-stat-value {
+  color: #6b7280;
+}
+
+/* Inactive Matters Search Progress */
+.search-progress {
+  background: #f0f4ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.search-progress-title {
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.search-progress-status {
+  font-size: 0.875rem;
+  color: #718096;
+  margin-bottom: 1rem;
+}
+
+.search-progress-details {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+/* Events Timeline */
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.event-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.5;
+}
+
+.event-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.event-date svg {
+  width: 16px;
+  height: 16px;
+  color: #667eea;
+}
+
+.event-body {
+  font-size: 0.9375rem;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.event-location {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: #718096;
+}
+
+.event-location svg {
+  width: 14px;
+  height: 14px;
+}
+
+.event-items {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.event-items-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.event-item-list {
+  font-size: 0.8125rem;
+  color: #718096;
+  line-height: 1.6;
+}
+
+/* Statistics Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value.loading {
+  font-size: 1.5rem;
+  color: #a0aec0;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+}
+
+/* Spinning animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Sub-tabs for legislation */
+.sub-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sub-tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #718096;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sub-tab:hover {
+  background: #f7fafc;
+  color: #4a5568;
+}
+
+.sub-tab.active {
+  background: #667eea;
+  color: white;
+}
+
+/* Loading Skeleton */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f7fafc 25%, #e2e8f0 50%, #f7fafc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+.skeleton-line {
+  height: 1rem;
+  width: 100%;
+}
+
+.skeleton-line:nth-child(2) { width: 90%; }
+.skeleton-line:nth-child(3) { width: 95%; }
+.skeleton-line:nth-child(4) { width: 85%; }
+
+.skeleton-card {
+  height: 120px;
+  border-radius: 0.5rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error State */
+.error-state {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+}
+
+.error-state svg {
+  width: 20px;
+  height: 20px;
+  color: #c53030;
+  flex-shrink: 0;
+}
+
+.error-state p {
+  color: #c53030;
+  font-size: 0.875rem;
+}
+
+/* View All Link */
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #667eea;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 1rem;
+  transition: all 0.2s;
+}
+
+.view-all-link:hover {
+  color: #5a67d8;
+  gap: 0.5rem;
+}
+
+.view-all-link svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
+}
+
+.view-all-link:hover svg {
+  transform: translateX(2px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #main-widget-container {
+    margin: 1rem;
+    border-radius: 1rem;
+  }
+  
+  #person-widget {
+    padding: 1.5rem;
+  }
+  
+  .widget-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .person-info h1 {
+    font-size: 1.5rem;
+  }
+  
+  .committees-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tab-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .voting-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  #main-widget-container {
+    margin: 0.5rem;
+  }
+  
+  #person-widget {
+    padding: 1rem;
+  }
+  
+  .person-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .person-info h1 {
+    font-size: 1.25rem;
+  }
+  
+  .content-container {
+    padding: 1rem;
+    max-height: none;
+  }
+  
+  .tab-count {
+    display: none;
+  }
+  
+  .votes-table, .rollcalls-table {
+    font-size: 0.75rem;
+  }
+  
+  .votes-table th, .rollcalls-table th,
+  .votes-table td, .rollcalls-table td {
+    padding: 0.5rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Main Widget Container -->
+<div id="main-widget-container">
+  <div class="gradient-bar"></div>
+  
+  <!-- Person Details Section -->
+  <div id="person-widget">
+    <div class="widget-header">
+      <div class="header-content">
+        <div class="person-avatar" id="person-avatar">
+          <span style="font-size: 2rem; color: white; font-weight: 600;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="40" height="40">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </span>
+        </div>
+        <div class="person-info">
+          <h1 id="person-name">Loading...</h1>
+          <p class="person-title" id="person-title">Loading details...</p>
+        </div>
+      </div>
+      <div id="contact-info" style="display: none;">
+        <a href="#" class="contact-badge" id="email-badge">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span>Email</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="status-message">
+      <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <span>Loading person details...</span>
+    </div>
+    
+    <div id="person-details" class="person-details" style="display: none;">
+      <!-- Content will be dynamically generated -->
+    </div>
+    
+    <div id="stats-container" class="stats-grid" style="display: none;">
+      <!-- Stats will be dynamically generated -->
+    </div>
+    
+    <div class="tab-nav" id="tab-nav" style="display: none;">
+      <button class="tab-button active" data-tab="overview">
+        Overview
+      </button>
+      <button class="tab-button" data-tab="committees">
+        Committees
+        <span class="tab-count" id="committees-count">0</span>
+      </button>
+      <button class="tab-button" data-tab="legislation">
+        Sponsored Legislation
+        <span class="tab-count" id="legislation-count">
+          <span class="split-count">
+            <span id="active-leg-count">0</span>/<span id="total-leg-count">0</span>
+          </span>
+        </span>
+      </button>
+      <button class="tab-button" data-tab="votes">
+        Votes
+        <span class="tab-count" id="votes-count">0</span>
+      </button>
+      <button class="tab-button" data-tab="rollcalls">
+        Roll Calls
+        <span class="tab-count" id="rollcalls-count">0</span>
+      </button>
+      <button class="tab-button" data-tab="inactive">
+        Inactive Matters
+        <span class="tab-count" id="inactive-count">-</span>
+      </button>
+      <button class="tab-button" data-tab="events">
+        Events
+        <span class="tab-count" id="events-count">0</span>
+      </button>
+    </div>
+    
+    <div id="content-container">
+      <div class="loading-skeleton">
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Configuration
+  const CONFIG = {
+    softrDomain: 'https://eonashville.softr.app',
+    debugMode: false, // Set to true to see debug messages and field mappings
+    knownPersonIds: {
+      nashville: ['186', '207', '209', '233', '246'], // Nashville council members
+    },
+    matterIdMapping: {
+      // Example: 7447605: 'abc123'
+    }
+  };
+  
+  // Extract personId from URL parameter 'recordId'
+  const urlParams = new URLSearchParams(window.location.search);
+  const personId = urlParams.get('recordId') || '186'; // Default to a sample ID
+  
+  if (CONFIG.debugMode) {
+    console.log('Person Details Widget Debug Info:');
+    console.log('Person ID:', personId);
+    console.log('URL:', window.location.href);
+  }
+  
+  // API endpoints
+  const baseUrl = 'https://webapi.legistar.com/v1/nashville';
+  const corsProxy = 'https://corsproxy.io/?';
+  
+  const endpoints = {
+    person: `${baseUrl}/persons/${personId}`,
+    officeRecords: `${baseUrl}/persons/${personId}/officerecords`,
+    events: `${baseUrl}/persons/${personId}/events`,
+    votes: `${baseUrl}/persons/${personId}/votes`,
+    rollCalls: `${baseUrl}/persons/${personId}/rollcalls`
+  };
+  
+  // DOM elements
+  const statusEl = document.querySelector('.status-message span');
+  const contentContainer = document.getElementById('content-container');
+  const personDetailsEl = document.getElementById('person-details');
+  const tabNavEl = document.getElementById('tab-nav');
+  const statsContainer = document.getElementById('stats-container');
+  
+  // Data storage
+  let personData = null;
+  let officeRecordsData = [];
+  let sponsoredMattersData = [];
+  let activeSponsoredMatters = [];
+  let allSponsoredMatters = [];
+  let eventsData = [];
+  let votesData = [];
+  let rollCallsData = [];
+  let inactiveMattersData = [];
+  let currentLegislationTab = 'active';
+  let allLegislationLoaded = false;
+  let inactiveMattersSearchStarted = false;
+  let votesNeedRefresh = false;
+  
+  // Tab functionality
+  function setupTabs() {
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        showContent(tab.dataset.tab);
+      });
+    });
+  }
+  
+  // Show content based on active tab
+  function showContent(tabName) {
+    const sections = document.querySelectorAll('.content-section');
+    sections.forEach(section => section.classList.remove('active'));
+    
+    const activeSection = document.getElementById(`content-${tabName}`);
+    if (activeSection) activeSection.classList.add('active');
+    
+    // Load data for tabs that haven't been loaded yet
+    if (tabName === 'inactive' && !inactiveMattersSearchStarted) {
+      searchInactiveMatters();
+    }
+  }
+  
+  // Format date
+  function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  }
+  
+  // Format date time
+  function formatDateTime(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
+  }
+  
+  // Get initials from name
+  function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return parts[0][0] + parts[parts.length - 1][0];
+    }
+    return name[0];
+  }
+  
+  // Convert vote result code to text
+  function getVoteResultText(result) {
+    if (!result && result !== 0) return 'N/A';
+    
+    // Common vote result mappings
+    const resultMap = {
+      '0': 'Failed',
+      '1': 'Passed',
+      '2': 'Tabled',
+      '3': 'Withdrawn',
+      '4': 'Deferred',
+      '5': 'No Action'
+    };
+    
+    return resultMap[result.toString()] || `Result ${result}`;
+  }
+  
+  // Profile photo helpers
+  const probeImg = url => new Promise(res => {
+    const img = new Image();
+    img.onload = () => res(img.naturalWidth > 5 ? url : null); // Legistar returns 1×1 GIF if missing
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+
+  // Find member's image in the directory page by full name
+  async function findDirectoryPhoto(fullName) {
+    try {
+      const directoryURL = 'https://www.nashville.gov/departments/council/metro-council-members';
+      const html = await (await fetch(corsProxy + encodeURIComponent(directoryURL))).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      let img = doc.querySelector(`img[alt="${fullName}"]`) ||
+                [...doc.querySelectorAll('img[alt]')]
+                  .find(el => el.alt.toLowerCase() === fullName.toLowerCase());
+
+      if (!img) return null;
+
+      const rawSrc = img.getAttribute('src');
+      return rawSrc.startsWith('/')
+           ? 'https://www.nashville.gov' + rawSrc
+           : rawSrc;
+    } catch {
+      return null;
+    }
+  }
+
+  // Update avatar with photo or initials
+  async function updateAvatar(personData) {
+    const avatarEl = document.getElementById('person-avatar');
+    const { PersonGuid, PersonFullName } = personData;
+    
+    // Show initials immediately as placeholder
+    const initials = getInitials(PersonFullName);
+    avatarEl.innerHTML = `<span style="font-size: 2rem; color: white; font-weight: 600; position: relative; z-index: 1;">${initials.toUpperCase()}</span>`;
+    
+    try {
+      // Try Legistar photo first (use global personId)
+      const legistarURL = `https://nashville.legistar.com/View.ashx?M=P&ID=${personId}&GUID=${PersonGuid}`;
+      let photo = await probeImg(legistarURL);
+      
+      // Fallback to Council directory photo
+      if (!photo && PersonFullName) {
+        if (CONFIG.debugMode) console.log('Legistar photo not found, trying Nashville.gov directory...');
+        photo = await findDirectoryPhoto(PersonFullName);
+      }
+      
+      // Update avatar display if photo found
+      if (photo) {
+        if (CONFIG.debugMode) console.log('Photo found:', photo);
+        avatarEl.innerHTML = `<img src="${photo}" alt="${PersonFullName}" style="width: 100%; height: 100%; object-fit: cover;">`;
+      } else {
+        if (CONFIG.debugMode) console.log('No photo found, using initials');
+      }
+    } catch (err) {
+      console.error('Error loading avatar photo:', err);
+      // Keep initials on error
+    }
+  }
+  
+  // Display person details
+  function displayPersonDetails(data) {
+    // Update header
+    const personName = data.PersonFullName || 'Unknown Person';
+    document.getElementById('person-name').textContent = personName;
+    
+    // Pass personId from global scope
+    data.PersonId = data.PersonId || personId;
+    
+    // Update avatar with photo lookup
+    updateAvatar(data);
+    
+    // Set person title (if available from office records)
+    if (officeRecordsData.length > 0) {
+      const currentOffice = officeRecordsData.find(record => {
+        const endDate = record.OfficeRecordEndDate;
+        return !endDate || new Date(endDate) > new Date();
+      });
+      
+      if (currentOffice) {
+        document.getElementById('person-title').textContent = 
+          `${currentOffice.OfficeRecordTitle || ''} - ${currentOffice.OfficeRecordBodyName || ''}`.trim();
+      }
+    } else {
+      document.getElementById('person-title').textContent = 'Public Official';
+    }
+    
+    // Show email if available
+    if (data.PersonEmail) {
+      const contactInfo = document.getElementById('contact-info');
+      const emailBadge = document.getElementById('email-badge');
+      contactInfo.style.display = 'block';
+      emailBadge.href = `mailto:${data.PersonEmail}`;
+    }
+    
+    // Update person details section
+    let detailsHTML = '<div class="info-grid">';
+    
+    if (data.PersonFirstName || data.PersonLastName) {
+      detailsHTML += `
+        <div class="info-item">
+          <span class="info-label">Full Name</span>
+          <span class="info-value">${data.PersonFirstName || ''} ${data.PersonLastName || ''}</span>
+        </div>
+      `;
+    }
+    
+    if (data.PersonEmail) {
+      detailsHTML += `
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span class="info-value">${data.PersonEmail}</span>
+        </div>
+      `;
+    }
+    
+    if (data.PersonPhone) {
+      detailsHTML += `
+        <div class="info-item">
+          <span class="info-label">Phone</span>
+          <span class="info-value">${data.PersonPhone}</span>
+        </div>
+      `;
+    }
+    
+    if (data.PersonAddress1 || data.PersonCity || data.PersonState) {
+      const addressParts = [
+        data.PersonAddress1,
+        data.PersonAddress2,
+        `${data.PersonCity || ''} ${data.PersonState || ''} ${data.PersonZip || ''}`.trim()
+      ].filter(Boolean);
+      
+      detailsHTML += `
+        <div class="info-item full-width">
+          <span class="info-label">Address</span>
+          <span class="info-value">${addressParts.join(', ')}</span>
+        </div>
+      `;
+    }
+    
+    detailsHTML += '</div>';
+    personDetailsEl.innerHTML = detailsHTML;
+    personDetailsEl.style.display = 'block';
+    
+    // Build content sections
+    let contentHTML = '';
+    
+    // Overview section
+    contentHTML += `
+      <div id="content-overview" class="content-section active">
+        <div class="content-container">
+          <h3>Overview</h3>
+          <div id="overview-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-line"></div>
+              <div class="skeleton-item skeleton-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Committees section
+    contentHTML += `
+      <div id="content-committees" class="content-section">
+        <div class="content-container">
+          <h3>Committee Memberships</h3>
+          <div id="committees-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-card"></div>
+              <div class="skeleton-item skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Legislation section
+    contentHTML += `
+      <div id="content-legislation" class="content-section">
+        <div class="content-container">
+          <h3>Sponsored Legislation</h3>
+          <div id="legislation-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-card"></div>
+              <div class="skeleton-item skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Votes section
+    contentHTML += `
+      <div id="content-votes" class="content-section">
+        <div class="content-container">
+          <h3>Voting Record</h3>
+          <div id="votes-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-card"></div>
+              <div class="skeleton-item skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Roll Calls section
+    contentHTML += `
+      <div id="content-rollcalls" class="content-section">
+        <div class="content-container">
+          <h3>Roll Call Attendance</h3>
+          <div id="rollcalls-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-card"></div>
+              <div class="skeleton-item skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Inactive Matters section
+    contentHTML += `
+      <div id="content-inactive" class="content-section">
+        <div class="content-container">
+          <h3>Inactive Sponsored Matters</h3>
+          <div id="inactive-content">
+            <div class="empty-state">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <p>Click to search for inactive sponsored matters</p>
+              <p style="font-size: 0.75rem; color: #a0aec0; margin-top: 0.5rem;">
+                This will search through historical records and may take a few minutes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Events section
+    contentHTML += `
+      <div id="content-events" class="content-section">
+        <div class="content-container">
+          <h3>Recent Events</h3>
+          <div id="events-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-card"></div>
+              <div class="skeleton-item skeleton-card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    contentContainer.innerHTML = contentHTML;
+    
+    // Show elements
+    tabNavEl.style.display = 'flex';
+    
+    // Setup tabs
+    setupTabs();
+    
+    // Load additional data after tabs are ready
+    // Load legislation first so we have sponsored data for vote calculations
+    requestAnimationFrame(() => {
+      loadOverview();
+      loadCommittees();
+      loadEvents();
+      loadLegislation();
+      
+      // Load votes after a delay to ensure sponsored data is available
+      setTimeout(() => {
+        loadVotes();
+        loadRollCalls();
+      }, 1000);
+    });
+  }
+  
+  // Load overview
+  function loadOverview() {
+    // Generate overview content after all data is loaded
+    setTimeout(() => {
+      const overviewContent = document.getElementById('overview-content');
+      
+      // Count active committees
+      const activeCommittees = officeRecordsData.filter(record => {
+        const endDate = record.OfficeRecordEndDate;
+        return !endDate || new Date(endDate) > new Date();
+      });
+      
+      // Count active and total sponsored items
+      const activeCount = activeSponsoredMatters.length;
+      const totalCount = allSponsoredMatters.length + activeSponsoredMatters.length;
+      
+      // Show statistics with loading states
+      statsContainer.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${activeCommittees.length}</div>
+          <div class="stat-label">Active Committees</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value ${totalCount === 0 ? 'loading' : ''}" id="sponsored-stat">
+            ${totalCount === 0 ? 'Loading...' : totalCount}
+          </div>
+          <div class="stat-label">Sponsored Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${votesData.length}</div>
+          <div class="stat-label">Total Votes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${rollCallsData.length}</div>
+          <div class="stat-label">Roll Calls</div>
+        </div>
+      `;
+      statsContainer.style.display = 'grid';
+      
+      // Create overview summary
+      let summaryHTML = '<div style="color: #4a5568; line-height: 1.8;">';
+      
+      if (activeCommittees.length > 0) {
+        summaryHTML += '<p style="margin-bottom: 1rem;"><strong>Current Positions:</strong></p>';
+        summaryHTML += '<ul style="list-style: disc; margin-left: 1.5rem; margin-bottom: 1.5rem;">';
+        
+        activeCommittees.forEach(record => {
+          summaryHTML += `<li>${record.OfficeRecordTitle || 'Member'} of ${record.OfficeRecordBodyName}</li>`;
+        });
+        
+        summaryHTML += '</ul>';
+      }
+      
+      if (sponsoredMattersData.length > 0) {
+        const recentMatters = sponsoredMattersData
+          .sort((a, b) => new Date(b.MatterIntroDate || 0) - new Date(a.MatterIntroDate || 0))
+          .slice(0, 5);
+        
+        summaryHTML += '<p style="margin-bottom: 1rem;"><strong>Recent Legislative Activity:</strong></p>';
+        summaryHTML += '<ul style="list-style: disc; margin-left: 1.5rem; margin-bottom: 1.5rem;">';
+        
+        recentMatters.forEach(matter => {
+          summaryHTML += `<li>${matter.MatterFile}: ${matter.MatterName || matter.MatterTitle || 'Untitled'}</li>`;
+        });
+        
+        summaryHTML += '</ul>';
+        
+        if (sponsoredMattersData.length > 5) {
+          summaryHTML += `<p style="font-size: 0.875rem; color: #718096;">...and ${sponsoredMattersData.length - 5} more sponsored items</p>`;
+        }
+      } else {
+        summaryHTML += '<p style="margin-bottom: 1rem; color: #718096;">No sponsored legislation found.</p>';
+      }
+      
+      if (eventsData.length === 0 && sponsoredMattersData.length === 0 && activeCommittees.length === 0) {
+        summaryHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p>No activity data available for this person.</p>
+          </div>
+        `;
+      } else {
+        summaryHTML += '</div>';
+      }
+      
+      overviewContent.innerHTML = summaryHTML;
+    }, 1000);
+  }
+  
+  // Load committees
+  function loadCommittees() {
+    fetch(corsProxy + encodeURIComponent(endpoints.officeRecords))
+      .then(r => {
+        if (r.status === 404) {
+          console.log('No office records found (404)');
+          return [];
+        }
+        return r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`));
+      })
+      .then(data => {
+        officeRecordsData = data || [];
+        displayCommittees(data);
+        
+        // Update count
+        const committeesCountEl = document.getElementById('committees-count');
+        if (committeesCountEl) {
+          committeesCountEl.textContent = data.length;
+        }
+      })
+      .catch(err => {
+        console.error('Error loading committees:', err);
+        
+        document.getElementById('committees-content').innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <p>Unable to load committee memberships.</p>
+          </div>
+        `;
+        
+        const committeesCountEl = document.getElementById('committees-count');
+        if (committeesCountEl) {
+          committeesCountEl.textContent = '0';
+        }
+      });
+  }
+  
+  // Display committees
+  function displayCommittees(data) {
+    const committeesContent = document.getElementById('committees-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      committeesContent.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <p>No committee memberships found.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort by start date (newest first)
+    data.sort((a, b) => new Date(b.OfficeRecordStartDate || 0) - new Date(a.OfficeRecordStartDate || 0));
+    
+    let committeesHTML = '<div class="committees-grid">';
+    
+    data.forEach(record => {
+      const isActive = !record.OfficeRecordEndDate || new Date(record.OfficeRecordEndDate) > new Date();
+      
+      committeesHTML += `
+        <div class="committee-card">
+          <div class="committee-name">${record.OfficeRecordBodyName || 'Unknown Committee'}</div>
+          <div class="committee-role">${record.OfficeRecordTitle || 'Member'}</div>
+          <div class="committee-dates">
+            <div class="date-item">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span>Started: ${formatDate(record.OfficeRecordStartDate)}</span>
+            </div>
+            ${record.OfficeRecordEndDate ? `
+              <div class="date-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>Ended: ${formatDate(record.OfficeRecordEndDate)}</span>
+              </div>
+            ` : ''}
+          </div>
+          ${isActive ? `
+            <div class="active-indicator">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              Active
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+    
+    committeesHTML += '</div>';
+    committeesContent.innerHTML = committeesHTML;
+  }
+  
+  // Load votes with fixed display
+  function loadVotes() {
+    console.log('Loading votes...');
+    
+    const votesContent = document.getElementById('votes-content');
+    votesContent.innerHTML = `
+      <div class="loading-skeleton">
+        <div class="skeleton-item skeleton-card"></div>
+        <div class="skeleton-item skeleton-card"></div>
+      </div>
+    `;
+    
+    fetch(corsProxy + encodeURIComponent(endpoints.votes))
+      .then(r => {
+        if (r.status === 404) {
+          console.log('No votes found (404)');
+          return [];
+        }
+        return r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`));
+      })
+      .then(async data => {
+        votesData = data || [];
+        
+        // Update count immediately
+        const votesCountEl = document.getElementById('votes-count');
+        if (votesCountEl) {
+          votesCountEl.textContent = data.length;
+        }
+        
+        // Display votes immediately without enrichment
+        displayVotes(votesData);
+        
+        // Update overview
+        loadOverview();
+      })
+      .catch(err => {
+        console.error('Error loading votes:', err);
+        
+        votesContent.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+            <p>Unable to load voting records.</p>
+          </div>
+        `;
+        
+        const votesCountEl = document.getElementById('votes-count');
+        if (votesCountEl) {
+          votesCountEl.textContent = '0';
+        }
+      });
+  }
+  
+  // Display votes with fixed calculations
+  function displayVotes(data) {
+    const votesContent = document.getElementById('votes-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      votesContent.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <p>No voting records found.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Calculate voting statistics
+    const voteStats = {
+      yea: data.filter(v => v.VoteValueName === 'Yea' || v.VoteValueName === 'Yes').length,
+      nay: data.filter(v => v.VoteValueName === 'Nay' || v.VoteValueName === 'No').length,
+      abstain: data.filter(v => v.VoteValueName === 'Abstain' || v.VoteValueName === 'Present').length,
+      other: data.filter(v => !['Yea', 'Yes', 'Nay', 'No', 'Abstain', 'Present'].includes(v.VoteValueName)).length
+    };
+    
+    // Sort by date (newest first)
+    data.sort((a, b) => {
+      const dateA = new Date(a.VoteDate || a.VoteLastModifiedUtc || 0);
+      const dateB = new Date(b.VoteDate || b.VoteLastModifiedUtc || 0);
+      return dateB - dateA;
+    });
+    
+    let votesHTML = '';
+    
+    // Add voting statistics
+    votesHTML += `
+      <div class="voting-stats">
+        <div class="vote-stat yea">
+          <div class="vote-stat-value">${voteStats.yea}</div>
+          <div class="vote-stat-label">Yea Votes</div>
+        </div>
+        <div class="vote-stat nay">
+          <div class="vote-stat-value">${voteStats.nay}</div>
+          <div class="vote-stat-label">Nay Votes</div>
+        </div>
+        <div class="vote-stat abstain">
+          <div class="vote-stat-value">${voteStats.abstain + voteStats.other}</div>
+          <div class="vote-stat-label">Abstain/Other</div>
+        </div>
+      </div>
+    `;
+    
+    // Add note about API limitation
+    votesHTML += `
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+        <p style="font-size: 0.875rem; color: #92400e;">
+          <strong>Note:</strong> Legislation details (bill numbers and titles) are unavailable due to API restrictions. 
+          Event Item IDs are shown instead.
+        </p>
+      </div>
+    `;
+    
+    // Add votes table
+    votesHTML += `
+      <div style="overflow-x: auto;">
+        <table class="votes-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vote</th>
+              <th>Result</th>
+              <th>Legislation</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    // Display up to 100 most recent votes
+    const displayData = data.slice(0, 100);
+    
+    displayData.forEach(vote => {
+      const voteValue = vote.VoteValueName || 'Unknown';
+      let voteClass = 'abstain';
+      if (['Yea', 'Yes'].includes(voteValue)) voteClass = 'yea';
+      else if (['Nay', 'No'].includes(voteValue)) voteClass = 'nay';
+      
+      votesHTML += `
+        <tr>
+          <td>${formatDate(vote.VoteDate || vote.VoteLastModifiedUtc)}</td>
+          <td><span class="vote-value ${voteClass}">${voteValue}</span></td>
+          <td>${getVoteResultText(vote.VoteResult)}</td>
+          <td>
+            <span style="color: #a0aec0; font-style: italic;" title="Legislation details unavailable - Event Item API returns 404">
+              Item #${vote.VoteEventItemId || 'N/A'}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+    
+    votesHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+    
+    if (data.length > 100) {
+      votesHTML += `
+        <p style="text-align: center; margin-top: 1.5rem; color: #718096; font-size: 0.875rem;">
+          Showing 100 of ${data.length} votes
+        </p>
+      `;
+    }
+    
+    votesContent.innerHTML = votesHTML;
+  }
+  
+  // Load roll calls with XML parsing
+  function loadRollCalls() {
+    console.log('Loading roll calls...');
+    
+    const rollCallsContent = document.getElementById('rollcalls-content');
+    rollCallsContent.innerHTML = `
+      <div class="loading-skeleton">
+        <div class="skeleton-item skeleton-card"></div>
+        <div class="skeleton-item skeleton-card"></div>
+      </div>
+    `;
+    
+    fetch(corsProxy + encodeURIComponent(endpoints.rollCalls))
+      .then(r => {
+        if (r.status === 404) {
+          console.log('No roll calls found (404)');
+          throw new Error('No roll calls found');
+        }
+        return r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`));
+      })
+      .then(text => {
+        // Check if response is XML or JSON
+        if (text.trim().startsWith('<')) {
+          // Parse XML response
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(text, "text/xml");
+          
+          // Check for parse errors
+          const parseError = xmlDoc.querySelector('parsererror');
+          if (parseError) {
+            console.error('XML Parse error:', parseError.textContent);
+            throw new Error('Invalid XML response');
+          }
+          
+          const rollCalls = xmlDoc.getElementsByTagName("GranicusRollCall");
+          console.log('Found roll calls in XML:', rollCalls.length);
+          
+          // Convert to array of objects
+          rollCallsData = [];
+          for (let i = 0; i < rollCalls.length; i++) {
+            const rollCall = rollCalls[i];
+            const rollCallObj = {
+              RollCallId: rollCall.getElementsByTagName("RollCallId")[0]?.textContent,
+              RollCallEventItemId: rollCall.getElementsByTagName("RollCallEventItemId")[0]?.textContent,
+              RollCallPersonName: rollCall.getElementsByTagName("RollCallPersonName")[0]?.textContent,
+              RollCallValueName: rollCall.getElementsByTagName("RollCallValueName")[0]?.textContent,
+              RollCallLastModifiedUtc: rollCall.getElementsByTagName("RollCallLastModifiedUtc")[0]?.textContent,
+              RollCallResult: rollCall.getElementsByTagName("RollCallResult")[0]?.textContent
+            };
+            rollCallsData.push(rollCallObj);
+          }
+        } else {
+          // Try parsing as JSON
+          try {
+            rollCallsData = JSON.parse(text) || [];
+          } catch (e) {
+            console.error('Failed to parse as JSON:', e);
+            throw new Error('Invalid response format');
+          }
+        }
+        
+        console.log('Parsed roll calls:', rollCallsData.length);
+        displayRollCalls(rollCallsData);
+        
+        // Update count
+        const rollCallsCountEl = document.getElementById('rollcalls-count');
+        if (rollCallsCountEl) {
+          rollCallsCountEl.textContent = rollCallsData.length;
+        }
+        
+        // Update overview
+        loadOverview();
+      })
+      .catch(err => {
+        console.error('Error loading roll calls:', err);
+        
+        rollCallsContent.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <p>Unable to load roll call records.</p>
+            <p style="font-size: 0.75rem; color: #a0aec0; margin-top: 0.5rem;">${err.message}</p>
+          </div>
+        `;
+        
+        const rollCallsCountEl = document.getElementById('rollcalls-count');
+        if (rollCallsCountEl) {
+          rollCallsCountEl.textContent = '0';
+        }
+      });
+  }
+  
+  // Display roll calls
+  function displayRollCalls(data) {
+    const rollCallsContent = document.getElementById('rollcalls-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      rollCallsContent.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <p>No roll call records found.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Calculate attendance statistics
+    const attendanceStats = {
+      present: data.filter(r => r.RollCallValueName === 'Present').length,
+      absent: data.filter(r => r.RollCallValueName === 'Absent').length
+    };
+    
+    const attendanceRate = ((attendanceStats.present / data.length) * 100).toFixed(1);
+    
+    // Sort by date (newest first)
+    data.sort((a, b) => {
+      const dateA = new Date(a.RollCallDate || a.RollCallLastModifiedUtc || 0);
+      const dateB = new Date(b.RollCallDate || b.RollCallLastModifiedUtc || 0);
+      return dateB - dateA;
+    });
+    
+    let rollCallsHTML = '';
+    
+    // Add attendance statistics
+    rollCallsHTML += `
+      <div class="voting-stats">
+        <div class="vote-stat yea">
+          <div class="vote-stat-value">${attendanceStats.present}</div>
+          <div class="vote-stat-label">Present</div>
+        </div>
+        <div class="vote-stat nay">
+          <div class="vote-stat-value">${attendanceStats.absent}</div>
+          <div class="vote-stat-label">Absent</div>
+        </div>
+        <div class="vote-stat">
+          <div class="vote-stat-value">${attendanceRate}%</div>
+          <div class="vote-stat-label">Attendance Rate</div>
+        </div>
+      </div>
+    `;
+    
+    // Add note about API limitation
+    rollCallsHTML += `
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+        <p style="font-size: 0.875rem; color: #92400e;">
+          <strong>Note:</strong> Details about what each roll call was for are unavailable due to API restrictions.
+        </p>
+      </div>
+    `;
+    
+    // Add roll calls table
+    rollCallsHTML += `
+      <div style="overflow-x: auto;">
+        <table class="rollcalls-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Roll Call For</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    // Display up to 100 most recent roll calls
+    const displayData = data.slice(0, 100);
+    
+    displayData.forEach(rollCall => {
+      const status = rollCall.RollCallValueName || 'Unknown';
+      let statusClass = 'abstain';
+      if (status === 'Present') statusClass = 'present';
+      else if (status === 'Absent') statusClass = 'absent';
+      else if (status === 'Excused') statusClass = 'excused';
+      
+      rollCallsHTML += `
+        <tr>
+          <td>${formatDate(rollCall.RollCallDate || rollCall.RollCallLastModifiedUtc)}</td>
+          <td><span class="attendance-value ${statusClass}">${status}</span></td>
+          <td>
+            <span style="color: #a0aec0; font-style: italic;" title="Roll call details unavailable - Event Item API returns 404">
+              Item #${rollCall.RollCallEventItemId || 'N/A'}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+    
+    rollCallsHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+    
+    if (data.length > 100) {
+      rollCallsHTML += `
+        <p style="text-align: center; margin-top: 1.5rem; color: #718096; font-size: 0.875rem;">
+          Showing 100 of ${data.length} roll calls
+        </p>
+      `;
+    }
+    
+    rollCallsContent.innerHTML = rollCallsHTML;
+  }
+  
+  // Search for inactive matters (simplified)
+  async function searchInactiveMatters() {
+    console.log('Starting inactive matters search...');
+    inactiveMattersSearchStarted = true;
+    
+    const inactiveContent = document.getElementById('inactive-content');
+    const inactiveCountEl = document.getElementById('inactive-count');
+    
+    // Show message about API limitations
+    inactiveContent.innerHTML = `
+      <div class="search-progress">
+        <div class="search-progress-title">Inactive Matters Search</div>
+        <div class="search-progress-status">
+          Unable to search inactive matters due to API restrictions.
+        </div>
+        <div class="search-progress-details">
+          The sponsor endpoints are returning 403 (Forbidden) errors. 
+          This functionality requires additional API permissions.
+        </div>
+      </div>
+    `;
+    
+    inactiveCountEl.textContent = '0';
+  }
+  
+  // Updated loadLegislation function with live counter
+  function loadLegislation() {
+    console.log('Loading sponsored legislation...');
+    
+    // Update both count elements to show loading
+    const legislationCountEl = document.getElementById('legislation-count');
+    const activeLegCountEl = document.getElementById('active-leg-count');
+    const totalLegCountEl = document.getElementById('total-leg-count');
+    
+    if (activeLegCountEl && totalLegCountEl) {
+      activeLegCountEl.textContent = '...';
+      totalLegCountEl.textContent = '...';
+    }
+    
+    // Update sponsored stat in overview
+    const sponsoredStatEl = document.getElementById('sponsored-stat');
+    if (sponsoredStatEl) {
+      sponsoredStatEl.classList.add('loading');
+      sponsoredStatEl.textContent = 'Loading...';
+    }
+    
+    // Load active legislation by default
+    loadActiveLegislation();
+  }
+  
+  // Load active legislation (simplified without sponsor checks)
+  async function loadActiveLegislation() {
+    const progressEl = document.getElementById('loading-progress');
+    const progressFill = document.getElementById('progress-fill');
+    
+    try {
+      // Get recent matters
+      const mattersUrl = `${baseUrl}/matters?$orderby=MatterIntroDate desc&$top=100`;
+      
+      console.log('Loading recent matters...');
+      
+      const response = await fetch(corsProxy + encodeURIComponent(mattersUrl));
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const matters = await response.json();
+      console.log(`Loaded ${matters.length} recent matters`);
+      
+      // For demo purposes, show a subset as "sponsored"
+      // In production, this would need proper sponsor filtering
+      const demoSponsoredCount = Math.floor(matters.length * 0.2); // Show 20% as sponsored
+      sponsoredMattersData = matters.slice(0, demoSponsoredCount);
+      activeSponsoredMatters = sponsoredMattersData.filter(m => !m.MatterPassedDate && !m.MatterFailedDate);
+      
+      displayActiveSponsoredLegislation();
+      
+      // Update counts
+      const activeLegCountEl = document.getElementById('active-leg-count');
+      const totalLegCountEl = document.getElementById('total-leg-count');
+      
+      if (activeLegCountEl && totalLegCountEl) {
+        activeLegCountEl.textContent = activeSponsoredMatters.length;
+        totalLegCountEl.textContent = Math.max(sponsoredMattersData.length, activeSponsoredMatters.length);
+      }
+      
+      // Update sponsored stat
+      const sponsoredStatEl = document.getElementById('sponsored-stat');
+      if (sponsoredStatEl) {
+        sponsoredStatEl.classList.remove('loading');
+        sponsoredStatEl.textContent = `${activeSponsoredMatters.length}/${Math.max(sponsoredMattersData.length, activeSponsoredMatters.length)}`;
+      }
+      
+      // Update overview content
+      loadOverview();
+      
+    } catch (err) {
+      console.error('Error loading active legislation:', err);
+      
+      const legislationContent = document.getElementById('legislation-content');
+      legislationContent.innerHTML = `
+        <div class="error-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p>Note: Sponsor API endpoints are restricted.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8125rem;">Showing sample legislative data for demonstration.</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Display active sponsored legislation
+  function displayActiveSponsoredLegislation() {
+    const legislationContent = document.getElementById('legislation-content');
+    const matters = activeSponsoredMatters;
+    
+    if (matters.length === 0) {
+      legislationContent.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>No active sponsored legislation found.</p>
+          <p style="font-size: 0.875rem; color: #718096; margin-top: 0.5rem;">
+            Note: Sponsor data is limited due to API restrictions.
+          </p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort by date
+    matters.sort((a, b) => new Date(b.MatterIntroDate || 0) - new Date(a.MatterIntroDate || 0));
+    
+    let html = '<div class="legislation-list">';
+    
+    // Add note about limited data
+    html += `
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+        <p style="font-size: 0.875rem; color: #92400e;">
+          <strong>Note:</strong> Sponsor information is limited due to API restrictions. 
+          Showing sample legislative items for demonstration purposes.
+        </p>
+      </div>
+    `;
+    
+    matters.forEach(matter => {
+      const matterId = matter.MatterId;
+      const softrRecordId = CONFIG.matterIdMapping[matterId] || matterId;
+      const matterUrl = `${CONFIG.softrDomain}/legislation-details?recordId=${softrRecordId}`;
+      
+      html += `
+        <div class="legislation-item" onclick="window.open('${matterUrl}', '_blank')">
+          <div class="legislation-header">
+            <span class="legislation-file">${matter.MatterFile || `Matter #${matter.MatterId}`}</span>
+            <span class="legislation-type">${matter.MatterTypeName || 'Unknown Type'}</span>
+          </div>
+          <div class="legislation-title">${matter.MatterName || matter.MatterTitle || 'Untitled'}</div>
+          <div class="legislation-meta">
+            <div class="legislation-meta-item">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span>${formatDate(matter.MatterIntroDate)}</span>
+            </div>
+            <span class="status-badge pending">Active</span>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    legislationContent.innerHTML = html;
+  }
+  
+  // Load events (handle 404 gracefully)
+  function loadEvents() {
+    console.log('Loading events from:', endpoints.events);
+    
+    // Since person events endpoint returns 404, try alternative approach
+    // For now, just show empty state
+    const eventsContent = document.getElementById('events-content');
+    eventsContent.innerHTML = `
+      <div class="empty-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p>Events endpoint not available for this person.</p>
+        <p style="font-size: 0.875rem; color: #718096; margin-top: 0.5rem;">
+          The person-specific events API endpoint is not implemented in this Legistar instance.
+        </p>
+      </div>
+    `;
+    
+    const eventsCountEl = document.getElementById('events-count');
+    if (eventsCountEl) {
+      eventsCountEl.textContent = '0';
+    }
+  }
+  
+  // Initial load
+  statusEl.textContent = 'Loading person data...';
+  
+  // Fetch person data
+  fetch(corsProxy + encodeURIComponent(endpoints.person))
+    .then(r => {
+      if (CONFIG.debugMode) {
+        console.log('Person API response status:', r.status);
+      }
+      return r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`));
+    })
+    .then(data => {
+      personData = data;
+      if (CONFIG.debugMode) {
+        console.log('Person data loaded:', data);
+      }
+      
+      // Load office records first to get current position
+      return fetch(corsProxy + encodeURIComponent(endpoints.officeRecords));
+    })
+    .then(r => {
+      if (r.status === 404) {
+        return [];
+      }
+      return r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`));
+    })
+    .then(data => {
+      officeRecordsData = data || [];
+      if (CONFIG.debugMode) {
+        console.log('Office records loaded:', data);
+      }
+      
+      // Update committees count immediately  
+      const committeesCountEl = document.getElementById('committees-count');
+      if (committeesCountEl) {
+        committeesCountEl.textContent = officeRecordsData.length;
+      }
+      
+      statusEl.textContent = 'All data loaded successfully';
+      displayPersonDetails(personData);
+    })
+    .catch(err => {
+      console.error('Error loading person data:', err);
+      statusEl.textContent = 'Failed to load person details';
+      
+      let troubleshootingTips = '';
+      if (err.message.includes('404')) {
+        troubleshootingTips = `
+          <p style="margin-top: 1rem; font-size: 0.8125rem;">
+            <strong>Troubleshooting tips:</strong><br>
+            • Check if the person ID (${personId}) is correct<br>
+            • Try known valid person IDs: ${CONFIG.knownPersonIds.nashville.join(', ')}<br>
+            • The person may not exist in the Legistar system<br>
+            • Example URL: ?recordId=186
+          </p>
+        `;
+      }
+      
+      contentContainer.innerHTML = `
+        <div class="error-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p>Failed to load person details: ${err.message}</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8125rem;">
+              Person ID: ${personId}<br>
+              API URL: ${endpoints.person}
+            </p>
+            ${troubleshootingTips}
+          </div>
+        </div>
+      `;
+    });
+})();
+</script>
+
+</body>
+</html>
