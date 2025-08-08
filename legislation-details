@@ -80,80 +80,129 @@ body {
   height: 16px;
 }
 
-/* Community Header */
-.community-header {
+/* Discussion Header */
+.discussion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.discussion-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.community-header h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #2d3748;
 }
 
-.discussion-icon {
-  width: 32px;
-  height: 32px;
-  background: #f0f4ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #667eea;
-}
-
-.discussion-subtitle {
-  color: #718096;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Discussion Status */
-.discussion-status {
+.discussion-stats {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9999px;
   font-size: 0.875rem;
-  color: #718096;
-  margin-bottom: 1.5rem;
+  color: #2d3748;
 }
 
-.status-dot {
+.discussion-stats .pulse-dot {
+  position: static;
   width: 8px;
   height: 8px;
-  background: #48bb78;
-  border-radius: 50%;
+  background: #22c55e;
 }
 
-/* Comment Box */
-.comment-section {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2rem;
-}
-
-.comment-as {
-  font-size: 0.8125rem;
-  color: #718096;
-  margin-bottom: 0.5rem;
+/* Activity indicator */
+.activity-indicator {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pulse {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+.pulse-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.activity-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Comment Input */
+.comment-input-section {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(99,102,241,0.05));
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+}
+
+.comment-input-section:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.input-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .user-avatar {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   background: #e2e8f0;
   color: #718096;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -162,57 +211,75 @@ body {
   color: white;
 }
 
+.input-title {
+  font-weight: 600;
+}
+
+.input-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
 .comment-textarea {
   width: 100%;
-  min-height: 120px;
-  padding: 1rem;
+  min-height: 80px;
+  padding: 0.75rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   resize: vertical;
   font-family: inherit;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: 0.95rem;
 }
 
 .comment-textarea:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
 }
 
-.comment-textarea::placeholder {
-  color: #a0aec0;
-}
-
-.comment-actions {
+.input-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 1rem;
 }
 
-.anonymous-checkbox {
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tool-btn {
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: #f8fafc;
+  transform: scale(1.1);
+}
+
+.anonymous-toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
   color: #4a5568;
-  cursor: pointer;
 }
 
-.anonymous-checkbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.char-count {
-  font-size: 0.75rem;
-  color: #a0aec0;
-}
-
-.comment-button {
+.post-btn {
   padding: 0.625rem 1.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -224,15 +291,20 @@ body {
   transition: all 0.2s;
 }
 
-.comment-button:hover {
+.post-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(102,126,234,0.4);
 }
 
-.comment-button:disabled {
+.post-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: #a0aec0;
 }
 
 /* Comments Section */
@@ -373,6 +445,44 @@ body {
 .reply-button svg {
   width: 14px;
   height: 14px;
+}
+
+/* Reaction picker */
+.reaction-picker {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.reaction-btn:hover {
+  background: #f8fafc;
+}
+
+
+.reaction-btn.active {
+  background: #eff6ff;
+  border-color: var(--reaction-color, #3b82f6);
+  color: var(--reaction-color, #3b82f6);
+}
+
+.reaction-emoji {
+  line-height: 1;
+}
+
+.reaction-count {
+  font-weight: 600;
 }
 
 /* Reply form */
@@ -1454,8 +1564,20 @@ a.sponsor-card:hover svg {
   
   // Configuration for Xano API
   const XANO_CONFIG = {
-    API_BASE_URL: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO', // Your Xano API URL
-    AUTH_TOKEN: '' // Add if using authentication
+    API_BASE_URL: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO',
+    ENDPOINTS: {
+      COMMENTS: '/comment',
+      VOTES: '/comment_vote'
+    }
+  };
+
+  const REACTIONS = {
+    '👍': { name: 'like', color: '#3b82f6' },
+    '❤️': { name: 'love', color: '#ef4444' },
+    '🔥': { name: 'fire', color: '#f59e0b' },
+    '💡': { name: 'insight', color: '#fbbf24' },
+    '🤔': { name: 'thinking', color: '#8b5cf6' },
+    '👏': { name: 'applause', color: '#10b981' }
   };
   
   // Generate consistent session ID for this matter
@@ -1517,7 +1639,7 @@ a.sponsor-card:hover svg {
       console.log('Loading comments for session:', sessionId);
       
       // Fetch comments for this matter/session from Xano
-      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment?session_id=${sessionId}`, {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}?session_id=${sessionId}`, {
         headers: {
           'Content-Type': 'application/json',
           // Add authorization header if needed
@@ -1561,6 +1683,7 @@ a.sponsor-card:hover svg {
             isAnonymous: comment.is_anonymous || false,
             upvotes: comment.upvotes || 0,
             downvotes: comment.downvotes || 0,
+            votes: comment.votes || [],
             parent_comment_id: comment.parent_comment_id || 0,
             replies: []
           };
@@ -1628,7 +1751,7 @@ a.sponsor-card:hover svg {
     try {
       // Prepare data for Xano - matching your exact field names
       const commentData = {
-        legislation_id: matterId, // Using matterId as legislation_id
+        matterId: matterId,
         comment_text: text,
         user_email: userEmail, // Now using real email when available
         is_anonymous: isAnonymous,
@@ -1644,7 +1767,7 @@ a.sponsor-card:hover svg {
       console.log('Sending comment to Xano:', JSON.stringify(commentData, null, 2));
       
       // Send to Xano API
-      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment`, {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1751,6 +1874,76 @@ a.sponsor-card:hover svg {
       }
     }
   }
+
+  // Vote/React function
+  async function addReaction(commentId, emoji) {
+    const voteData = {
+      comment_id: commentId,
+      matterId: matterId,
+      user_identifier: isSoftrUserAuthenticated ? softrUserEmail : generateAnonymousId(),
+      vote_type: 'reaction',
+      vote: emoji
+    };
+
+    try {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.VOTES}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(voteData)
+      });
+
+      if (response.ok) {
+        animateReaction(commentId, emoji);
+        await loadCommentsFromXano();
+      }
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+    }
+  }
+
+  function aggregateReactions(votes) {
+    return votes.reduce((acc, vote) => {
+      acc[vote.vote] = (acc[vote.vote] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
+  function hasUserReacted(commentId, emoji) {
+    return false;
+  }
+
+  function animateReaction(commentId, emoji) {
+    // Placeholder for reaction animation
+  }
+
+  function generateAnonymousId() {
+    return `anon_${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  function createActivityIndicator() {
+    return `
+      <div class="activity-indicator">
+        <div class="activity-pulse">
+          <span class="pulse-ring"></span>
+          <span class="pulse-dot"></span>
+        </div>
+        <div class="activity-stats">
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="viewer-count">12</span> viewing
+          </span>
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="active-discussions">${commentsData.length}</span> comments
+          </span>
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="engagement-score">Hot</span>
+          </span>
+        </div>
+      </div>
+    `;
+  }
   
   // Show reply form
   window.showReplyForm = function(parentId, parentAuthor) {
@@ -1854,20 +2047,26 @@ a.sponsor-card:hover svg {
   
   // Render a single comment
   function renderComment(comment, isReply = false) {
-    const timeAgo = getTimeAgo(comment.timestamp);
-    const hasReplies = comment.replies && comment.replies.length > 0;
-    
-    let html = `
-      <div class="comment-item" data-comment-id="${comment.id}">
+    const reactions = aggregateReactions(comment.votes || []);
+    return `
+      <div class="comment-item${isReply ? ' comment-reply' : ''}" data-comment-id="${comment.id}">
         <div class="comment-header">
           <div class="comment-author">
             <div class="comment-avatar${!comment.isAnonymous ? ' comment-avatar-user' : ''}">${comment.isAnonymous ? '?' : comment.author[0].toUpperCase()}</div>
             <span class="comment-name">${comment.author}</span>
-            <span class="comment-time">${timeAgo}</span>
+            <span class="comment-time">${getTimeAgo(comment.timestamp)}</span>
           </div>
         </div>
         <div class="comment-text">${escapeHtml(comment.text)}</div>
         <div class="comment-footer">
+          <div class="reaction-picker">
+            ${Object.entries(REACTIONS).map(([emoji, data]) => `
+              <button class="reaction-btn ${hasUserReacted(comment.id, emoji) ? 'active' : ''}" onclick="addReaction(${comment.id}, '${emoji}')" style="--reaction-color: ${data.color}">
+                <span class="reaction-emoji">${emoji}</span>
+                <span class="reaction-count">${reactions[emoji] || ''}</span>
+              </button>
+            `).join('')}
+          </div>
           <button class="reply-button" onclick="showReplyForm(${comment.id}, '${escapeHtml(comment.author).replace(/'/g, "\\'")}')">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -1875,26 +2074,9 @@ a.sponsor-card:hover svg {
             Reply
           </button>
         </div>
+        ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => renderComment(reply, true)).join('')}</div>` : ''}
+      </div>
     `;
-    
-    // Add replies section if there are replies
-    if (hasReplies) {
-      html += `
-        <button class="show-replies-toggle expanded" onclick="toggleReplies(${comment.id})">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-          Hide ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}
-        </button>
-        <div class="comment-replies" id="replies-${comment.id}">
-          ${comment.replies.map(reply => renderComment(reply, true)).join('')}
-        </div>
-      `;
-    }
-    
-    html += '</div>';
-    
-    return html;
   }
   
   // Render comments
@@ -1918,6 +2100,10 @@ a.sponsor-card:hover svg {
     
     // Update count
     commentsCount.textContent = `${totalCount} comment${totalCount !== 1 ? 's' : ''}`;
+    const activeDiscussionEl = document.getElementById('active-discussions');
+    if (activeDiscussionEl) {
+      activeDiscussionEl.textContent = totalCount;
+    }
     
     if (commentsData.length === 0) {
       commentsList.innerHTML = `
@@ -1929,27 +2115,30 @@ a.sponsor-card:hover svg {
     }
     
     let commentsHTML = commentsData.map(comment => renderComment(comment)).join('');
-    
+
     commentsList.innerHTML = commentsHTML;
+
+    const activityContainer = document.getElementById('activity-indicator-container');
+    if (activityContainer) {
+      activityContainer.innerHTML = createActivityIndicator();
+    }
   }
   
   // Update comment as display
   function updateCommentAsDisplay() {
-    const commentAsDisplay = document.querySelector('.comment-as');
+    const avatarEl = document.getElementById('comment-user-avatar');
+    const nameEl = document.getElementById('comment-user-name');
     const anonymousCheckbox = document.getElementById('post-anonymous');
-    
-    if (!commentAsDisplay) return; // Element might not exist yet
-    
+
+    if (!avatarEl || !nameEl) return;
+
     const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : true;
     const displayName = isAnonymous ? 'Anonymous' : currentUserName;
-    const avatar = isAnonymous ? '?' : displayName[0].toUpperCase();
-    const avatarClass = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
-    
-    commentAsDisplay.innerHTML = `
-      <span>Comment as</span>
-      <div class="${avatarClass}">${avatar}</div>
-      <strong>${displayName}</strong>
-    `;
+    const avatarChar = isAnonymous ? '?' : displayName[0].toUpperCase();
+
+    avatarEl.textContent = avatarChar;
+    avatarEl.className = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
+    nameEl.textContent = displayName;
   }
   
   // Get time ago string
@@ -2177,63 +2366,66 @@ a.sponsor-card:hover svg {
     contentHTML += `
       <div id="content-comments" class="content-section">
         <div class="content-container">
-          <div class="community-header">
-            <div class="discussion-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
+          <div class="discussion-header">
+            <div class="discussion-title">
+              <span>💬</span>
+              <span>Community Discussion</span>
             </div>
-            <h3>Community Discussion</h3>
+            <div class="discussion-stats">
+              <span class="pulse-dot"></span>
+              <span><strong id="active-discussions">0</strong> comments</span>
+            </div>
           </div>
-          
-          <p class="discussion-subtitle">Share your thoughts on this legislation</p>
-          
-          <div class="discussion-status">
-            <span class="status-dot"></span>
-            <span>Discussing: <span>${data.MatterFile || `Matter #${matterId}`}</span></span>
-          </div>
-          
+
+          <div id="activity-indicator-container"></div>
+
           <div id="softr-user-status" class="softr-user-status" style="display: none;">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 018 0z"/>
             </svg>
             <span id="softr-status-text">Checking authentication...</span>
           </div>
-          
-          <div class="comment-section">
-            <div class="comment-as">
-              <span>Comment as</span>
-              <div class="user-avatar">?</div>
-              <strong>Anonymous</strong>
+
+          <div class="comment-input-section">
+            <div class="input-header">
+              <div class="user-avatar" id="comment-user-avatar">?</div>
+              <div>
+                <div class="input-title">Join the conversation</div>
+                <div class="input-subtitle">Commenting as <strong id="comment-user-name">Anonymous</strong></div>
+              </div>
             </div>
-            
+
             <div id="comment-success" class="comment-success" style="display: none;">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
               <span>Comment posted successfully!</span>
             </div>
-            
-            <textarea 
-              class="comment-textarea" 
-              placeholder="What are your thoughts? (Press Enter to submit, Shift+Enter for new line)"
+
+            <textarea
+              class="comment-textarea"
               id="comment-input"
+              placeholder="What's your perspective on this proposal?"
               maxlength="1000"
             ></textarea>
-            
-            <div class="comment-actions">
-              <label class="anonymous-checkbox">
-                <input type="checkbox" id="post-anonymous" checked>
-                <span>Post anonymously</span>
-              </label>
-              
-              <div style="display: flex; align-items: center; gap: 1rem;">
+
+            <div class="input-footer">
+              <div class="input-tools">
+                <button class="tool-btn" type="button">😊</button>
+                <button class="tool-btn" type="button">📎</button>
+                <button class="tool-btn" type="button">@</button>
+                <label class="anonymous-toggle">
+                  <input type="checkbox" id="post-anonymous" checked>
+                  Post anonymously
+                </label>
+              </div>
+              <div class="footer-right">
                 <span class="char-count"><span id="char-count">0</span>/1000</span>
-                <button class="comment-button" id="comment-btn">Comment</button>
+                <button class="post-btn" id="comment-btn">Post Comment</button>
               </div>
             </div>
           </div>
-          
+
           <div class="comments-section">
             <div class="comments-header">
               <h4 class="comments-title">Community Comments</h4>
