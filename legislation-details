@@ -1,0 +1,2562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comprehensive Legistar Widget</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #f8fafc;
+  color: #1a202c;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Widget Container */
+#main-widget-container {
+  max-width: 72rem;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Gradient top bar */
+.gradient-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.8;
+  z-index: 1;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Legislation Details Section */
+#legislation-widget {
+  padding: 2rem;
+}
+
+/* Header */
+.widget-header {
+  margin-bottom: 2rem;
+}
+
+.widget-header h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #2d3748;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+
+.matter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.matter-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Community Header */
+.community-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.community-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.discussion-icon {
+  width: 32px;
+  height: 32px;
+  background: #f0f4ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+}
+
+.discussion-subtitle {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Discussion Status */
+.discussion-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #718096;
+  margin-bottom: 1.5rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #48bb78;
+  border-radius: 50%;
+}
+
+/* Comment Box */
+.comment-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+
+.comment-as {
+  font-size: 0.8125rem;
+  color: #718096;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  background: #e2e8f0;
+  color: #718096;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-avatar-authenticated {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.comment-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.comment-textarea::placeholder {
+  color: #a0aec0;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.anonymous-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.anonymous-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+.comment-button {
+  padding: 0.625rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comment-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.comment-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Comments Section */
+.comments-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.comments-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.comments-count {
+  font-size: 0.875rem;
+  color: #718096;
+}
+
+.no-comments {
+  text-align: center;
+  padding: 2rem;
+  color: #a0aec0;
+  font-size: 0.875rem;
+}
+
+/* Comment Item */
+.comment-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  animation: commentFadeIn 0.3s ease-out;
+}
+
+@keyframes commentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-item:first-child {
+  padding-top: 0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comment-header {
+  margin-bottom: 0.5rem;
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  background: #e2e8f0;
+  color: #718096;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.comment-avatar-user {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.comment-name {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.875rem;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  margin-left: 0.25rem;
+}
+
+.comment-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #4a5568;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Reply functionality styles */
+.comment-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.reply-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: #667eea;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reply-button:hover {
+  background: #f0f4ff;
+  border-color: #e0e7ff;
+}
+
+.reply-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Reply form */
+.reply-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reply-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.replying-to {
+  font-size: 0.8125rem;
+  color: #718096;
+}
+
+.cancel-reply {
+  font-size: 0.8125rem;
+  color: #718096;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.cancel-reply:hover {
+  color: #4a5568;
+  text-decoration: underline;
+}
+
+.reply-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.reply-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.reply-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.reply-submit {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reply-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.reply-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Nested replies */
+.comment-replies {
+  margin-left: 2.5rem;
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid #e2e8f0;
+}
+
+.comment-replies .comment-item {
+  padding: 0.75rem 0;
+}
+
+.comment-replies .comment-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.8125rem;
+}
+
+/* Show replies toggle */
+.show-replies-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: #667eea;
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.show-replies-toggle:hover {
+  background: #f0f4ff;
+  border-radius: 0.375rem;
+}
+
+.show-replies-toggle svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s;
+}
+
+.show-replies-toggle.expanded svg {
+  transform: rotate(180deg);
+}
+
+/* Status */
+.status-message {
+  font-size: 0.875rem;
+  color: #718096;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.5rem;
+}
+
+.status-icon {
+  width: 16px;
+  height: 16px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Matter Info Section */
+.matter-info {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-item.full-width .info-value {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #1a202c;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #718096;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: #2d3748;
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Tab Navigation */
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  color: #4a5568;
+}
+
+.tab-button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+/* Content Section */
+.content-section {
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.content-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Content Container */
+.content-container {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.content-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.content-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.content-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.content-container h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+
+.content-container p {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: #2d3748;
+}
+
+/* Comments tab container */
+#content-comments .content-container {
+  background: white;
+  border: none;
+  padding: 0;
+  max-height: none;
+}
+
+/* Sponsors Grid */
+.sponsors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+a.sponsor-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  padding-right: 2.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
+}
+
+a.sponsor-card svg {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #cbd5e0;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+a.sponsor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
+  text-decoration: none;
+}
+
+a.sponsor-card:hover svg {
+  opacity: 1;
+  transform: translateY(-50%) translateX(2px);
+  color: #667eea;
+}
+
+.sponsor-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.sponsor-type {
+  font-size: 0.75rem;
+  color: #667eea;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Attachments List */
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachment-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.attachment-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.attachment-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
+}
+
+.attachment-item:hover::before {
+  transform: translateX(0);
+}
+
+.attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-icon svg {
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.attachment-name {
+  font-weight: 500;
+  color: #2d3748;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #667eea;
+  border: 1px solid #667eea;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+
+.action-button:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.action-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* History Timeline */
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+.history-action {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.history-date {
+  font-size: 0.8125rem;
+  color: #718096;
+  margin-bottom: 0.5rem;
+}
+
+.history-text {
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.history-body {
+  font-size: 0.8125rem;
+  color: #718096;
+  margin-top: 0.25rem;
+}
+
+.history-status {
+  font-size: 0.8125rem;
+  color: #667eea;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+}
+
+/* Loading Skeleton */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f7fafc 25%, #e2e8f0 50%, #f7fafc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+.skeleton-line {
+  height: 1rem;
+  width: 100%;
+}
+
+.skeleton-line:nth-child(2) { width: 90%; }
+.skeleton-line:nth-child(3) { width: 95%; }
+.skeleton-line:nth-child(4) { width: 85%; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Comment Success Message */
+.comment-success {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  color: #22c55e;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+  transition: all 0.3s ease;
+}
+
+.comment-success svg {
+  flex-shrink: 0;
+}
+
+#comments-list {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+#comments-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+#comments-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+#comments-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+#comments-list::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.error-state {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+}
+
+.error-state svg {
+  width: 20px;
+  height: 20px;
+  color: #c53030;
+  flex-shrink: 0;
+}
+
+.error-state p {
+  color: #c53030;
+  font-size: 0.875rem;
+}
+
+/* Softr User Status */
+.softr-user-status {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.softr-user-status.authenticated {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #22c55e;
+}
+
+.softr-user-status svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Modal for PDF Preview */
+#pdf-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#pdf-modal.show {
+  opacity: 1;
+  visibility: visible;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 56rem;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#pdf-modal.show .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 1rem 1rem 0 0;
+}
+
+#pdf-title {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-close {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #718096;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+#pdf-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #f8fafc;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.download-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.download-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.close-button {
+  padding: 0.625rem 1.25rem;
+  background: white;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #main-widget-container {
+    margin: 1rem;
+  }
+  
+  #legislation-widget {
+    padding: 1.5rem;
+  }
+  
+  .widget-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sponsors-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .comment-replies {
+    margin-left: 1.5rem;
+    padding-left: 0.5rem;
+  }
+  
+  .tab-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+  
+  .content-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  #main-widget-container {
+    margin: 0.5rem;
+  }
+  
+  #legislation-widget {
+    padding: 1rem;
+  }
+  
+  .widget-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .comment-replies {
+    margin-left: 1rem;
+    padding-left: 0.5rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Main Widget Container -->
+<div id="main-widget-container">
+  <div class="gradient-bar"></div>
+  
+  <!-- Legislation Details Section -->
+  <div id="legislation-widget">
+    <div class="widget-header">
+      <h2>Legislation Details</h2>
+      <span class="matter-badge">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span class="matter-id">Loading...</span>
+      </span>
+    </div>
+    
+    <div class="status-message">
+      <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <span>Loading legislation details...</span>
+    </div>
+    
+    <div id="matter-info" class="matter-info" style="display: none;">
+      <!-- Content will be dynamically generated -->
+    </div>
+    
+    <div class="tab-nav" id="tab-nav" style="display: none;">
+      <button class="tab-button active" data-tab="overview">Overview</button>
+      <button class="tab-button" data-tab="sponsors">Sponsors</button>
+      <button class="tab-button" data-tab="documents">Documents</button>
+      <button class="tab-button" data-tab="history">History</button>
+      <button class="tab-button" data-tab="comments">Comments</button>
+    </div>
+    
+    <div id="content-container">
+      <div class="loading-skeleton">
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+        <div class="skeleton-item skeleton-line"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Preview Modal -->
+<div id="pdf-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="pdf-title">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        <span class="title-text"></span>
+      </span>
+      <button class="modal-close" onclick="closeModal()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <iframe id="pdf-frame"></iframe>
+    <div class="modal-footer">
+      <a id="download-link" href="#" download class="download-button">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Download
+      </a>
+      <button class="close-button" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ========================================
+  // SOFTR USER INTEGRATION
+  // ========================================
+  let softrUserData = null;
+  let softrUserEmail = null;
+  let softrUserName = 'Anonymous';
+  let isSoftrUserAuthenticated = false;
+  
+  // Function to detect Softr user
+  function detectSoftrUser() {
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const checkUser = () => {
+        if (window.logged_in_user) {
+          softrUserData = window.logged_in_user;
+          
+          // Try different possible email field names
+          softrUserEmail = softrUserData.email || 
+                          softrUserData.Email || 
+                          softrUserData.softr_user_email || 
+                          softrUserData.user_email ||
+                          softrUserData.EMAIL ||
+                          null;
+          
+          // Extract name from various possible fields
+          if (softrUserData.softr_user_full_name) {
+            softrUserName = softrUserData.softr_user_full_name;
+          } else if (softrUserData.name) {
+            softrUserName = softrUserData.name;
+          } else if (softrUserData.full_name) {
+            softrUserName = softrUserData.full_name;
+          } else if (softrUserData.Name) {
+            softrUserName = softrUserData.Name;
+          } else if (softrUserEmail) {
+            // Extract name from email
+            const emailName = softrUserEmail.split('@')[0];
+            softrUserName = emailName
+              .split(/[._-]/)
+              .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+              .join(' ');
+          }
+          
+          isSoftrUserAuthenticated = true;
+          
+          console.log('Softr user detected:', {
+            name: softrUserName,
+            email: '[hidden for privacy]',
+            authenticated: isSoftrUserAuthenticated
+          });
+          
+          resolve(true);
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(checkUser, 500);
+        } else {
+          console.log('No Softr user detected after', maxAttempts, 'attempts');
+          resolve(false);
+        }
+      };
+      
+      // Start checking
+      checkUser();
+    });
+  }
+  
+  // ========================================
+  // XANO SETUP INSTRUCTIONS:
+  // 1. API URL is configured: https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO
+  // 2. Create a GET /comment endpoint in Xano:
+  //    - Add a query parameter filter for session_id
+  //    - Return comments where session_id matches
+  // 3. The POST /comment endpoint is configured
+  // 4. Session ID format: matter_${matterId}_comments
+  //    This creates a unique session for each matter's comments
+  // 5. IP Address: Configure your Xano API to automatically capture
+  //    the client IP instead of accepting it from frontend
+  // 6. Email field: Now using real Softr user emails when available
+  // 7. CORS: Ensure your Xano API allows requests from your domain
+  // 
+  // To create the GET endpoint in Xano:
+  // - Go to your API dashboard
+  // - Create new endpoint: GET /comment
+  // - Add Query Input: session_id (text)
+  // - Query all records from comment table
+  // - Add filter: session_id = input.session_id
+  // - Sort by created_at descending
+  // - Return the filtered results
+  // ========================================
+  
+  // Configuration
+  const CONFIG = {
+    softrDomain: 'https://eonashville.softr.app',
+    // Add sponsor ID mapping here if needed
+    // Format: { legistarId: softrRecordId }
+    sponsorIdMapping: {
+      // Example mappings - update these with your actual IDs:
+      // 207: 186,  // Jennifer Gamble
+      // 209: 187,  // Sean Parker
+      // Add more mappings as needed
+    }
+  };
+  
+  // Extract matterId from URL parameter 'recordId'
+  const urlParams = new URLSearchParams(window.location.search);
+  const matterId = urlParams.get('recordId') || '7447605';
+  
+  // API endpoints
+  const baseUrl = 'https://webapi.legistar.com/v1/nashville';
+  const corsProxy = 'https://corsproxy.io/?';
+  
+  const endpoints = {
+    matter: `${baseUrl}/matters/${matterId}`,
+    sponsors: `${baseUrl}/matters/${matterId}/sponsors`,
+    attachments: `${baseUrl}/matters/${matterId}/attachments`,
+    history: `${baseUrl}/matters/${matterId}/histories`,
+    versions: `${baseUrl}/matters/${matterId}/versions`
+  };
+  
+  // DOM elements
+  const statusEl = document.querySelector('.status-message span');
+  const matterIdEl = document.querySelector('.matter-id');
+  const contentContainer = document.getElementById('content-container');
+  const matterInfoEl = document.getElementById('matter-info');
+  const tabNavEl = document.getElementById('tab-nav');
+  const modalEl = document.getElementById('pdf-modal');
+  const frameEl = document.getElementById('pdf-frame');
+  const downloadEl = document.getElementById('download-link');
+  const titleTextEl = document.querySelector('.title-text');
+  
+  // Update matter badge
+  matterIdEl.textContent = `Matter #${matterId}`;
+  
+  // Data storage
+  let matterData = null;
+  let sponsorsData = null;
+  let attachmentsData = null;
+  let historyData = null;
+  
+  // Comment functionality
+  let commentsData = [];
+  let currentUserName = 'Anonymous';
+  let activeReplyForm = null; // Track active reply form
+  
+  // Configuration for Xano API
+  const XANO_CONFIG = {
+    API_BASE_URL: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO', // Your Xano API URL
+    AUTH_TOKEN: '' // Add if using authentication
+  };
+  
+  // Generate consistent session ID for this matter
+  function generateSessionId(matterId) {
+    // Create a consistent session ID based on the matter ID
+    // This ensures all comments for a matter share the same session
+    return `matter_${matterId}_comments`;
+  }
+  
+  // Structure comments into a tree
+  function structureComments(flatComments) {
+    const commentMap = new Map();
+    const rootComments = [];
+    
+    // First pass: create map of all comments
+    flatComments.forEach(comment => {
+      comment.replies = [];
+      commentMap.set(comment.id, comment);
+    });
+    
+    // Second pass: organize into tree structure
+    flatComments.forEach(comment => {
+      if (comment.parent_comment_id && comment.parent_comment_id !== 0) {
+        const parent = commentMap.get(comment.parent_comment_id);
+        if (parent) {
+          parent.replies.push(comment);
+        } else {
+          // If parent not found, treat as root comment
+          rootComments.push(comment);
+        }
+      } else {
+        rootComments.push(comment);
+      }
+    });
+    
+    // Sort root comments by newest first
+    rootComments.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Sort replies by oldest first (conversation order)
+    const sortReplies = (comments) => {
+      comments.forEach(comment => {
+        if (comment.replies && comment.replies.length > 0) {
+          comment.replies.sort((a, b) => a.timestamp - b.timestamp);
+          sortReplies(comment.replies);
+        }
+      });
+    };
+    
+    sortReplies(rootComments);
+    
+    return rootComments;
+  }
+  
+  // Load comments from Xano
+  async function loadCommentsFromXano() {
+    try {
+      const sessionId = generateSessionId(matterId);
+      
+      console.log('Loading comments for session:', sessionId);
+      
+      // Fetch comments for this matter/session from Xano
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment?session_id=${sessionId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${XANO_CONFIG.AUTH_TOKEN}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load comments: ${response.status}`);
+      }
+      
+      const xanoComments = await response.json();
+      
+      console.log('Xano response:', xanoComments);
+      
+      // Handle both array response and object with items/data property
+      const commentsArray = Array.isArray(xanoComments) 
+        ? xanoComments 
+        : (xanoComments.items || xanoComments.data || xanoComments.comment || []);
+      
+      // Transform Xano comments to match our format
+      const allComments = commentsArray
+        .filter(comment => !comment.is_deleted) // Filter out deleted comments
+        .map(comment => {
+          // Extract name from email or use Anonymous
+          let authorName = 'Anonymous';
+          if (!comment.is_anonymous && comment.user_email) {
+            // Extract name from email (before @) and format it
+            const emailName = comment.user_email.split('@')[0];
+            authorName = emailName
+              .split(/[._-]/)
+              .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+              .join(' ');
+          }
+          
+          return {
+            id: comment.id,
+            text: comment.comment_text || '',
+            author: authorName,
+            timestamp: new Date(comment.created_at || comment.updated_at),
+            isAnonymous: comment.is_anonymous || false,
+            upvotes: comment.upvotes || 0,
+            downvotes: comment.downvotes || 0,
+            parent_comment_id: comment.parent_comment_id || 0,
+            replies: []
+          };
+        });
+      
+      console.log('Loaded comments from Xano:', allComments.length);
+      
+      // Structure comments into tree
+      commentsData = structureComments(allComments);
+      
+      // Update UI
+      renderComments();
+      
+    } catch (error) {
+      console.error('Error loading comments:', error);
+      console.log('Make sure you have a GET /comment endpoint in Xano with session_id query parameter');
+      
+      // Show empty state instead of sample comments
+      commentsData = [];
+      renderComments();
+    }
+  }
+  
+  // Initialize comments when comments tab is activated
+  async function initializeComments() {
+    console.log('Initializing comments for matter:', matterId);
+    console.log('Session ID will be:', generateSessionId(matterId));
+    
+    // Detect Softr user first
+    await detectSoftrUser();
+    
+    // Update the UI to show user status
+    if (isSoftrUserAuthenticated && softrUserEmail) {
+      console.log('Authenticated Softr user:', softrUserName);
+      currentUserName = softrUserName;
+      updateCommentAsDisplay();
+    }
+    
+    // Load comments
+    loadCommentsFromXano();
+  }
+  
+  // Add comment function
+  async function addComment(text, parentCommentId = 0) {
+    const isAnonymous = parentCommentId ? true : document.getElementById('post-anonymous').checked;
+    const timestamp = new Date();
+    
+    // Use real Softr user email if authenticated and not anonymous
+    let userEmail = 'anonymous@example.com';
+    
+    if (!isAnonymous && isSoftrUserAuthenticated && softrUserEmail) {
+      userEmail = softrUserEmail;
+      currentUserName = softrUserName;
+    } else if (!isAnonymous) {
+      // Fallback for non-authenticated users
+      userEmail = `${currentUserName.toLowerCase().replace(/\s+/g, '.')}@example.com`;
+    }
+    
+    // Disable button while submitting
+    const submitBtn = parentCommentId ? document.querySelector(`#reply-form-${parentCommentId} .reply-submit`) : document.getElementById('comment-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+    
+    try {
+      // Prepare data for Xano - matching your exact field names
+      const commentData = {
+        legislation_id: matterId, // Using matterId as legislation_id
+        comment_text: text,
+        user_email: userEmail, // Now using real email when available
+        is_anonymous: isAnonymous,
+        upvotes: 0,
+        downvotes: 0,
+        session_id: generateSessionId(matterId), // Consistent session ID
+        parent_comment_id: parentCommentId || 0, // 0 for top-level comments
+        is_deleted: false,
+        ip_address: 'client-ip', // This should be set by your backend
+        // created_at, updated_at, edited_at will be handled by Xano
+      };
+      
+      console.log('Sending comment to Xano:', JSON.stringify(commentData, null, 2));
+      
+      // Send to Xano API
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add authorization header if needed
+          // 'Authorization': `Bearer ${XANO_CONFIG.AUTH_TOKEN}`
+        },
+        body: JSON.stringify(commentData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Xano API error:', errorData);
+        throw new Error(`Failed to post comment: ${response.status}`);
+      }
+      
+      const savedComment = await response.json();
+      
+      console.log('Comment saved to Xano:', savedComment);
+      
+      // Clear input
+      if (parentCommentId) {
+        // Close reply form
+        const replyForm = document.getElementById(`reply-form-${parentCommentId}`);
+        if (replyForm) {
+          replyForm.remove();
+        }
+        activeReplyForm = null;
+      } else {
+        const commentInput = document.getElementById('comment-input');
+        commentInput.value = '';
+        document.getElementById('char-count').textContent = '0';
+        document.getElementById('char-count').style.color = '#a0aec0';
+      }
+      
+      // Show success message
+      const successEl = document.getElementById('comment-success');
+      successEl.style.display = 'flex';
+      setTimeout(() => {
+        successEl.style.display = 'none';
+      }, 3000);
+      
+      // Reload comments to show the new one
+      await loadCommentsFromXano();
+      
+      // Scroll to the new comment if it's a reply
+      if (parentCommentId) {
+        const parentElement = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
+        if (parentElement) {
+          parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        // Scroll to top for new root comments
+        const commentsList = document.getElementById('comments-list');
+        commentsList.scrollTop = 0;
+      }
+      
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      
+      // Show error message with helpful details
+      const successEl = document.getElementById('comment-success');
+      let errorMessage = 'Failed to post comment. ';
+      
+      if (error.message.includes('404')) {
+        errorMessage += 'The API endpoint was not found. Check your Xano configuration.';
+      } else if (error.message.includes('403') || error.message.includes('401')) {
+        errorMessage += 'Authentication error. Check your API permissions.';
+      } else if (error.message.includes('400')) {
+        errorMessage += 'Invalid data format. Check the field requirements.';
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      successEl.innerHTML = `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        <span>${errorMessage}</span>
+      `;
+      successEl.style.background = '#fef2f2';
+      successEl.style.borderColor = '#fecaca';
+      successEl.style.color = '#dc2626';
+      successEl.style.display = 'flex';
+      
+      setTimeout(() => {
+        successEl.style.display = 'none';
+        successEl.innerHTML = `
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span>Comment posted successfully!</span>
+        `;
+        successEl.style.background = '#f0fdf4';
+        successEl.style.borderColor = '#bbf7d0';
+        successEl.style.color = '#22c55e';
+      }, 3000);
+      
+    } finally {
+      // Reset button
+      submitBtn.textContent = originalText;
+      if (!parentCommentId) {
+        const commentInput = document.getElementById('comment-input');
+        submitBtn.disabled = commentInput.value.trim().length === 0;
+      }
+    }
+  }
+  
+  // Show reply form
+  window.showReplyForm = function(parentId, parentAuthor) {
+    // Remove any existing reply form
+    if (activeReplyForm) {
+      activeReplyForm.remove();
+    }
+    
+    const parentElement = document.querySelector(`[data-comment-id="${parentId}"]`);
+    if (!parentElement) return;
+    
+    const replyForm = document.createElement('div');
+    replyForm.id = `reply-form-${parentId}`;
+    replyForm.className = 'reply-form';
+    replyForm.innerHTML = `
+      <div class="reply-form-header">
+        <span class="replying-to">Replying to ${escapeHtml(parentAuthor)}</span>
+        <a href="#" class="cancel-reply" onclick="cancelReply(${parentId}); return false;">Cancel</a>
+      </div>
+      <textarea 
+        class="reply-textarea" 
+        placeholder="Write your reply..."
+        id="reply-input-${parentId}"
+        maxlength="1000"
+      ></textarea>
+      <div class="reply-actions">
+        <label class="anonymous-checkbox">
+          <input type="checkbox" checked disabled>
+          <span>Reply anonymously</span>
+        </label>
+        <button class="reply-submit" onclick="submitReply(${parentId})" disabled>Reply</button>
+      </div>
+    `;
+    
+    // Insert after the comment footer (which contains the reply button)
+    const commentFooter = parentElement.querySelector('.comment-footer');
+    commentFooter.parentNode.insertBefore(replyForm, commentFooter.nextSibling);
+    
+    activeReplyForm = replyForm;
+    
+    // Set up the reply textarea
+    const replyTextarea = document.getElementById(`reply-input-${parentId}`);
+    const replySubmitBtn = replyForm.querySelector('.reply-submit');
+    
+    replyTextarea.focus();
+    
+    replyTextarea.addEventListener('input', function() {
+      replySubmitBtn.disabled = this.value.trim().length === 0;
+    });
+    
+    // Handle Enter key to submit
+    replyTextarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (this.value.trim()) {
+          submitReply(parentId);
+        }
+      }
+    });
+  };
+  
+  // Cancel reply
+  window.cancelReply = function(parentId) {
+    const replyForm = document.getElementById(`reply-form-${parentId}`);
+    if (replyForm) {
+      replyForm.remove();
+    }
+    activeReplyForm = null;
+  };
+  
+  // Submit reply
+  window.submitReply = function(parentId) {
+    const replyTextarea = document.getElementById(`reply-input-${parentId}`);
+    const replyText = replyTextarea.value.trim();
+    
+    if (replyText) {
+      addComment(replyText, parentId);
+    }
+  };
+  
+  // Toggle replies visibility
+  window.toggleReplies = function(commentId) {
+    const repliesContainer = document.getElementById(`replies-${commentId}`);
+    const toggleBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-toggle`);
+    
+    if (repliesContainer) {
+      const isHidden = repliesContainer.style.display === 'none';
+      repliesContainer.style.display = isHidden ? 'block' : 'none';
+      toggleBtn.classList.toggle('expanded', isHidden);
+      
+      // Update button text
+      const replyCount = repliesContainer.querySelectorAll('.comment-item').length;
+      toggleBtn.innerHTML = `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+        ${isHidden ? 'Hide' : 'Show'} ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}
+      `;
+    }
+  };
+  
+  // Render a single comment
+  function renderComment(comment, isReply = false) {
+    const timeAgo = getTimeAgo(comment.timestamp);
+    const hasReplies = comment.replies && comment.replies.length > 0;
+    
+    let html = `
+      <div class="comment-item" data-comment-id="${comment.id}">
+        <div class="comment-header">
+          <div class="comment-author">
+            <div class="comment-avatar${!comment.isAnonymous ? ' comment-avatar-user' : ''}">${comment.isAnonymous ? '?' : comment.author[0].toUpperCase()}</div>
+            <span class="comment-name">${comment.author}</span>
+            <span class="comment-time">${timeAgo}</span>
+          </div>
+        </div>
+        <div class="comment-text">${escapeHtml(comment.text)}</div>
+        <div class="comment-footer">
+          <button class="reply-button" onclick="showReplyForm(${comment.id}, '${escapeHtml(comment.author).replace(/'/g, "\\'")}')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+            </svg>
+            Reply
+          </button>
+        </div>
+    `;
+    
+    // Add replies section if there are replies
+    if (hasReplies) {
+      html += `
+        <button class="show-replies-toggle expanded" onclick="toggleReplies(${comment.id})">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+          Hide ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}
+        </button>
+        <div class="comment-replies" id="replies-${comment.id}">
+          ${comment.replies.map(reply => renderComment(reply, true)).join('')}
+        </div>
+      `;
+    }
+    
+    html += '</div>';
+    
+    return html;
+  }
+  
+  // Render comments
+  function renderComments() {
+    const commentsList = document.getElementById('comments-list');
+    const commentsCount = document.querySelector('.comments-count');
+    
+    // Count total comments including replies
+    const countAllComments = (comments) => {
+      let count = 0;
+      comments.forEach(comment => {
+        count++; // Count the comment itself
+        if (comment.replies && comment.replies.length > 0) {
+          count += countAllComments(comment.replies);
+        }
+      });
+      return count;
+    };
+    
+    const totalCount = countAllComments(commentsData);
+    
+    // Update count
+    commentsCount.textContent = `${totalCount} comment${totalCount !== 1 ? 's' : ''}`;
+    
+    if (commentsData.length === 0) {
+      commentsList.innerHTML = `
+        <div class="no-comments">
+          <p>No comments yet. Be the first to share your thoughts!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let commentsHTML = commentsData.map(comment => renderComment(comment)).join('');
+    
+    commentsList.innerHTML = commentsHTML;
+  }
+  
+  // Update comment as display
+  function updateCommentAsDisplay() {
+    const commentAsDisplay = document.querySelector('.comment-as');
+    const anonymousCheckbox = document.getElementById('post-anonymous');
+    
+    if (!commentAsDisplay) return; // Element might not exist yet
+    
+    const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : true;
+    const displayName = isAnonymous ? 'Anonymous' : currentUserName;
+    const avatar = isAnonymous ? '?' : displayName[0].toUpperCase();
+    const avatarClass = isAnonymous ? 'user-avatar' : 'user-avatar user-avatar-authenticated';
+    
+    commentAsDisplay.innerHTML = `
+      <span>Comment as</span>
+      <div class="${avatarClass}">${avatar}</div>
+      <strong>${displayName}</strong>
+    `;
+  }
+  
+  // Get time ago string
+  function getTimeAgo(timestamp) {
+    const now = new Date();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (seconds < 60) return 'just now';
+    if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    return `${days} day${days !== 1 ? 's' : ''} ago`;
+  }
+  
+  // Escape HTML to prevent XSS
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+  
+  // Modal functions
+  window.openModal = function(name, href) {
+    titleTextEl.textContent = name;
+    frameEl.src = href;
+    downloadEl.href = href;
+    downloadEl.setAttribute('download', name.replace(/\s+/g, '_'));
+    modalEl.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  };
+  
+  window.closeModal = function() {
+    modalEl.classList.remove('show');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      frameEl.src = '';
+    }, 300);
+  };
+  
+  // Click outside to close
+  modalEl.addEventListener('click', function(e) {
+    if (e.target === modalEl) {
+      closeModal();
+    }
+  });
+  
+  // Escape key to close modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modalEl.classList.contains('show')) {
+      closeModal();
+    }
+  });
+  
+  // Tab functionality
+  function setupTabs() {
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        showContent(tab.dataset.tab);
+        
+        // Initialize comments when comments tab is clicked for the first time
+        if (tab.dataset.tab === 'comments' && commentsData.length === 0) {
+          initializeComments();
+        }
+      });
+    });
+  }
+  
+  // Show content based on active tab
+  function showContent(tabName) {
+    const sections = document.querySelectorAll('.content-section');
+    sections.forEach(section => section.classList.remove('active'));
+    
+    const activeSection = document.getElementById(`content-${tabName}`);
+    if (activeSection) activeSection.classList.add('active');
+  }
+  
+  // Format date
+  function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  }
+  
+  // Helper functions for attachments
+  function buildHref(att) {
+    if (att.MatterAttachmentHyperlink) return encodeURI(att.MatterAttachmentHyperlink);
+    if (att.MatterAttachmentFileName) {
+      return `https://nashville.legistar1.com/nashville/attachments/${encodeURIComponent(att.MatterAttachmentFileName)}`;
+    }
+    return null;
+  }
+  
+  function deriveName(att) {
+    const raw = (att.MatterAttachmentName || '').trim();
+    if (raw && !/^hyperlink$/i.test(raw)) return raw;
+    if (att.MatterAttachmentFileName) return att.MatterAttachmentFileName;
+    if (att.MatterAttachmentHyperlink) return att.MatterAttachmentHyperlink.split('/').pop();
+    return 'Attachment';
+  }
+  
+  function isPreviewable(href) {
+    try {
+      const url = new URL(href);
+      return /legistar1\.com$/.test(url.hostname);
+    } catch (_) {
+      return false;
+    }
+  }
+  
+  // Display matter details
+  function displayMatterDetails(data) {
+    // Get the title, preferring MatterTitle over MatterName
+    const fullTitle = data.MatterTitle || data.MatterName || 'N/A';
+    
+    // Create a 300 character preview of the title
+    const titlePreview = fullTitle.length > 300 
+      ? fullTitle.substring(0, 297) + '...' 
+      : fullTitle;
+    
+    // Update the HTML structure for info grid
+    document.getElementById('matter-info').innerHTML = `
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">File Number</span>
+          <span class="info-value">${data.MatterFile || 'N/A'}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Type</span>
+          <span class="info-value">${data.MatterTypeName || 'N/A'}</span>
+        </div>
+        <div class="info-item full-width">
+          <span class="info-label">Title</span>
+          <span class="info-value">${titlePreview}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Status</span>
+          <span class="info-value">${data.MatterStatusName || 'N/A'}</span>
+        </div>
+      </div>
+    `;
+    
+    // Build content sections
+    let contentHTML = '';
+    
+    // Overview section
+    contentHTML += `
+      <div id="content-overview" class="content-section active">
+        <div class="content-container">
+          <h3>Matter Overview</h3>
+          <p><strong>Title:</strong> ${fullTitle}</p>
+          <p><strong>Introduction Date:</strong> ${formatDate(data.MatterIntroDate)}</p>
+          <p><strong>Agenda Date:</strong> ${formatDate(data.MatterAgendaDate)}</p>
+          <p><strong>Passed Date:</strong> ${formatDate(data.MatterPassedDate)}</p>
+          <p><strong>Enactment Date:</strong> ${formatDate(data.MatterEnactmentDate)}</p>
+          <p><strong>Enactment Number:</strong> ${data.MatterEnactmentNumber || 'N/A'}</p>
+          ${data.MatterRequester ? `<p><strong>Requester:</strong> ${data.MatterRequester}</p>` : ''}
+          ${data.MatterNotes ? `<p><strong>Notes:</strong> ${data.MatterNotes}</p>` : ''}
+        </div>
+      </div>
+    `;
+    
+    // Sponsors section
+    contentHTML += `
+      <div id="content-sponsors" class="content-section">
+        <div class="content-container">
+          <h3>Sponsors</h3>
+          <div id="sponsors-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-line"></div>
+              <div class="skeleton-item skeleton-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Documents section
+    contentHTML += `
+      <div id="content-documents" class="content-section">
+        <div class="content-container">
+          <h3>Documents & Attachments</h3>
+          <div id="documents-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-line"></div>
+              <div class="skeleton-item skeleton-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // History section
+    contentHTML += `
+      <div id="content-history" class="content-section">
+        <div class="content-container">
+          <h3>Legislative History</h3>
+          <div id="history-content">
+            <div class="loading-skeleton">
+              <div class="skeleton-item skeleton-line"></div>
+              <div class="skeleton-item skeleton-line"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Comments section
+    contentHTML += `
+      <div id="content-comments" class="content-section">
+        <div class="content-container">
+          <div class="community-header">
+            <div class="discussion-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <h3>Community Discussion</h3>
+          </div>
+          
+          <p class="discussion-subtitle">Share your thoughts on this legislation</p>
+          
+          <div class="discussion-status">
+            <span class="status-dot"></span>
+            <span>Discussing: <span>${data.MatterFile || `Matter #${matterId}`}</span></span>
+          </div>
+          
+          <div id="softr-user-status" class="softr-user-status" style="display: none;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="softr-status-text">Checking authentication...</span>
+          </div>
+          
+          <div class="comment-section">
+            <div class="comment-as">
+              <span>Comment as</span>
+              <div class="user-avatar">?</div>
+              <strong>Anonymous</strong>
+            </div>
+            
+            <div id="comment-success" class="comment-success" style="display: none;">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Comment posted successfully!</span>
+            </div>
+            
+            <textarea 
+              class="comment-textarea" 
+              placeholder="What are your thoughts? (Press Enter to submit, Shift+Enter for new line)"
+              id="comment-input"
+              maxlength="1000"
+            ></textarea>
+            
+            <div class="comment-actions">
+              <label class="anonymous-checkbox">
+                <input type="checkbox" id="post-anonymous" checked>
+                <span>Post anonymously</span>
+              </label>
+              
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="char-count"><span id="char-count">0</span>/1000</span>
+                <button class="comment-button" id="comment-btn">Comment</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="comments-section">
+            <div class="comments-header">
+              <h4 class="comments-title">Community Comments</h4>
+              <span class="comments-count">0 comments</span>
+            </div>
+            <div id="comments-list">
+              <div class="no-comments">
+                <p>No comments yet. Be the first to share your thoughts!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    contentContainer.innerHTML = contentHTML;
+    
+    // Set up comment functionality
+    const commentInput = document.getElementById('comment-input');
+    const charCountEl = document.getElementById('char-count');
+    const commentBtn = document.getElementById('comment-btn');
+    const anonymousCheckbox = document.getElementById('post-anonymous');
+    
+    // Update comment as display on checkbox change
+    anonymousCheckbox.addEventListener('change', updateCommentAsDisplay);
+    updateCommentAsDisplay();
+    
+    commentInput.addEventListener('input', function() {
+      const length = this.value.length;
+      charCountEl.textContent = length;
+      
+      if (length > 900) {
+        charCountEl.style.color = '#e53e3e';
+      } else if (length > 800) {
+        charCountEl.style.color = '#ed8936';
+      } else {
+        charCountEl.style.color = '#a0aec0';
+      }
+      
+      // Enable/disable button based on content
+      commentBtn.disabled = this.value.trim().length === 0;
+    });
+    
+    // Initially disable the button
+    commentBtn.disabled = true;
+    
+    // Handle Enter key to submit (Shift+Enter for new line)
+    commentInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const comment = commentInput.value.trim();
+        if (comment) {
+          addComment(comment);
+        }
+      }
+    });
+    
+    commentBtn.addEventListener('click', function() {
+      const comment = commentInput.value.trim();
+      if (comment) {
+        addComment(comment);
+      }
+    });
+    
+    // Show elements
+    matterInfoEl.style.display = 'block';
+    tabNavEl.style.display = 'flex';
+    
+    // Setup tabs
+    setupTabs();
+    
+    // Load additional data
+    loadSponsors();
+    loadAttachments();
+    loadHistory();
+    
+    // Update Softr user status when comments tab is shown
+    const commentsTab = document.querySelector('[data-tab="comments"]');
+    if (commentsTab) {
+      commentsTab.addEventListener('click', async () => {
+        const statusEl = document.getElementById('softr-user-status');
+        const statusTextEl = document.getElementById('softr-status-text');
+        
+        if (statusEl) {
+          statusEl.style.display = 'flex';
+          
+          if (isSoftrUserAuthenticated && softrUserEmail) {
+            statusEl.classList.add('authenticated');
+            statusTextEl.textContent = `Authenticated as: ${softrUserName}`;
+          } else {
+            statusEl.classList.remove('authenticated');
+            statusTextEl.textContent = 'Not authenticated - comments will be posted anonymously';
+          }
+        }
+      });
+    }
+  }
+  
+  // Load sponsors
+  function loadSponsors() {
+    console.log('Loading sponsors from:', corsProxy + encodeURIComponent(endpoints.sponsors));
+    
+    fetch(corsProxy + encodeURIComponent(endpoints.sponsors))
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(data => {
+        console.log('Raw sponsors data received:', data);
+        sponsorsData = data;
+        displaySponsors(data);
+      })
+      .catch(err => {
+        console.error('Error loading sponsors:', err);
+        document.getElementById('sponsors-content').innerHTML = `
+          <p style="color: #718096; font-size: 0.875rem;">Failed to load sponsors: ${err.message}</p>
+        `;
+      });
+  }
+  
+  // Display sponsors
+  function displaySponsors(data) {
+    const sponsorsContent = document.getElementById('sponsors-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      sponsorsContent.innerHTML = '<p style="color: #718096;">No sponsors found.</p>';
+      return;
+    }
+    
+    let sponsorsHTML = '<div class="sponsors-grid">';
+    
+    data.forEach(sponsor => {
+      const legistarId = sponsor.MatterSponsorNameId;
+      const sponsorName = sponsor.MatterSponsorName || 'Unknown';
+      const sponsorType = sponsor.MatterSponsorTypeName || 'Sponsor';
+      
+      // Use ID mapping if available, otherwise use the Legistar ID
+      const softrRecordId = CONFIG.sponsorIdMapping[legistarId] || legistarId;
+      
+      console.log(`Sponsor: ${sponsorName}, Legistar ID: ${legistarId}, Softr Record ID: ${softrRecordId}`);
+      
+      // Build URL using the Softr person-details page format
+      let sponsorUrl = '#';
+      if (softrRecordId) {
+        sponsorUrl = `https://eonashville.softr.app/person-details?recordId=${softrRecordId}`;
+      }
+      
+      sponsorsHTML += `
+        <a href="${sponsorUrl}" class="sponsor-card" style="text-decoration: none; color: inherit;">
+          <div class="sponsor-name">${sponsorName}</div>
+          <div class="sponsor-type">${sponsorType}</div>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      `;
+    });
+    
+    sponsorsHTML += '</div>';
+    sponsorsContent.innerHTML = sponsorsHTML;
+  }
+  
+  // Load attachments
+  function loadAttachments() {
+    fetch(corsProxy + encodeURIComponent(endpoints.attachments))
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(data => {
+        attachmentsData = data;
+        displayAttachments(data);
+      })
+      .catch(err => {
+        document.getElementById('documents-content').innerHTML = `
+          <p style="color: #718096; font-size: 0.875rem;">Failed to load attachments: ${err.message}</p>
+        `;
+      });
+  }
+  
+  // Display attachments
+  function displayAttachments(data) {
+    const documentsContent = document.getElementById('documents-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      documentsContent.innerHTML = `
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>No documents or attachments found.</p>
+          <p>The full legislative text may be stored elsewhere.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let attachmentsHTML = '<div class="attachments-list">';
+    
+    data.forEach((att, index) => {
+      const href = buildHref(att);
+      const name = deriveName(att);
+      
+      if (!href) {
+        attachmentsHTML += `
+          <div class="attachment-item" style="opacity: 0.6;">
+            <div class="attachment-info">
+              <div class="file-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span class="attachment-name">${name}</span>
+            </div>
+            <span style="color: #a0aec0; font-size: 0.875rem;">No link available</span>
+          </div>
+        `;
+        return;
+      }
+      
+      const previewable = isPreviewable(href);
+      const actionHtml = previewable
+        ? `<button class="action-button" onclick="openModal('${name.replace(/'/g, "\\'")}', '${href}')">
+             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+             </svg>
+             Preview
+           </button>`
+        : `<a class="action-button" href="${href}" target="_blank" rel="noopener">
+             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+             </svg>
+             Open
+           </a>`;
+      
+      attachmentsHTML += `
+        <div class="attachment-item">
+          <div class="attachment-info">
+            <div class="file-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <span class="attachment-name" title="${name}">${name}</span>
+          </div>
+          ${actionHtml}
+        </div>
+      `;
+    });
+    
+    attachmentsHTML += '</div>';
+    documentsContent.innerHTML = attachmentsHTML;
+  }
+  
+  // Load history
+  function loadHistory() {
+    fetch(corsProxy + encodeURIComponent(endpoints.history))
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(data => {
+        historyData = data;
+        displayHistory(data);
+      })
+      .catch(err => {
+        document.getElementById('history-content').innerHTML = `
+          <p style="color: #718096; font-size: 0.875rem;">Failed to load history: ${err.message}</p>
+        `;
+      });
+  }
+  
+  // Display history
+  function displayHistory(data) {
+    const historyContent = document.getElementById('history-content');
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      historyContent.innerHTML = '<p style="color: #718096;">No history records found.</p>';
+      return;
+    }
+    
+    let historyHTML = '<div class="history-timeline">';
+    
+    data.forEach(item => {
+      historyHTML += `
+        <div class="history-item">
+          <div class="history-action">${item.MatterHistoryActionName || 'Action'}</div>
+          <div class="history-date">${formatDate(item.MatterHistoryActionDate)}</div>
+          ${item.MatterHistoryActionText ? `<div class="history-text">${item.MatterHistoryActionText}</div>` : ''}
+          ${item.MatterHistoryActionBodyName ? `<div class="history-body">By: ${item.MatterHistoryActionBodyName}</div>` : ''}
+          ${item.MatterHistoryPassedFlagName ? `<div class="history-status">${item.MatterHistoryPassedFlagName}</div>` : ''}
+        </div>
+      `;
+    });
+    
+    historyHTML += '</div>';
+    historyContent.innerHTML = historyHTML;
+  }
+  
+  // Initial load
+  statusEl.textContent = 'Loading legislation data...';
+  
+  // Detect Softr user on page load
+  detectSoftrUser().then(() => {
+    console.log('Initial Softr user detection complete');
+  });
+  
+  // Fetch matter data
+  fetch(corsProxy + encodeURIComponent(endpoints.matter))
+    .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+    .then(data => {
+      matterData = data;
+      statusEl.textContent = 'All data loaded successfully';
+      displayMatterDetails(data);
+    })
+    .catch(err => {
+      statusEl.textContent = 'Failed to load matter';
+      contentContainer.innerHTML = `
+        <div class="error-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p>Failed to load matter details: ${err.message}</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8125rem;">Make sure the record ID is correct and try refreshing the page.</p>
+          </div>
+        </div>
+      `;
+    });
+})();
+</script>
+
+</body>
+</html>
