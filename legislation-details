@@ -128,6 +128,61 @@ body {
   border-radius: 50%;
 }
 
+/* Activity indicator */
+.activity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pulse {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+.pulse-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.activity-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 /* Comment Box */
 .comment-section {
   display: flex;
@@ -373,6 +428,44 @@ body {
 .reply-button svg {
   width: 14px;
   height: 14px;
+}
+
+/* Reaction picker */
+.reaction-picker {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.reaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.reaction-btn:hover {
+  background: #f8fafc;
+}
+
+
+.reaction-btn.active {
+  background: #eff6ff;
+  border-color: var(--reaction-color, #3b82f6);
+  color: var(--reaction-color, #3b82f6);
+}
+
+.reaction-emoji {
+  line-height: 1;
+}
+
+.reaction-count {
+  font-weight: 600;
 }
 
 /* Reply form */
@@ -1454,8 +1547,20 @@ a.sponsor-card:hover svg {
   
   // Configuration for Xano API
   const XANO_CONFIG = {
-    API_BASE_URL: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO', // Your Xano API URL
-    AUTH_TOKEN: '' // Add if using authentication
+    API_BASE_URL: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO',
+    ENDPOINTS: {
+      COMMENTS: '/comment',
+      VOTES: '/comment_vote'
+    }
+  };
+
+  const REACTIONS = {
+    '👍': { name: 'like', color: '#3b82f6' },
+    '❤️': { name: 'love', color: '#ef4444' },
+    '🔥': { name: 'fire', color: '#f59e0b' },
+    '💡': { name: 'insight', color: '#fbbf24' },
+    '🤔': { name: 'thinking', color: '#8b5cf6' },
+    '👏': { name: 'applause', color: '#10b981' }
   };
   
   // Generate consistent session ID for this matter
@@ -1517,7 +1622,7 @@ a.sponsor-card:hover svg {
       console.log('Loading comments for session:', sessionId);
       
       // Fetch comments for this matter/session from Xano
-      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment?session_id=${sessionId}`, {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}?session_id=${sessionId}`, {
         headers: {
           'Content-Type': 'application/json',
           // Add authorization header if needed
@@ -1561,6 +1666,7 @@ a.sponsor-card:hover svg {
             isAnonymous: comment.is_anonymous || false,
             upvotes: comment.upvotes || 0,
             downvotes: comment.downvotes || 0,
+            votes: comment.votes || [],
             parent_comment_id: comment.parent_comment_id || 0,
             replies: []
           };
@@ -1628,7 +1734,7 @@ a.sponsor-card:hover svg {
     try {
       // Prepare data for Xano - matching your exact field names
       const commentData = {
-        legislation_id: matterId, // Using matterId as legislation_id
+        matterId: matterId,
         comment_text: text,
         user_email: userEmail, // Now using real email when available
         is_anonymous: isAnonymous,
@@ -1644,7 +1750,7 @@ a.sponsor-card:hover svg {
       console.log('Sending comment to Xano:', JSON.stringify(commentData, null, 2));
       
       // Send to Xano API
-      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}/comment`, {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1751,6 +1857,76 @@ a.sponsor-card:hover svg {
       }
     }
   }
+
+  // Vote/React function
+  async function addReaction(commentId, emoji) {
+    const voteData = {
+      comment_id: commentId,
+      matterId: matterId,
+      user_identifier: isSoftrUserAuthenticated ? softrUserEmail : generateAnonymousId(),
+      vote_type: 'reaction',
+      vote: emoji
+    };
+
+    try {
+      const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.VOTES}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(voteData)
+      });
+
+      if (response.ok) {
+        animateReaction(commentId, emoji);
+        await loadCommentsFromXano();
+      }
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+    }
+  }
+
+  function aggregateReactions(votes) {
+    return votes.reduce((acc, vote) => {
+      acc[vote.vote] = (acc[vote.vote] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
+  function hasUserReacted(commentId, emoji) {
+    return false;
+  }
+
+  function animateReaction(commentId, emoji) {
+    // Placeholder for reaction animation
+  }
+
+  function generateAnonymousId() {
+    return `anon_${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  function createActivityIndicator() {
+    return `
+      <div class="activity-indicator">
+        <div class="activity-pulse">
+          <span class="pulse-ring"></span>
+          <span class="pulse-dot"></span>
+        </div>
+        <div class="activity-stats">
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="viewer-count">12</span> viewing
+          </span>
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="active-discussions">${commentsData.length}</span> comments
+          </span>
+          <span class="stat-item">
+            <svg class="w-4 h-4"></svg>
+            <span id="engagement-score">Hot</span>
+          </span>
+        </div>
+      </div>
+    `;
+  }
   
   // Show reply form
   window.showReplyForm = function(parentId, parentAuthor) {
@@ -1854,20 +2030,26 @@ a.sponsor-card:hover svg {
   
   // Render a single comment
   function renderComment(comment, isReply = false) {
-    const timeAgo = getTimeAgo(comment.timestamp);
-    const hasReplies = comment.replies && comment.replies.length > 0;
-    
-    let html = `
-      <div class="comment-item" data-comment-id="${comment.id}">
+    const reactions = aggregateReactions(comment.votes || []);
+    return `
+      <div class="comment-item${isReply ? ' comment-reply' : ''}" data-comment-id="${comment.id}">
         <div class="comment-header">
           <div class="comment-author">
             <div class="comment-avatar${!comment.isAnonymous ? ' comment-avatar-user' : ''}">${comment.isAnonymous ? '?' : comment.author[0].toUpperCase()}</div>
             <span class="comment-name">${comment.author}</span>
-            <span class="comment-time">${timeAgo}</span>
+            <span class="comment-time">${getTimeAgo(comment.timestamp)}</span>
           </div>
         </div>
         <div class="comment-text">${escapeHtml(comment.text)}</div>
         <div class="comment-footer">
+          <div class="reaction-picker">
+            ${Object.entries(REACTIONS).map(([emoji, data]) => `
+              <button class="reaction-btn ${hasUserReacted(comment.id, emoji) ? 'active' : ''}" onclick="addReaction(${comment.id}, '${emoji}')" style="--reaction-color: ${data.color}">
+                <span class="reaction-emoji">${emoji}</span>
+                <span class="reaction-count">${reactions[emoji] || ''}</span>
+              </button>
+            `).join('')}
+          </div>
           <button class="reply-button" onclick="showReplyForm(${comment.id}, '${escapeHtml(comment.author).replace(/'/g, "\\'")}')">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -1875,26 +2057,9 @@ a.sponsor-card:hover svg {
             Reply
           </button>
         </div>
+        ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => renderComment(reply, true)).join('')}</div>` : ''}
+      </div>
     `;
-    
-    // Add replies section if there are replies
-    if (hasReplies) {
-      html += `
-        <button class="show-replies-toggle expanded" onclick="toggleReplies(${comment.id})">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-          Hide ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}
-        </button>
-        <div class="comment-replies" id="replies-${comment.id}">
-          ${comment.replies.map(reply => renderComment(reply, true)).join('')}
-        </div>
-      `;
-    }
-    
-    html += '</div>';
-    
-    return html;
   }
   
   // Render comments
@@ -1929,8 +2094,13 @@ a.sponsor-card:hover svg {
     }
     
     let commentsHTML = commentsData.map(comment => renderComment(comment)).join('');
-    
+
     commentsList.innerHTML = commentsHTML;
+
+    const activityContainer = document.getElementById('activity-indicator-container');
+    if (activityContainer) {
+      activityContainer.innerHTML = createActivityIndicator();
+    }
   }
   
   // Update comment as display
@@ -2192,6 +2362,8 @@ a.sponsor-card:hover svg {
             <span class="status-dot"></span>
             <span>Discussing: <span>${data.MatterFile || `Matter #${matterId}`}</span></span>
           </div>
+
+          <div id="activity-indicator-container"></div>
           
           <div id="softr-user-status" class="softr-user-status" style="display: none;">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
