@@ -1462,19 +1462,12 @@ a.sponsor-card:hover svg {
           }
           
           isSoftrUserAuthenticated = true;
-          
-          console.log('Softr user detected:', {
-            name: softrUserName,
-            email: '[hidden for privacy]',
-            authenticated: isSoftrUserAuthenticated
-          });
-          
+
           resolve(true);
         } else if (attempts < maxAttempts) {
           attempts++;
           setTimeout(checkUser, 500);
         } else {
-          console.log('No Softr user detected after', maxAttempts, 'attempts');
           resolve(false);
         }
       };
@@ -1636,7 +1629,6 @@ a.sponsor-card:hover svg {
     try {
       const sessionId = generateSessionId(matterId);
       
-      console.log('Loading comments for session:', sessionId);
       
       // Fetch comments for this matter/session from Xano
       const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}?session_id=${sessionId}`, {
@@ -1653,7 +1645,6 @@ a.sponsor-card:hover svg {
       
       const xanoComments = await response.json();
       
-      console.log('Xano response:', xanoComments);
       
       // Handle both array response and object with items/data property
       const commentsArray = Array.isArray(xanoComments) 
@@ -1689,7 +1680,6 @@ a.sponsor-card:hover svg {
           };
         });
       
-      console.log('Loaded comments from Xano:', allComments.length);
       
       // Structure comments into tree
       commentsData = structureComments(allComments);
@@ -1699,7 +1689,6 @@ a.sponsor-card:hover svg {
       
     } catch (error) {
       console.error('Error loading comments:', error);
-      console.log('Make sure you have a GET /comment endpoint in Xano with session_id query parameter');
       
       // Show empty state instead of sample comments
       commentsData = [];
@@ -1709,15 +1698,12 @@ a.sponsor-card:hover svg {
   
   // Initialize comments when comments tab is activated
   async function initializeComments() {
-    console.log('Initializing comments for matter:', matterId);
-    console.log('Session ID will be:', generateSessionId(matterId));
     
     // Detect Softr user first
     await detectSoftrUser();
     
     // Update the UI to show user status
     if (isSoftrUserAuthenticated && softrUserEmail) {
-      console.log('Authenticated Softr user:', softrUserName);
       currentUserName = softrUserName;
       updateCommentAsDisplay();
     }
@@ -1764,7 +1750,6 @@ a.sponsor-card:hover svg {
         // created_at, updated_at, edited_at will be handled by Xano
       };
       
-      console.log('Sending comment to Xano:', JSON.stringify(commentData, null, 2));
       
       // Send to Xano API
       const response = await fetch(`${XANO_CONFIG.API_BASE_URL}${XANO_CONFIG.ENDPOINTS.COMMENTS}`, {
@@ -1785,7 +1770,6 @@ a.sponsor-card:hover svg {
       
       const savedComment = await response.json();
       
-      console.log('Comment saved to Xano:', savedComment);
       
       // Clear input
       if (parentCommentId) {
@@ -2526,12 +2510,10 @@ a.sponsor-card:hover svg {
   
   // Load sponsors
   function loadSponsors() {
-    console.log('Loading sponsors from:', corsProxy + encodeURIComponent(endpoints.sponsors));
     
     fetch(corsProxy + encodeURIComponent(endpoints.sponsors))
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(data => {
-        console.log('Raw sponsors data received:', data);
         sponsorsData = data;
         displaySponsors(data);
       })
@@ -2562,7 +2544,6 @@ a.sponsor-card:hover svg {
       // Use ID mapping if available, otherwise use the Legistar ID
       const softrRecordId = CONFIG.sponsorIdMapping[legistarId] || legistarId;
       
-      console.log(`Sponsor: ${sponsorName}, Legistar ID: ${legistarId}, Softr Record ID: ${softrRecordId}`);
       
       // Build URL using the Softr person-details page format
       let sponsorUrl = '#';
@@ -2722,7 +2703,6 @@ a.sponsor-card:hover svg {
   
   // Detect Softr user on page load
   detectSoftrUser().then(() => {
-    console.log('Initial Softr user detection complete');
   });
   
   // Fetch matter data
