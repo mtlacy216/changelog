@@ -959,12 +959,19 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             position: relative;
         }
-
-        .modal-close {
+        .modal-controls {
             position: sticky;
-            top: 1rem;
-            right: 1rem;
-            float: right;
+            top: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            z-index: 10;
+            padding: 1rem;
+        }
+
+        .modal-close,
+        .modal-expand {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 50%;
@@ -975,13 +982,25 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            z-index: 10;
-            margin: 1rem;
         }
 
-        .modal-close:hover {
+        .modal-close:hover,
+        .modal-expand:hover {
             transform: scale(1.1);
             background: var(--bg-secondary);
+        }
+
+        .modal.fullscreen {
+            max-width: none;
+            width: 100%;
+            height: 100%;
+            max-height: none;
+            border-radius: 0;
+        }
+
+        .modal-overlay.fullscreen {
+            align-items: stretch;
+            padding: 0;
         }
 
         /* Legislation Modal */
@@ -1447,7 +1466,8 @@
             corsProxy: 'https://corsproxy.io/?',
             redditUrl: 'https://www.reddit.com/r/nashville/hot.json?limit=50',
             updateInterval: 300000, // 5 minutes
-            
+            softrDomain: 'https://eonashville.preview.softr.app',
+
             rssSources: {
                 // Core (permanent)
                 'googlenews': {
@@ -1692,15 +1712,16 @@
             normalizeLegislation(matter) {
                 const title = matter.MatterTitle || matter.MatterName || 'Untitled Legislation';
                 const themes = this.detectThemes(title, matter.MatterTypeName || '');
-                
+                const recordId = matter.MatterId || matter.id;
+
                 let status = matter.MatterStatusName || 'Pending';
                 let statusClass = 'pending';
                 if (status.toLowerCase().includes('pass')) statusClass = 'passed';
                 else if (status.toLowerCase().includes('fail')) statusClass = 'failed';
                 else if (status.toLowerCase().includes('progress')) statusClass = 'in-progress';
-                
+
                 return {
-                    id: `leg-${matter.MatterId || Math.random()}`,
+                    id: `leg-${recordId || Math.random()}`,
                     type: 'legislation',
                     source: 'metro',
                     title: title,
@@ -1715,6 +1736,8 @@
                     sponsor: matter.MatterSponsor || '',
                     committee: matter.MatterBodyName || '',
                     fileNumber: matter.MatterFile || '',
+                    recordId: recordId,
+                    detailUrl: `${CONFIG.softrDomain}/legislation-details?recordId=${recordId}`,
                     rawData: matter
                 };
             }
@@ -1733,11 +1756,12 @@
                 else if (postData.preview?.images?.[0]?.source) {
                     imageUrl = postData.preview.images[0].source.url.replace(/&amp;/g, '&');
                 }
-                
+
                 return {
                     id: `reddit-${postData.id}`,
                     type: type,
                     source: 'reddit',
+                    sourceName: 'r/Nashville',
                     title: postData.title,
                     displayTitle: postData.title,
                     fullContent: postData.selftext || '',
@@ -2045,6 +2069,35 @@
                             </div>
                         </div>
                     </article>
+
+                        <div class="card-type-bar"></div>
+                        ${card.imageUrl ? 
+                            `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
+                            `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
+                        }
+                        <div class="card-content">
+                            <div class="card-header">
+                                <span class="card-type-label">
+                                    ${getTypeIcon(card.type)} ${card.type}
+                                </span>
+                                ${card.status ? `<span class="status-${card.statusClass}">${card.status}</span>` : ''}
+                            </div>
+                            <h3 class="card-title">${card.displayTitle}</h3>
+                            <div class="theme-tags">
+                                ${card.themes.map(t => `<span class="theme-tag" data-theme="${t}">${THEMES[t]}</span>`).join('')}
+                            </div>
+                            <p class="card-excerpt">${card.excerpt}</p>
+                              <div class="card-footer">
+                                  <div class="card-stats">
+                                      ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
+                                      ${card.type === 'discussion' ? `💬 ${card.sourceName || 'Discussion'} • ⬆️ ${card.upvotes} 💬 ${card.comments}` : ''}
+                                      ${card.type === 'news' ? `📰 ${card.sourceName || 'News'}` : ''}
+                                  </div>
+                                  <span>${card.dateFormatted}</span>
+                              </div>
+                          </div>
+                      </article>
+
                 `).join('')}
             </div>`;
         }
@@ -2059,18 +2112,20 @@
                                 <span class="vote-count">${card.upvotes || 0}</span>
                                 <button class="vote-btn" onclick="event.stopPropagation(); vote(this, 'down')">▼</button>
                             </div>
-                            <div class="reddit-main">
-                                <div class="reddit-meta">
-                                    <span class="reddit-type-badge">${card.type}</span>
-                                    <span>${card.source === 'reddit' ? `u/${card.author}` : card.source}</span>
-                                    <span>•</span>
-                                    <span>${card.dateFormatted}</span>
-                                    ${card.comments ? `<span>• ${card.comments} comments</span>` : ''}
-                                </div>
-                                <h3 class="reddit-title">${card.displayTitle}</h3>
-                                <p class="reddit-preview">${card.excerpt}</p>
-                            </div>
-                            ${card.imageUrl ? `<img class="reddit-thumbnail" src="${card.imageUrl}" alt="">` : ''}
+                              <div class="reddit-main">
+                                  <div class="reddit-meta">
+                                      <span class="reddit-type-badge">${card.type}</span>
+                                      <span>${card.sourceName || card.source}</span>
+                                      <span>•</span>
+                                      <span>u/${card.author}</span>
+                                      <span>•</span>
+                                      <span>${card.dateFormatted}</span>
+                                      ${card.comments ? `<span>• ${card.comments} comments</span>` : ''}
+                                  </div>
+                                  <h3 class="reddit-title">${card.displayTitle}</h3>
+                                  <p class="reddit-preview">${card.excerpt}</p>
+                              </div>
+                              ${card.imageUrl ? `<img class="reddit-thumbnail" src="${card.imageUrl}" alt="">` : ''}
                         </div>
                     </div>
                 `).join('')}
@@ -2096,12 +2151,12 @@
                         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
                             ${currentCard.excerpt}
                         </p>
-                        <div class="swipe-card-meta">
-                            <span>${currentCard.type}</span>
-                            <span>${currentCard.dateFormatted}</span>
-                        </div>
-                    </div>
-                </div>
+                          <div class="swipe-card-meta">
+                              <span>${currentCard.sourceName || currentCard.type}</span>
+                              <span>${currentCard.dateFormatted}</span>
+                          </div>
+                      </div>
+                  </div>
                 ${nextCard ? `
                     <div class="swipe-card" style="z-index: 1; transform: scale(0.95); opacity: 0.5;">
                         <div class="swipe-card-image gradient-${nextCard.themes[0] || 1}">${getTypeIcon(nextCard.type)}</div>
@@ -2204,7 +2259,15 @@
         }
 
         function closeModal() {
-            document.getElementById('modal-overlay').classList.remove('show');
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById('modal-content');
+            overlay.classList.remove('show', 'fullscreen');
+            modal.classList.remove('fullscreen');
+        }
+
+        function toggleModalFullscreen() {
+            document.getElementById('modal-content').classList.toggle('fullscreen');
+            document.getElementById('modal-overlay').classList.toggle('fullscreen');
         }
 
         function renderLegislationModal(card) {
@@ -2212,11 +2275,14 @@
                            card.statusClass === 'failed' ? 0 : 
                            card.statusClass === 'in-progress' ? 60 : 30;
             
-            return `
-                <button class="modal-close" onclick="closeModal()">✕</button>
-                <div class="modal-legislation">
-                    <span class="legislation-status status-${card.statusClass}">${card.status}</span>
-                    <h2 class="legislation-title">${card.title}</h2>
+                return `
+                    <div class="modal-controls">
+                        <button class="modal-expand" onclick="toggleModalFullscreen()">⤢</button>
+                        <button class="modal-close" onclick="closeModal()">✕</button>
+                    </div>
+                    <div class="modal-legislation">
+                        <span class="legislation-status status-${card.statusClass}">${card.status}</span>
+                        <h2 class="legislation-title">${card.title}</h2>
                     
                     <div class="legislation-meta">
                         <div class="meta-item">
@@ -2265,8 +2331,8 @@
                     
                     <div class="modal-actions">
                         <span class="modal-action-text">View full legislation details</span>
-                        <a href="https://nashville.legistar.com" target="_blank" class="modal-action-btn">
-                            Open in Legistar →
+                        <a href="${card.detailUrl}" target="_blank" class="modal-action-btn">
+                            Open Legislation Page →
                         </a>
                     </div>
                 </div>
@@ -2275,31 +2341,35 @@
 
         function renderContentModal(card) {
             return `
-                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-controls">
+                    <button class="modal-expand" onclick="toggleModalFullscreen()">⤢</button>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
                 <div class="modal-content-body">
                     <h2 class="modal-title">${card.title}</h2>
                     <div class="modal-meta-bar">
                         <span>${getTypeIcon(card.type)} ${card.type}</span>
                         <span>•</span>
-                        <span>${card.source === 'reddit' ? `u/${card.author}` : card.sourceName || card.source}</span>
+                        <span>${card.sourceName || card.source}</span>
+                        ${card.source === 'reddit' ? `<span>• u/${card.author}</span>` : ''}
                         <span>•</span>
                         <span>${card.dateFormatted}</span>
                         ${card.upvotes ? `<span>• ⬆️ ${card.upvotes}</span>` : ''}
                         ${card.comments ? `<span>• 💬 ${card.comments}</span>` : ''}
                     </div>
-                    
+
                     <div class="modal-excerpt">
                         ${card.fullContent || card.excerpt}
                     </div>
-                    
+
                     <div class="modal-actions">
                         <span class="modal-action-text">
-                            ${card.source === 'reddit' ? 'Continue on Reddit' : 
+                            ${card.source === 'reddit' ? `View discussion on ${card.sourceName}` :
                               card.type === 'news' ? `Read full article on ${card.sourceName || 'source'}` :
                               'View original source'}
                         </span>
                         <a href="${card.link}" target="_blank" class="modal-action-btn">
-                            Open Source →
+                            Open in New Tab →
                         </a>
                     </div>
                 </div>
