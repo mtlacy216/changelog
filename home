@@ -548,62 +548,59 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 1.5rem;
-            grid-auto-flow: dense;
         }
 
         .card {
             background: var(--bg-secondary);
             border-radius: 12px;
-            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
         }
 
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
 
-        .card-image-container {
-            position: relative;
-            aspect-ratio: 4/3;
-            overflow: hidden;
-            background: var(--bg-card);
+        .card-type-bar {
+            height: 4px;
+            background: var(--text-tertiary);
         }
 
-        .card-featured {
-            grid-column: 1 / -1;
+        .card[data-type="legislation"] .card-type-bar {
+            background: var(--type-legislation);
         }
 
-        .card-featured .card-image-container {
-            aspect-ratio: 16/9;
-
+        .card[data-type="discussion"] .card-type-bar {
+            background: var(--type-discussion);
         }
 
-        .card-image-container {
-            position: relative;
-            height: 300px;
-            overflow: hidden;
-            background: var(--bg-card);
-
+        .card[data-type="news"] .card-type-bar {
+            background: var(--type-news);
         }
 
         .card-image {
             width: 100%;
-            height: 100%;
+            height: 200px;
             object-fit: cover;
+            background: var(--bg-card);
         }
 
         .card-image-placeholder {
             width: 100%;
-            height: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 3rem;
+            opacity: 0.8;
         }
 
         .gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
@@ -614,93 +611,115 @@
         .gradient-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
         .gradient-7 { background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%); }
 
-        .text-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 30px 20px 20px;
-            background: linear-gradient(to bottom,
-                rgba(0,0,0,0) 0%,
-                rgba(0,0,0,0.4) 30%,
-                rgba(0,0,0,0.8) 100%);
-            color: white;
+        .card-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
-        .category-tag {
-            display: inline-block;
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(10px);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-type-label {
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .card[data-type="legislation"] .card-type-label {
+            color: var(--type-legislation);
+        }
+
+        .card[data-type="discussion"] .card-type-label {
+            color: var(--type-discussion);
+        }
+
+        .card[data-type="news"] .card-type-label {
+            color: var(--type-news);
+        }
+
+        .card-source {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
         }
 
         .card-title {
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .card-excerpt {
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.5;
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .meta-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 12px;
-            font-size: 13px;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .source {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .source-icon {
-            width: 16px;
-            height: 16px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
-        }
-
-        .engagement {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-left: auto;
-        }
-
-        .engagement-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .card-excerpt {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .theme-tags {
-            display: none;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            min-height: 28px;
         }
 
         .theme-tag {
-            display: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-card);
         }
 
+        .theme-tag[data-theme="1"] { background: rgba(74, 144, 226, 0.1); color: var(--theme-1); }
+        .theme-tag[data-theme="2"] { background: rgba(39, 174, 96, 0.1); color: var(--theme-2); }
+        .theme-tag[data-theme="3"] { background: rgba(155, 89, 182, 0.1); color: var(--theme-3); }
+        .theme-tag[data-theme="4"] { background: rgba(243, 156, 18, 0.1); color: var(--theme-4); }
+        .theme-tag[data-theme="5"] { background: rgba(233, 30, 99, 0.1); color: var(--theme-5); }
+        .theme-tag[data-theme="6"] { background: rgba(26, 188, 156, 0.1); color: var(--theme-6); }
+        .theme-tag[data-theme="7"] { background: rgba(124, 179, 66, 0.1); color: var(--theme-7); }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.813rem;
+            color: var(--text-tertiary);
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 1rem;
+        }
 
         /* REDDIT VIEW */
         .reddit-view {
@@ -978,19 +997,12 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             position: relative;
         }
-        .modal-controls {
-            position: sticky;
-            top: 0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-            background: var(--bg-secondary);
-            z-index: 10;
-            padding: 1rem;
-        }
 
-        .modal-close,
-        .modal-expand {
+        .modal-close {
+            position: sticky;
+            top: 1rem;
+            right: 1rem;
+            float: right;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 50%;
@@ -1001,25 +1013,13 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
+            z-index: 10;
+            margin: 1rem;
         }
 
-        .modal-close:hover,
-        .modal-expand:hover {
+        .modal-close:hover {
             transform: scale(1.1);
             background: var(--bg-secondary);
-        }
-
-        .modal.fullscreen {
-            max-width: none;
-            width: 100%;
-            height: 100%;
-            max-height: none;
-            border-radius: 0;
-        }
-
-        .modal-overlay.fullscreen {
-            align-items: stretch;
-            padding: 0;
         }
 
         /* Legislation Modal */
@@ -1164,12 +1164,6 @@
             margin-bottom: 1.5rem;
             font-size: 0.875rem;
             color: var(--text-secondary);
-        }
-
-        .modal-image {
-            width: 100%;
-            border-radius: 12px;
-            margin: 1rem 0;
         }
 
         .modal-excerpt {
@@ -1491,8 +1485,7 @@
             corsProxy: 'https://corsproxy.io/?',
             redditUrl: 'https://www.reddit.com/r/nashville/hot.json?limit=50',
             updateInterval: 300000, // 5 minutes
-            softrDomain: 'https://eonashville.preview.softr.app',
-
+            
             rssSources: {
                 // Core (permanent)
                 'googlenews': {
@@ -1737,16 +1730,15 @@
             normalizeLegislation(matter) {
                 const title = matter.MatterTitle || matter.MatterName || 'Untitled Legislation';
                 const themes = this.detectThemes(title, matter.MatterTypeName || '');
-                const recordId = matter.MatterId || matter.id;
-
+                
                 let status = matter.MatterStatusName || 'Pending';
                 let statusClass = 'pending';
                 if (status.toLowerCase().includes('pass')) statusClass = 'passed';
                 else if (status.toLowerCase().includes('fail')) statusClass = 'failed';
                 else if (status.toLowerCase().includes('progress')) statusClass = 'in-progress';
-
+                
                 return {
-                    id: `leg-${recordId || Math.random()}`,
+                    id: `leg-${matter.MatterId || Math.random()}`,
                     type: 'legislation',
                     source: 'metro',
                     title: title,
@@ -1761,8 +1753,6 @@
                     sponsor: matter.MatterSponsor || '',
                     committee: matter.MatterBodyName || '',
                     fileNumber: matter.MatterFile || '',
-                    recordId: recordId,
-                    detailUrl: `${CONFIG.softrDomain}/legislation-details?recordId=${recordId}`,
                     rawData: matter
                 };
             }
@@ -1781,12 +1771,11 @@
                 else if (postData.preview?.images?.[0]?.source) {
                     imageUrl = postData.preview.images[0].source.url.replace(/&amp;/g, '&');
                 }
-
+                
                 return {
                     id: `reddit-${postData.id}`,
                     type: type,
                     source: 'reddit',
-                    sourceName: 'r/Nashville',
                     title: postData.title,
                     displayTitle: postData.title,
                     fullContent: postData.selftext || '',
@@ -2012,19 +2001,8 @@
                 const rssItems = rssResults
                     .filter(result => result.status === 'fulfilled')
                     .flatMap(result => result.value);
-
-                const combined = [...legislation, ...redditPosts, ...rssItems];
-                const unique = [];
-                const seen = new Set();
-                combined.forEach(card => {
-                    const key = (card.title + (card.link || '')).toLowerCase();
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        unique.push(card);
-                    }
-                });
-
-                this.manager.allCards = unique;
+                
+                this.manager.allCards = [...legislation, ...redditPosts, ...rssItems];
                 this.manager.applyFilters();
                 renderView();
             }
@@ -2066,106 +2044,36 @@
         }
 
         function renderCardsView(cards) {
-
-            const working = [...cards];
-            let featuredIndex = working.findIndex(c => c.type === 'news' || c.type === 'legislation');
-            const featured = featuredIndex !== -1 ? working.splice(featuredIndex, 1)[0] : working.shift();
-
-            const renderCard = (card, isFeatured = false) => `
-                <article class="card${isFeatured ? ' card-featured' : ''}" data-type="${card.type}" onclick="openModal('${card.id}')">
-                    <div class="card-image-container">
-                        ${card.imageUrl ?
             return `<div class="card-grid">
                 ${cards.map(card => `
                     <article class="card" data-type="${card.type}" onclick="openModal('${card.id}')">
-                        <div class="card-image-container">
-                            ${card.imageUrl ?
-                                `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
-                                `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
-                            }
-                            <div class="text-overlay">
-                                <span class="category-tag">${getTypeIcon(card.type)} ${card.type}</span>
-                                <h2 class="card-title">${card.displayTitle}</h2>
-                                <p class="card-excerpt">${card.excerpt}</p>
-                                <div class="meta-info">
-                                    ${card.type === 'news' ? `
-                                        <div class="source">
-                                            <div class="source-icon"></div>
-                                            <span>${card.sourceName || ''}</span>
-                                        </div>
-                                    ` : ''}
-                                    ${card.type === 'discussion' ? `
-                                        <div class="engagement">
-                                            <div class="engagement-item">
-                                                <span>⬆</span><span>${card.upvotes}</span>
-                                            </div>
-                                            <div class="engagement-item">
-                                                <span>💬</span><span>${card.comments}</span>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                    ${card.type === 'legislation' ? `
-                                        <div class="source">
-                                            <span>📋 ${card.fileNumber || 'No file'}</span>
-                                        </div>
-                                    ` : ''}
-                                    <span>${card.dateFormatted}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
-
                         <div class="card-type-bar"></div>
                         ${card.imageUrl ? 
                             `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
                             `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
                         }
-                        <div class="text-overlay">
-                            <span class="category-tag">${getTypeIcon(card.type)} ${card.type}</span>
-                            <h2 class="card-title">${card.displayTitle}</h2>
+                        <div class="card-content">
+                            <div class="card-header">
+                                <span class="card-type-label">
+                                    ${getTypeIcon(card.type)} ${card.type}
+                                </span>
+                                ${card.status ? `<span class="status-${card.statusClass}">${card.status}</span>` : ''}
+                            </div>
+                            <h3 class="card-title">${card.displayTitle}</h3>
+                            <div class="theme-tags">
+                                ${card.themes.map(t => `<span class="theme-tag" data-theme="${t}">${THEMES[t]}</span>`).join('')}
+                            </div>
                             <p class="card-excerpt">${card.excerpt}</p>
-                            <div class="meta-info">
-                                ${card.type === 'news' ? `
-                                    <div class="source">
-                                        <div class="source-icon"></div>
-                                        <span>${card.sourceName || ''}</span>
-                                    </div>
-                                ` : ''}
-                                ${card.type === 'discussion' ? `
-                                    <div class="engagement">
-                                        <div class="engagement-item">
-                                            <span>⬆</span><span>${card.upvotes}</span>
-                                        </div>
-                                        <div class="engagement-item">
-                                            <span>💬</span><span>${card.comments}</span>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                ${card.type === 'legislation' ? `
-                                    <div class="source">
-                                        <span>📋 ${card.fileNumber || 'No file'}</span>
-                                    </div>
-                                ` : ''}
+                            <div class="card-footer">
+                                <div class="card-stats">
+                                    ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
+                                    ${card.type === 'discussion' ? `⬆️ ${card.upvotes} 💬 ${card.comments}` : ''}
+                                    ${card.type === 'news' ? `📰 ${card.sourceName || 'News'}` : ''}
+                                </div>
                                 <span>${card.dateFormatted}</span>
                             </div>
                         </div>
-                    </div>
-                </article>`;
-
-            return `<div class="card-grid">
-                ${featured ? renderCard(featured, true) : ''}
-                ${working.map(card => renderCard(card)).join('')}
-                              <div class="card-footer">
-                                  <div class="card-stats">
-                                      ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
-                                      ${card.type === 'discussion' ? `💬 ${card.sourceName || 'Discussion'} • ⬆️ ${card.upvotes} 💬 ${card.comments}` : ''}
-                                      ${card.type === 'news' ? `📰 ${card.sourceName || 'News'}` : ''}
-                                  </div>
-                                  <span>${card.dateFormatted}</span>
-                              </div>
-                          </div>
-                      </article>
-
+                    </article>
                 `).join('')}
             </div>`;
         }
@@ -2180,20 +2088,18 @@
                                 <span class="vote-count">${card.upvotes || 0}</span>
                                 <button class="vote-btn" onclick="event.stopPropagation(); vote(this, 'down')">▼</button>
                             </div>
-                              <div class="reddit-main">
-                                  <div class="reddit-meta">
-                                      <span class="reddit-type-badge">${card.type}</span>
-                                      <span>${card.sourceName || card.source}</span>
-                                      <span>•</span>
-                                      <span>u/${card.author}</span>
-                                      <span>•</span>
-                                      <span>${card.dateFormatted}</span>
-                                      ${card.comments ? `<span>• ${card.comments} comments</span>` : ''}
-                                  </div>
-                                  <h3 class="reddit-title">${card.displayTitle}</h3>
-                                  <p class="reddit-preview">${card.excerpt}</p>
-                              </div>
-                              ${card.imageUrl ? `<img class="reddit-thumbnail" src="${card.imageUrl}" alt="">` : ''}
+                            <div class="reddit-main">
+                                <div class="reddit-meta">
+                                    <span class="reddit-type-badge">${card.type}</span>
+                                    <span>${card.source === 'reddit' ? `u/${card.author}` : card.source}</span>
+                                    <span>•</span>
+                                    <span>${card.dateFormatted}</span>
+                                    ${card.comments ? `<span>• ${card.comments} comments</span>` : ''}
+                                </div>
+                                <h3 class="reddit-title">${card.displayTitle}</h3>
+                                <p class="reddit-preview">${card.excerpt}</p>
+                            </div>
+                            ${card.imageUrl ? `<img class="reddit-thumbnail" src="${card.imageUrl}" alt="">` : ''}
                         </div>
                     </div>
                 `).join('')}
@@ -2219,12 +2125,12 @@
                         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
                             ${currentCard.excerpt}
                         </p>
-                          <div class="swipe-card-meta">
-                              <span>${currentCard.sourceName || currentCard.type}</span>
-                              <span>${currentCard.dateFormatted}</span>
-                          </div>
-                      </div>
-                  </div>
+                        <div class="swipe-card-meta">
+                            <span>${currentCard.type}</span>
+                            <span>${currentCard.dateFormatted}</span>
+                        </div>
+                    </div>
+                </div>
                 ${nextCard ? `
                     <div class="swipe-card" style="z-index: 1; transform: scale(0.95); opacity: 0.5;">
                         <div class="swipe-card-image gradient-${nextCard.themes[0] || 1}">${getTypeIcon(nextCard.type)}</div>
@@ -2327,15 +2233,7 @@
         }
 
         function closeModal() {
-            const overlay = document.getElementById('modal-overlay');
-            const modal = document.getElementById('modal-content');
-            overlay.classList.remove('show', 'fullscreen');
-            modal.classList.remove('fullscreen');
-        }
-
-        function toggleModalFullscreen() {
-            document.getElementById('modal-content').classList.toggle('fullscreen');
-            document.getElementById('modal-overlay').classList.toggle('fullscreen');
+            document.getElementById('modal-overlay').classList.remove('show');
         }
 
         function renderLegislationModal(card) {
@@ -2343,14 +2241,11 @@
                            card.statusClass === 'failed' ? 0 : 
                            card.statusClass === 'in-progress' ? 60 : 30;
             
-                return `
-                    <div class="modal-controls">
-                        <button class="modal-expand" onclick="toggleModalFullscreen()">⤢</button>
-                        <button class="modal-close" onclick="closeModal()">✕</button>
-                    </div>
-                    <div class="modal-legislation">
-                        <span class="legislation-status status-${card.statusClass}">${card.status}</span>
-                        <h2 class="legislation-title">${card.title}</h2>
+            return `
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-legislation">
+                    <span class="legislation-status status-${card.statusClass}">${card.status}</span>
+                    <h2 class="legislation-title">${card.title}</h2>
                     
                     <div class="legislation-meta">
                         <div class="meta-item">
@@ -2399,8 +2294,8 @@
                     
                     <div class="modal-actions">
                         <span class="modal-action-text">View full legislation details</span>
-                        <a href="${card.detailUrl}" target="_blank" class="modal-action-btn">
-                            Open Legislation Page →
+                        <a href="https://nashville.legistar.com" target="_blank" class="modal-action-btn">
+                            Open in Legistar →
                         </a>
                     </div>
                 </div>
@@ -2409,37 +2304,31 @@
 
         function renderContentModal(card) {
             return `
-                <div class="modal-controls">
-                    <button class="modal-expand" onclick="toggleModalFullscreen()">⤢</button>
-                    <button class="modal-close" onclick="closeModal()">✕</button>
-                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
                 <div class="modal-content-body">
                     <h2 class="modal-title">${card.title}</h2>
                     <div class="modal-meta-bar">
                         <span>${getTypeIcon(card.type)} ${card.type}</span>
                         <span>•</span>
-                        <span>${card.sourceName || card.source}</span>
-                        ${card.source === 'reddit' ? `<span>• u/${card.author}</span>` : ''}
+                        <span>${card.source === 'reddit' ? `u/${card.author}` : card.sourceName || card.source}</span>
                         <span>•</span>
                         <span>${card.dateFormatted}</span>
                         ${card.upvotes ? `<span>• ⬆️ ${card.upvotes}</span>` : ''}
                         ${card.comments ? `<span>• 💬 ${card.comments}</span>` : ''}
                     </div>
-
-                    ${card.imageUrl ? `<img class="modal-image" src="${card.imageUrl}" alt="">` : ''}
-
+                    
                     <div class="modal-excerpt">
-                        ${card.type === 'discussion' ? card.fullContent : card.fullContent || card.excerpt}
+                        ${card.fullContent || card.excerpt}
                     </div>
-
+                    
                     <div class="modal-actions">
                         <span class="modal-action-text">
-                            ${card.source === 'reddit' ? `View discussion on ${card.sourceName}` :
+                            ${card.source === 'reddit' ? 'Continue on Reddit' : 
                               card.type === 'news' ? `Read full article on ${card.sourceName || 'source'}` :
                               'View original source'}
                         </span>
                         <a href="${card.link}" target="_blank" class="modal-action-btn">
-                            Open in New Tab →
+                            Open Source →
                         </a>
                     </div>
                 </div>
