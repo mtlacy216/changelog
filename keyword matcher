@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Theme Matcher</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .results.show {
+            display: block;
+        }
+        .theme-match {
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        .theme-match:hover {
+            transform: translateX(5px);
+        }
+        .theme-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .confidence {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .confidence.high {
+            background: #d4f4dd;
+            color: #1e7e34;
+        }
+        .confidence.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .confidence.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .score-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .matched-keywords {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Text Theme Matcher</h1>
+        <p class="subtitle">Analyze text to identify governance and organizational themes</p>
+        
+        <textarea id="textInput" placeholder="Enter your text here to analyze which themes it relates to..."></textarea>
+        <button onclick="analyzeThemes()">Analyze Themes</button>
+        
+        <div id="results" class="results">
+            <h3>Theme Analysis:</h3>
+            <div id="themeResults"></div>
+        </div>
+    </div>
+
+    <script>
+        // Theme definitions with associated keywords and phrases
+        const themes = {
+            "Governing without Coercion": {
+                keywords: [
+                    "consent", "voluntary", "non-coercive", "autonomy", "self-governance",
+                    "consensus", "cooperation", "mutual agreement", "non-violent", "persuasion",
+                    "freedom", "liberty", "self-determination", "empowerment", "participatory",
+                    "collaborative", "horizontal", "decentralized", "anarchist", "libertarian",
+                    "force", "coercion", "authority", "control", "domination"
+                ],
+                weight: 1
+            },
+            "Feedback & Truth-Telling": {
+                keywords: [
+                    "feedback", "truth", "honesty", "transparency", "accountability",
+                    "communication", "dialogue", "listening", "constructive criticism", "openness",
+                    "authentic", "genuine", "candid", "disclosure", "integrity",
+                    "assessment", "evaluation", "reflection", "learning", "improvement",
+                    "data", "metrics", "measurement", "evidence", "facts"
+                ],
+                weight: 1
+            },
+            "Decision-Making Beyond Binaries": {
+                keywords: [
+                    "nuance", "complexity", "spectrum", "continuum", "multiple options",
+                    "third way", "alternatives", "creative solutions", "paradox", "both-and",
+                    "non-binary", "inclusive", "diverse", "plurality", "multiplicity",
+                    "synthesis", "integration", "holistic", "systems thinking", "emergence",
+                    "binary", "either-or", "false dichotomy", "polarization", "middle ground"
+                ],
+                weight: 1
+            },
+            "Contextual Leadership": {
+                keywords: [
+                    "context", "situational", "adaptive", "flexible", "responsive",
+                    "leadership", "leader", "facilitate", "guide", "mentor",
+                    "circumstances", "conditions", "environment", "culture", "dynamics",
+                    "rotating", "temporary", "emergent", "distributed", "shared leadership",
+                    "expertise", "competence", "skills", "experience", "wisdom"
+                ],
+                weight: 1
+            },
+            "Ritual & Myth": {
+                keywords: [
+                    "ritual", "ceremony", "tradition", "customs", "practices",
+                    "myth", "story", "narrative", "legend", "folklore",
+                    "sacred", "symbolic", "meaning", "purpose", "values",
+                    "community", "belonging", "identity", "culture", "heritage",
+                    "celebration", "commemoration", "rites", "initiation", "transition"
+                ],
+                weight: 1
+            },
+            "Circulation of Power & Resources": {
+                keywords: [
+                    "circulation", "distribution", "sharing", "rotation", "flow",
+                    "power", "resources", "wealth", "capital", "assets",
+                    "equity", "equality", "fairness", "justice", "redistribution",
+                    "access", "opportunity", "allocation", "exchange", "reciprocity",
+                    "commons", "collective", "mutual aid", "cooperation", "abundance"
+                ],
+                weight: 1
+            },
+            "Structural & Planetary Care": {
+                keywords: [
+                    "structure", "systems", "infrastructure", "institutions", "organizations",
+                    "planetary", "ecological", "environmental", "sustainability", "climate",
+                    "care", "maintenance", "stewardship", "regeneration", "restoration",
+                    "long-term", "future generations", "legacy", "resilience", "adaptation",
+                    "earth", "nature", "ecosystem", "biodiversity", "conservation"
+                ],
+                weight: 1
+            }
+        };
+
+        function analyzeThemes() {
+            const text = document.getElementById('textInput').value.toLowerCase();
+            if (!text.trim()) {
+                alert('Please enter some text to analyze');
+                return;
+            }
+
+            // Calculate scores for each theme
+            const scores = {};
+            const matchedKeywords = {};
+            
+            for (const [themeName, themeData] of Object.entries(themes)) {
+                scores[themeName] = 0;
+                matchedKeywords[themeName] = [];
+                
+                for (const keyword of themeData.keywords) {
+                    // Check for exact word matches (with word boundaries)
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    const matches = text.match(regex);
+                    if (matches) {
+                        scores[themeName] += matches.length * themeData.weight;
+                        if (!matchedKeywords[themeName].includes(keyword)) {
+                            matchedKeywords[themeName].push(keyword);
+                        }
+                    }
+                }
+            }
+
+            // Sort themes by score
+            const sortedThemes = Object.entries(scores)
+                .sort((a, b) => b[1] - a[1])
+                .filter(([_, score]) => score > 0);
+
+            // Display results
+            displayResults(sortedThemes, matchedKeywords);
+        }
+
+        function displayResults(sortedThemes, matchedKeywords) {
+            const resultsDiv = document.getElementById('results');
+            const themeResultsDiv = document.getElementById('themeResults');
+            
+            if (sortedThemes.length === 0) {
+                themeResultsDiv.innerHTML = '<p>No strong theme matches found. Try adding more relevant keywords to your text.</p>';
+            } else {
+                const maxScore = sortedThemes[0][1];
+                let html = '';
+                
+                sortedThemes.forEach(([theme, score], index) => {
+                    const percentage = (score / maxScore) * 100;
+                    const confidence = percentage >= 70 ? 'high' : percentage >= 40 ? 'medium' : 'low';
+                    const confidenceText = percentage >= 70 ? 'Strong Match' : percentage >= 40 ? 'Moderate Match' : 'Weak Match';
+                    
+                    html += `
+                        <div class="theme-match">
+                            <div class="theme-name">
+                                ${index + 1}. ${theme}
+                                <span class="confidence ${confidence}">${confidenceText}</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${percentage}%"></div>
+                            </div>
+                            ${matchedKeywords[theme].length > 0 ? 
+                                `<div class="matched-keywords">Matched: ${matchedKeywords[theme].slice(0, 5).join(', ')}${matchedKeywords[theme].length > 5 ? '...' : ''}</div>` 
+                                : ''}
+                        </div>
+                    `;
+                });
+                
+                themeResultsDiv.innerHTML = html;
+            }
+            
+            resultsDiv.classList.add('show');
+        }
+
+        // Standalone function that can be used programmatically
+        function matchTextToThemes(text) {
+            const lowerText = text.toLowerCase();
+            const scores = {};
+            
+            for (const [themeName, themeData] of Object.entries(themes)) {
+                scores[themeName] = 0;
+                
+                for (const keyword of themeData.keywords) {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    const matches = lowerText.match(regex);
+                    if (matches) {
+                        scores[themeName] += matches.length * themeData.weight;
+                    }
+                }
+            }
+            
+            // Return sorted themes with scores
+            return Object.entries(scores)
+                .sort((a, b) => b[1] - a[1])
+                .map(([theme, score]) => ({ theme, score }));
+        }
+
+        // Example usage for embedding:
+        // const results = matchTextToThemes("Your text here");
+        // console.log(results[0].theme); // Top matching theme
+    </script>
+</body>
+</html>
