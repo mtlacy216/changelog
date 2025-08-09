@@ -86,6 +86,22 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #4a5568;
+  cursor: pointer;
+  user-select: none;
+}
+
+.legislation-table th:hover {
+  background: #edf2f7;
+}
+
+.legislation-table th.sorted-asc::after {
+  content: ' ↑';
+  opacity: 0.7;
+}
+
+.legislation-table th.sorted-desc::after {
+  content: ' ↓';
+  opacity: 0.7;
 }
 
 .legislation-table td {
@@ -125,6 +141,40 @@ body {
   cursor: not-allowed;
 }
 
+.search-status {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.data-source {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.source-archive {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.source-live {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.loading-indicator {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: #3182ce;
+}
+
+.loading-indicator.hidden {
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -137,23 +187,35 @@ body {
       <select id="type-filter">
         <option value="all">All Types</option>
       </select>
+      <select id="sort-by">
+        <option value="MatterIntroDate">Date Introduced</option>
+        <option value="MatterTitle">Title</option>
+        <option value="MatterFile">File Number</option>
+        <option value="MatterTypeName">Type</option>
+        <option value="MatterStatusName">Status</option>
+      </select>
+      <select id="sort-direction">
+        <option value="desc">Newest First</option>
+        <option value="asc">Oldest First</option>
+      </select>
       <select id="page-size">
-        <option value="6" selected>6 per page</option>
         <option value="10">10 per page</option>
-        <option value="20">20 per page</option>
+        <option value="20" selected>20 per page</option>
+        <option value="50">50 per page</option>
       </select>
     </div>
+    <div id="search-status" class="search-status"></div>
   </div>
   <div class="table-container">
     <table class="legislation-table">
       <thead>
         <tr>
-          <th>File #</th>
-          <th>Title</th>
-          <th>Type</th>
-          <th>Body</th>
-          <th>Status</th>
-          <th>Introduced</th>
+          <th data-field="MatterFile">File #</th>
+          <th data-field="MatterTitle">Title</th>
+          <th data-field="MatterTypeName">Type</th>
+          <th data-field="MatterBodyName">Body</th>
+          <th data-field="MatterStatusName">Status</th>
+          <th data-field="MatterIntroDate">Introduced</th>
         </tr>
       </thead>
       <tbody id="table-content">
@@ -167,30 +229,43 @@ body {
     </div>
   </div>
 </div>
+
 <script>
+// Configuration
 const CONFIG = {
-  baseUrl: 'https://webapi.legistar.com/v1/nashville',
+  xanoUrl: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO/archiverecords',
+  legistarUrl: 'https://webapi.legistar.com/v1/nashville',
   corsProxy: 'https://corsproxy.io/?',
-  softrDomain: 'https://eonashville.preview.softr.app'
+  softrDomain: 'https://eonashville.preview.softr.app',
+  recentDaysCutoff: 90,
+  archivePerPage: 100 // Update this after fixing Xano
 };
 
-const BATCH_SIZE = 100;
+// Global state
 let allMatters = [];
 let filteredMatters = [];
 let currentPage = 1;
-let pageSize = 6;
+let pageSize = 20;
 let loading = false;
-let endReached = false;
 let currentSearchTerm = '';
+let currentSortBy = 'MatterIntroDate';
+let currentSortDirection = 'desc';
 let searchDebounceTimer = null;
-let fetchedCount = 0;
+let archivePagination = {
+  currentPage: 1,
+  totalPages: 0,
+  totalItems: 0,
+  hasMore: false
+};
 
+// Helper functions
 function showLoading(message = 'Loading...') {
   document.getElementById('table-content').innerHTML = `<tr><td colspan="6">${message}</td></tr>`;
 }
 
-function escapeODataString(str) {
-  return str.replace(/'/g, "''");
+function updateSearchStatus(message, showLoader = false) {
+  const statusEl = document.getElementById('search-status');
+  statusEl.innerHTML = message + (showLoader ? '<span class="loading-indicator">⟳</span>' : '');
 }
 
 function formatDate(dateStr) {
@@ -211,84 +286,244 @@ function populateTypeFilter() {
   if (types.includes(current)) select.value = current;
 }
 
-async function loadMore(searchTerm = '') {
-  if (loading || endReached) return;
-  loading = true;
-  try {
-    const skip = fetchedCount;
-    let filterQuery = '';
-    if (searchTerm) {
-      const escaped = escapeODataString(searchTerm.toLowerCase());
-      filterQuery = `&$filter=substringof('${escaped}',tolower(MatterTitle)) or ` +
-                   `substringof('${escaped}',tolower(MatterFile)) or ` +
-                   `substringof('${escaped}',tolower(MatterBodyName)) or ` +
-                   `substringof('${escaped}',tolower(MatterName))`;
+function deduplicateMatters(matters) {
+  const seen = new Map();
+  matters.forEach(matter => {
+    const id = matter.MatterId;
+    if (!seen.has(id) || (matter._source === 'live')) {
+      seen.set(id, matter);
     }
-    const url = `${CONFIG.corsProxy}${encodeURIComponent(
-      `${CONFIG.baseUrl}/matters?$orderby=MatterIntroDate desc&$skip=${skip}&$top=${BATCH_SIZE}${filterQuery}`
-    )}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    allMatters = allMatters.concat(data);
-    fetchedCount += data.length;
-    if (data.length < BATCH_SIZE) endReached = true;
+  });
+  return Array.from(seen.values());
+}
+
+// Fetch from Xano archive with pagination
+async function fetchFromArchive(searchTerm = '', page = 1) {
+  try {
+    updateSearchStatus('Searching archive...', true);
+    
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.append('search', searchTerm);
+    }
+    params.append('per_page', String(CONFIG.archivePerPage));
+    params.append('page', String(page));
+    
+    const url = `${CONFIG.xanoUrl}?${params.toString()}`;
+    console.log('Fetching from Xano:', url);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      console.error(`Archive API error: ${response.status}`);
+      return { records: [], pagination: null };
+    }
+    
+    const data = await response.json();
+    console.log('Xano response:', {
+      itemsReceived: data.itemsReceived,
+      itemsCount: data.items ? data.items.length : 0,
+      currentPage: data.curPage,
+      totalPages: data.pageTotal,
+      totalItems: data.itemsTotal
+    });
+    
+    let records = [];
+    let pagination = null;
+    
+    if (data && data.items && Array.isArray(data.items)) {
+      records = data.items;
+      pagination = {
+        currentPage: data.curPage || 1,
+        totalPages: data.pageTotal || 1,
+        totalItems: data.itemsTotal || data.itemsReceived,
+        hasMore: data.nextPage !== null
+      };
+      
+      console.log(`Got ${records.length} records from archive (page ${pagination.currentPage} of ${pagination.totalPages}, total: ${pagination.totalItems})`);
+    }
+    
+    return {
+      records: records.map(item => ({ ...item, _source: 'archive' })),
+      pagination: pagination
+    };
+  } catch (error) {
+    console.error('Archive fetch error:', error);
+    return { records: [], pagination: null };
+  }
+}
+
+// Fetch recent data from Legistar
+async function fetchRecentFromLegistar() {
+  try {
+    updateSearchStatus('Fetching recent updates...', true);
+    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - CONFIG.recentDaysCutoff);
+    const dateFilter = cutoffDate.toISOString().split('T')[0];
+    
+    const apiUrl = `${CONFIG.legistarUrl}/matters?$top=500&$filter=MatterIntroDate ge datetime'${dateFilter}'&$orderby=MatterIntroDate desc`;
+    const url = `${CONFIG.corsProxy}${encodeURIComponent(apiUrl)}`;
+    
+    console.log('Fetching from Legistar:', apiUrl);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Legistar API error: ${response.status}`);
+      throw new Error(`Legistar API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Fetched ${data.length} recent records from Legistar`);
+    
+    return data.map(item => ({ ...item, _source: 'live' }));
+  } catch (error) {
+    console.error('Legistar fetch failed:', error.message);
+    return [];
+  }
+}
+
+// Main data loading function
+async function loadData(appendArchive = false) {
+  if (loading) return;
+  loading = true;
+  
+  try {
+    if (!appendArchive) {
+      showLoading('Loading legislation data...');
+      archivePagination.currentPage = 1;
+    } else {
+      updateSearchStatus('Loading more archive results...', true);
+    }
+    
+    const archiveResult = await fetchFromArchive(currentSearchTerm, archivePagination.currentPage);
+    const archiveData = archiveResult.records || [];
+    
+    if (archiveResult.pagination) {
+      archivePagination = archiveResult.pagination;
+    }
+    
+    let liveData = [];
+    if (!appendArchive) {
+      liveData = await fetchRecentFromLegistar();
+    }
+    
+    if (appendArchive) {
+      allMatters = deduplicateMatters([...allMatters, ...archiveData]);
+    } else {
+      let combinedData = [...archiveData, ...liveData];
+      allMatters = deduplicateMatters(combinedData);
+      
+      if (currentSearchTerm && liveData.length > 0) {
+        const searchLower = currentSearchTerm.toLowerCase();
+        const filteredLive = liveData.filter(matter => 
+          (matter.MatterTitle && matter.MatterTitle.toLowerCase().includes(searchLower)) ||
+          (matter.MatterFile && matter.MatterFile.toLowerCase().includes(searchLower)) ||
+          (matter.MatterBodyName && matter.MatterBodyName.toLowerCase().includes(searchLower)) ||
+          (matter.MatterName && matter.MatterName.toLowerCase().includes(searchLower)) ||
+          (matter.MatterTypeName && matter.MatterTypeName.toLowerCase().includes(searchLower)) ||
+          (matter.MatterStatusName && matter.MatterStatusName.toLowerCase().includes(searchLower))
+        );
+        
+        allMatters = deduplicateMatters([...archiveData, ...filteredLive]);
+      }
+    }
+    
+    sortMatters();
     populateTypeFilter();
-  } catch (err) {
-    console.error('Failed to load legislation', err);
-    endReached = true;
-    showLoading('Search failed. Please try again.');
+    
+    const archiveCount = allMatters.filter(m => m._source === 'archive').length;
+    const liveCount = allMatters.filter(m => m._source === 'live').length;
+    const totalCount = allMatters.length;
+    
+    let statusMessage = '';
+    if (totalCount > 0) {
+      statusMessage = `Showing ${totalCount} records `;
+      statusMessage += `(<span class="data-source source-archive">${archiveCount} archived</span>`;
+      statusMessage += `<span class="data-source source-live">${liveCount} recent</span>)`;
+      
+      if (archivePagination.hasMore && archivePagination.totalItems) {
+        const remaining = archivePagination.totalItems - archiveCount;
+        statusMessage += ` - <a href="#" onclick="loadMoreArchive(); return false;" style="color: #3182ce; text-decoration: underline;">Load more (${remaining} more available)</a>`;
+      }
+    } else {
+      statusMessage = 'No results found';
+    }
+    
+    updateSearchStatus(statusMessage);
+    renderTable();
+  } catch (error) {
+    console.error('Failed to load data:', error);
+    showLoading('Error loading data. Please refresh the page.');
+    updateSearchStatus('Error loading data');
   } finally {
     loading = false;
   }
 }
 
-async function ensureDataForPage(page) {
-  const needed = page * pageSize;
-  while (allMatters.length < needed && !endReached) {
-    await loadMore(currentSearchTerm);
-  }
+// Load more archive results
+async function loadMoreArchive() {
+  if (loading || !archivePagination.hasMore) return;
+  archivePagination.currentPage++;
+  await loadData(true);
 }
 
-async function performServerSearch() {
-  const searchTerm = document.getElementById('search-input').value.trim();
-  if (searchTerm !== currentSearchTerm) {
-    currentSearchTerm = searchTerm;
-    allMatters = [];
-    filteredMatters = [];
-    currentPage = 1;
-    fetchedCount = 0;
-    endReached = false;
-    showLoading('Searching...');
-    await loadMore(searchTerm);
-    await renderTable();
-  }
+// Sort matters
+function sortMatters() {
+  allMatters.sort((a, b) => {
+    let aVal = a[currentSortBy];
+    let bVal = b[currentSortBy];
+    
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return 1;
+    if (bVal == null) return -1;
+    
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = (bVal || '').toLowerCase();
+    }
+    
+    if (currentSortDirection === 'asc') {
+      return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+    } else {
+      return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+    }
+  });
 }
 
-async function renderTable() {
-  await ensureDataForPage(currentPage);
+// Render table
+function renderTable() {
   const typeFilter = document.getElementById('type-filter').value;
+  
   filteredMatters = allMatters.filter(m => {
     const matchesType = typeFilter === 'all' || m.MatterTypeName === typeFilter;
     return matchesType;
   });
+  
   const totalPages = Math.ceil(filteredMatters.length / pageSize) || 1;
   if (currentPage > totalPages) {
     currentPage = totalPages;
   }
+  
   const tbody = document.getElementById('table-content');
   tbody.innerHTML = '';
+  
   const start = (currentPage - 1) * pageSize;
   const pageItems = filteredMatters.slice(start, start + pageSize);
+  
   if (pageItems.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6">No results found.</td></tr>';
   } else {
     pageItems.forEach(matter => {
       const link = `${CONFIG.softrDomain}/legislation-details?recordId=${matter.MatterId}`;
+      const sourceIndicator = matter._source === 'live' ? 
+        '<span class="data-source source-live">LIVE</span>' : 
+        '<span class="data-source source-archive">ARCHIVE</span>';
+      
       tbody.innerHTML += `
         <tr onclick="window.location.href='${link}'">
-          <td>${matter.MatterFile}</td>
-          <td>${matter.MatterTitle || ''}</td>
+          <td>${matter.MatterFile || ''}</td>
+          <td>${matter.MatterTitle || ''} ${sourceIndicator}</td>
           <td>${matter.MatterTypeName || ''}</td>
           <td>${matter.MatterBodyName || ''}</td>
           <td>${matter.MatterStatusName || ''}</td>
@@ -296,48 +531,104 @@ async function renderTable() {
         </tr>`;
     });
   }
+  
   renderPagination(totalPages);
+  updateSortIndicators();
 }
 
 function renderPagination(totalPages) {
   document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
   document.getElementById('prev-btn').disabled = currentPage === 1;
-  const atEnd = endReached && currentPage === totalPages;
-  document.getElementById('next-btn').disabled = atEnd;
+  document.getElementById('next-btn').disabled = currentPage === totalPages;
 }
 
-document.getElementById('search-input').addEventListener('input', () => {
+function updateSortIndicators() {
+  document.querySelectorAll('.legislation-table th').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (th.dataset.field === currentSortBy) {
+      th.classList.add(`sorted-${currentSortDirection}`);
+    }
+  });
+}
+
+// Event Listeners
+document.getElementById('search-input').addEventListener('input', (e) => {
   clearTimeout(searchDebounceTimer);
   searchDebounceTimer = setTimeout(() => {
-    performServerSearch();
+    currentSearchTerm = e.target.value.trim();
+    currentPage = 1;
+    archivePagination.currentPage = 1;
+    loadData();
   }, 500);
 });
+
 document.getElementById('clear-search').addEventListener('click', () => {
   document.getElementById('search-input').value = '';
-  performServerSearch();
+  currentSearchTerm = '';
+  currentPage = 1;
+  archivePagination.currentPage = 1;
+  loadData();
 });
+
 document.getElementById('type-filter').addEventListener('change', () => {
   currentPage = 1;
   renderTable();
 });
+
+document.getElementById('sort-by').addEventListener('change', (e) => {
+  currentSortBy = e.target.value;
+  sortMatters();
+  currentPage = 1;
+  renderTable();
+});
+
+document.getElementById('sort-direction').addEventListener('change', (e) => {
+  currentSortDirection = e.target.value;
+  sortMatters();
+  currentPage = 1;
+  renderTable();
+});
+
 document.getElementById('page-size').addEventListener('change', e => {
   pageSize = parseInt(e.target.value, 10);
   currentPage = 1;
   renderTable();
 });
-document.getElementById('prev-btn').addEventListener('click', async () => {
+
+document.getElementById('prev-btn').addEventListener('click', () => {
   if (currentPage > 1) {
     currentPage--;
-    await renderTable();
+    renderTable();
   }
 });
-document.getElementById('next-btn').addEventListener('click', async () => {
+
+document.getElementById('next-btn').addEventListener('click', () => {
   currentPage++;
-  await renderTable();
+  renderTable();
 });
 
-loadMore('').then(() => renderTable());
+// Table header click sorting
+document.querySelectorAll('.legislation-table th').forEach(th => {
+  th.addEventListener('click', () => {
+    const field = th.dataset.field;
+    if (field) {
+      if (currentSortBy === field) {
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSortBy = field;
+        currentSortDirection = 'desc';
+      }
+      document.getElementById('sort-by').value = currentSortBy;
+      document.getElementById('sort-direction').value = currentSortDirection;
+      sortMatters();
+      currentPage = 1;
+      renderTable();
+    }
+  });
+});
+
+// Initial load
+loadData();
 </script>
 </body>
 </html>
-
