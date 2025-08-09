@@ -1154,6 +1154,14 @@
             margin-bottom: 2rem;
         }
 
+        .modal-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
         .modal-actions {
             padding: 1.5rem;
             background: var(--bg-card);
@@ -2359,8 +2367,10 @@
                     </div>
 
                     <div class="modal-excerpt">
-                        ${card.fullContent || card.excerpt}
+                        ${card.type === 'discussion' ? card.fullContent : card.fullContent || card.excerpt}
                     </div>
+
+                    ${card.imageUrl ? `<img class="modal-image" src="${card.imageUrl}" alt="">` : ''}
 
                     <div class="modal-actions">
                         <span class="modal-action-text">
