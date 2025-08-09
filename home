@@ -566,7 +566,7 @@
 
         .card-image-container {
             position: relative;
-            height: 300px;
+            height: 400px;
             overflow: hidden;
             background: var(--bg-card);
         }
@@ -619,6 +619,13 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.4;
+            margin-bottom: 8px;
         }
 
         .card-title {
@@ -2038,77 +2045,44 @@
         }
 
         function renderCardsView(cards) {
-            return `<div class="card-grid">
-                ${cards.map(card => `
-                    <article class="card" data-type="${card.type}" onclick="openModal('${card.id}')">
-                        <div class="card-image-container">
-                            ${card.imageUrl ?
-                                `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
-                                `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
-                            }
-                            <div class="text-overlay">
-                                <span class="category-tag">${getTypeIcon(card.type)} ${card.type}</span>
-                                <h2 class="card-title">${card.displayTitle}</h2>
-                                <p class="card-excerpt">${card.excerpt}</p>
-                                <div class="meta-info">
-                                    ${card.type === 'news' ? `
-                                        <div class="source">
-                                            <div class="source-icon"></div>
-                                            <span>${card.sourceName || ''}</span>
-                                        </div>
-                                    ` : ''}
-                                    ${card.type === 'discussion' ? `
-                                        <div class="engagement">
-                                            <div class="engagement-item">
-                                                <span>⬆</span><span>${card.upvotes}</span>
-                                            </div>
-                                            <div class="engagement-item">
-                                                <span>💬</span><span>${card.comments}</span>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                    ${card.type === 'legislation' ? `
-                                        <div class="source">
-                                            <span>📋 ${card.fileNumber || 'No file'}</span>
-                                        </div>
-                                    ` : ''}
-                                    <span>${card.dateFormatted}</span>
+    return `<div class="card-grid">
+        ${cards.map(card => `
+            <article class="card" data-type="${card.type}" onclick="openModal('${card.id}')">
+                <div class="card-image-container">
+                    ${card.imageUrl ?
+                        `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
+                        `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
+                    }
+                    <div class="text-overlay">
+                        <span class="category-tag">${getTypeIcon(card.type)} ${card.type}</span>
+                        <h2 class="card-title">${card.displayTitle}</h2>
+                        <p class="card-subtitle">${THEMES[card.themes[0]]}</p>
+                        <p class="card-excerpt">${card.excerpt}</p>
+                        <div class="meta-info">
+                            ${card.type === 'news' ? `
+                                <div class="source">
+                                    <div class="source-icon"></div>
+                                    <span>${card.sourceName || ''}</span>
                                 </div>
+                            ` : card.type === 'legislation' ? `
+                                <div class="source">
+                                    <span>📋 ${card.fileNumber || 'No file'}</span>
+                                </div>
+                            ` : ''}
+                            <div class="engagement">
+                                ${card.type === 'discussion' ? `
+                                    <div class="engagement-item"><span>⬆</span><span>${card.upvotes}</span></div>
+                                    <div class="engagement-item"><span>💬</span><span>${card.comments}</span></div>
+                                ` : ''}
+                                <span>${card.dateFormatted}</span>
                             </div>
                         </div>
-                    </article>
-
-                        <div class="card-type-bar"></div>
-                        ${card.imageUrl ? 
-                            `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
-                            `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
-                        }
-                        <div class="card-content">
-                            <div class="card-header">
-                                <span class="card-type-label">
-                                    ${getTypeIcon(card.type)} ${card.type}
-                                </span>
-                                ${card.status ? `<span class="status-${card.statusClass}">${card.status}</span>` : ''}
-                            </div>
-                            <h3 class="card-title">${card.displayTitle}</h3>
-                            <div class="theme-tags">
-                                ${card.themes.map(t => `<span class="theme-tag" data-theme="${t}">${THEMES[t]}</span>`).join('')}
-                            </div>
-                            <p class="card-excerpt">${card.excerpt}</p>
-                              <div class="card-footer">
-                                  <div class="card-stats">
-                                      ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
-                                      ${card.type === 'discussion' ? `💬 ${card.sourceName || 'Discussion'} • ⬆️ ${card.upvotes} 💬 ${card.comments}` : ''}
-                                      ${card.type === 'news' ? `📰 ${card.sourceName || 'News'}` : ''}
-                                  </div>
-                                  <span>${card.dateFormatted}</span>
-                              </div>
-                          </div>
-                      </article>
-
-                `).join('')}
-            </div>`;
-        }
+                    </div>
+                </div>
+            </article>
+        `).join('')}
+    </div>`;
+}
 
         function renderRedditView(cards) {
             return `<div class="reddit-view">
