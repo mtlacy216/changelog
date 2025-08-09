@@ -183,6 +183,7 @@ let loading = false;
 let endReached = false;
 let currentSearchTerm = '';
 let searchDebounceTimer = null;
+let fetchedCount = 0;
 
 function showLoading(message = 'Loading...') {
   document.getElementById('table-content').innerHTML = `<tr><td colspan="6">${message}</td></tr>`;
@@ -214,7 +215,7 @@ async function loadMore(searchTerm = '') {
   if (loading || endReached) return;
   loading = true;
   try {
-    const skip = allMatters.length;
+    const skip = fetchedCount;
     let filterQuery = '';
     if (searchTerm) {
       const escaped = escapeODataString(searchTerm.toLowerCase());
@@ -230,6 +231,7 @@ async function loadMore(searchTerm = '') {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     allMatters = allMatters.concat(data);
+    fetchedCount += data.length;
     if (data.length < BATCH_SIZE) endReached = true;
     populateTypeFilter();
   } catch (err) {
@@ -255,6 +257,7 @@ async function performServerSearch() {
     allMatters = [];
     filteredMatters = [];
     currentPage = 1;
+    fetchedCount = 0;
     endReached = false;
     showLoading('Searching...');
     await loadMore(searchTerm);
