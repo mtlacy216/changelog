@@ -1166,6 +1166,12 @@
             color: var(--text-secondary);
         }
 
+        .modal-image {
+            width: 100%;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
         .modal-excerpt {
             font-size: 1rem;
             line-height: 1.6;
@@ -2420,8 +2426,10 @@
                         ${card.comments ? `<span>• 💬 ${card.comments}</span>` : ''}
                     </div>
 
+                    ${card.imageUrl ? `<img class="modal-image" src="${card.imageUrl}" alt="">` : ''}
+
                     <div class="modal-excerpt">
-                        ${card.fullContent || card.excerpt}
+                        ${card.type === 'discussion' ? card.fullContent : card.fullContent || card.excerpt}
                     </div>
 
                     <div class="modal-actions">
