@@ -548,6 +548,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 1.5rem;
+            grid-auto-flow: dense;
         }
 
         .card {
@@ -562,6 +563,23 @@
         .card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+        }
+
+        .card-image-container {
+            position: relative;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: var(--bg-card);
+        }
+
+        .card-featured {
+            grid-column: 1 / -1;
+        }
+
+        .card-featured .card-image-container {
+            aspect-ratio: 16/9;
+
         }
 
         .card-image-container {
@@ -569,6 +587,7 @@
             height: 300px;
             overflow: hidden;
             background: var(--bg-card);
+
         }
 
         .card-image {
@@ -1987,8 +2006,19 @@
                 const rssItems = rssResults
                     .filter(result => result.status === 'fulfilled')
                     .flatMap(result => result.value);
-                
-                this.manager.allCards = [...legislation, ...redditPosts, ...rssItems];
+
+                const combined = [...legislation, ...redditPosts, ...rssItems];
+                const unique = [];
+                const seen = new Set();
+                combined.forEach(card => {
+                    const key = (card.title + (card.link || '')).toLowerCase();
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        unique.push(card);
+                    }
+                });
+
+                this.manager.allCards = unique;
                 this.manager.applyFilters();
                 renderView();
             }
@@ -2030,6 +2060,15 @@
         }
 
         function renderCardsView(cards) {
+
+            const working = [...cards];
+            let featuredIndex = working.findIndex(c => c.type === 'news' || c.type === 'legislation');
+            const featured = featuredIndex !== -1 ? working.splice(featuredIndex, 1)[0] : working.shift();
+
+            const renderCard = (card, isFeatured = false) => `
+                <article class="card${isFeatured ? ' card-featured' : ''}" data-type="${card.type}" onclick="openModal('${card.id}')">
+                    <div class="card-image-container">
+                        ${card.imageUrl ?
             return `<div class="card-grid">
                 ${cards.map(card => `
                     <article class="card" data-type="${card.type}" onclick="openModal('${card.id}')">
@@ -2075,18 +2114,41 @@
                             `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
                             `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
                         }
-                        <div class="card-content">
-                            <div class="card-header">
-                                <span class="card-type-label">
-                                    ${getTypeIcon(card.type)} ${card.type}
-                                </span>
-                                ${card.status ? `<span class="status-${card.statusClass}">${card.status}</span>` : ''}
-                            </div>
-                            <h3 class="card-title">${card.displayTitle}</h3>
-                            <div class="theme-tags">
-                                ${card.themes.map(t => `<span class="theme-tag" data-theme="${t}">${THEMES[t]}</span>`).join('')}
-                            </div>
+                        <div class="text-overlay">
+                            <span class="category-tag">${getTypeIcon(card.type)} ${card.type}</span>
+                            <h2 class="card-title">${card.displayTitle}</h2>
                             <p class="card-excerpt">${card.excerpt}</p>
+                            <div class="meta-info">
+                                ${card.type === 'news' ? `
+                                    <div class="source">
+                                        <div class="source-icon"></div>
+                                        <span>${card.sourceName || ''}</span>
+                                    </div>
+                                ` : ''}
+                                ${card.type === 'discussion' ? `
+                                    <div class="engagement">
+                                        <div class="engagement-item">
+                                            <span>⬆</span><span>${card.upvotes}</span>
+                                        </div>
+                                        <div class="engagement-item">
+                                            <span>💬</span><span>${card.comments}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${card.type === 'legislation' ? `
+                                    <div class="source">
+                                        <span>📋 ${card.fileNumber || 'No file'}</span>
+                                    </div>
+                                ` : ''}
+                                <span>${card.dateFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>`;
+
+            return `<div class="card-grid">
+                ${featured ? renderCard(featured, true) : ''}
+                ${working.map(card => renderCard(card)).join('')}
                               <div class="card-footer">
                                   <div class="card-stats">
                                       ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
