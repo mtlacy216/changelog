@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Log // Nashville</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fefefe;
+            --bg-secondary: #ffffff;
+            --bg-card: #fafafa;
+            --text-primary: #2d3436;
+            --text-secondary: #74828c;
+            --text-tertiary: #a0aab4;
+            --border: #f0f2f5;
+            --border-light: #f8f9fa;
+            
+            --theme-1: #4a90e2;
+            --theme-2: #27ae60;
+            --theme-3: #9b59b6;
+            --theme-4: #f39c12;
+            --theme-5: #e91e63;
+            --theme-6: #1abc9c;
+            --theme-7: #7cb342;
+            
+            --type-legislation: #2c3e50;
+            --type-discussion: #3498db;
+            --type-news: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .demo-banner {
+            background: linear-gradient(135deg, #4a90e2 0%, #9b59b6 100%);
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-banner:hover {
+            background: linear-gradient(135deg, #3a7bc8 0%, #8b49a6 100%);
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo-slash {
+            color: var(--theme-1);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* View Switcher */
+        .view-switcher {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 0.25rem;
+            gap: 0.25rem;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .view-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--bg-secondary);
+            color: var(--theme-1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .view-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .view-btn span {
+            display: none;
+        }
+
+        @media (min-width: 640px) {
+            .view-btn span {
+                display: inline;
+            }
+        }
+
+        /* Source Selector Dropdown */
+        .source-selector {
+            position: relative;
+        }
+
+        .source-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            border-radius: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .source-btn:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .source-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            max-height: 600px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .source-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-header h4 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .close-dropdown {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-tertiary);
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-dropdown:hover {
+            color: var(--text-primary);
+        }
+
+        .dropdown-content {
+            padding: 0.5rem 0;
+        }
+
+        .source-section {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .source-section:last-child {
+            border-bottom: none;
+        }
+
+        .source-section h5 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .source-item:hover {
+            opacity: 0.8;
+        }
+
+        .source-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .source-item input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .source-item.permanent {
+            opacity: 0.8;
+        }
+
+        .source-item.permanent span::after {
+            content: ' 🔒';
+            font-size: 0.75rem;
+        }
+
+        .dropdown-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .apply-sources-btn {
+            width: 100%;
+            background: var(--theme-1);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .apply-sources-btn:hover {
+            background: #3a7bc8;
+        }
+
+        .intro {
+            max-width: 800px;
+            margin: 3rem auto 2rem;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .intro h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .intro p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: var(--bg-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--theme-1);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 0.25rem;
+            display: none;
+            transition: color 0.2s;
+        }
+
+        .search-clear.visible {
+            display: block;
+        }
+
+        .search-clear:hover {
+            color: var(--text-primary);
+        }
+
+        /* View Mode Switcher Below Search */
+        .view-controls {
+            max-width: 600px;
+            margin: 1rem auto 2rem;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Filter System */
+        .filters-wrapper {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+        }
+
+        .content-types {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .type-tab {
+            padding: 1rem 0;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .type-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .type-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--theme-1);
+        }
+
+        .type-icon {
+            font-size: 1.125rem;
+        }
+
+        .type-count {
+            background: var(--bg-card);
+            padding: 0.125rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .theme-filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .theme-label {
+            font-size: 0.813rem;
+            color: var(--text-tertiary);
+            margin-right: 0.5rem;
+        }
+
+        .theme-pill {
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.813rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-pill.active {
+            background: var(--bg-secondary);
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .theme-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .theme-count {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-left: 0.25rem;
+        }
+
+        /* Main content area */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+            min-height: 400px;
+        }
+
+        /* View container with transition */
+        .view-container {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .view-container.transitioning {
+            opacity: 0;
+        }
+
+        /* Loading State */
+        .loading-container {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--theme-1);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--theme-1);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* CARDS VIEW (Default) */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-type-bar {
+            height: 4px;
+            background: var(--text-tertiary);
+        }
+
+        .card[data-type="legislation"] .card-type-bar {
+            background: var(--type-legislation);
+        }
+
+        .card[data-type="discussion"] .card-type-bar {
+            background: var(--type-discussion);
+        }
+
+        .card[data-type="news"] .card-type-bar {
+            background: var(--type-news);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--bg-card);
+        }
+
+        .card-image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            opacity: 0.8;
+        }
+
+        .gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .gradient-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .gradient-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .gradient-7 { background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%); }
+
+        .card-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-type-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .card[data-type="legislation"] .card-type-label {
+            color: var(--type-legislation);
+        }
+
+        .card[data-type="discussion"] .card-type-label {
+            color: var(--type-discussion);
+        }
+
+        .card[data-type="news"] .card-type-label {
+            color: var(--type-news);
+        }
+
+        .card-source {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-excerpt {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .theme-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            min-height: 28px;
+        }
+
+        .theme-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-card);
+        }
+
+        .theme-tag[data-theme="1"] { background: rgba(74, 144, 226, 0.1); color: var(--theme-1); }
+        .theme-tag[data-theme="2"] { background: rgba(39, 174, 96, 0.1); color: var(--theme-2); }
+        .theme-tag[data-theme="3"] { background: rgba(155, 89, 182, 0.1); color: var(--theme-3); }
+        .theme-tag[data-theme="4"] { background: rgba(243, 156, 18, 0.1); color: var(--theme-4); }
+        .theme-tag[data-theme="5"] { background: rgba(233, 30, 99, 0.1); color: var(--theme-5); }
+        .theme-tag[data-theme="6"] { background: rgba(26, 188, 156, 0.1); color: var(--theme-6); }
+        .theme-tag[data-theme="7"] { background: rgba(124, 179, 66, 0.1); color: var(--theme-7); }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.813rem;
+            color: var(--text-tertiary);
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* REDDIT VIEW */
+        .reddit-view {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .reddit-post {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .reddit-post:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .reddit-post-content {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            cursor: pointer;
+        }
+
+        .reddit-votes {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: 40px;
+        }
+
+        .vote-btn {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .vote-btn:hover {
+            color: var(--primary);
+        }
+
+        .vote-btn.upvoted {
+            color: var(--theme-2);
+        }
+
+        .vote-btn.downvoted {
+            color: var(--theme-5);
+        }
+
+        .vote-count {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .reddit-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .reddit-meta {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-bottom: 0.5rem;
+        }
+
+        .reddit-type-badge {
+            padding: 0.125rem 0.375rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .reddit-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .reddit-preview {
+            font-size: 0.813rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .reddit-thumbnail {
+            width: 70px;
+            height: 70px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: var(--bg-card);
+        }
+
+        /* SWIPE VIEW */
+        .swipe-view {
+            position: relative;
+            height: calc(100vh - 400px);
+            min-height: 500px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .swipe-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: grab;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .swipe-card.dragging {
+            cursor: grabbing;
+            transition: none;
+        }
+
+        .swipe-card.swiped-left {
+            transform: translateX(-150%) rotate(-30deg);
+            opacity: 0;
+        }
+
+        .swipe-card.swiped-right {
+            transform: translateX(150%) rotate(30deg);
+            opacity: 0;
+        }
+
+        .swipe-card-image {
+            height: 50%;
+            background: linear-gradient(135deg, var(--theme-1) 0%, var(--theme-3) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            position: relative;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 20px;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .swipe-indicator.like {
+            right: 20px;
+            background: var(--theme-2);
+            color: white;
+        }
+
+        .swipe-indicator.nope {
+            left: 20px;
+            background: var(--theme-5);
+            color: white;
+        }
+
+        .swipe-card.tilted-right .like {
+            opacity: 1;
+        }
+
+        .swipe-card.tilted-left .nope {
+            opacity: 1;
+        }
+
+        .swipe-card-content {
+            padding: 1.5rem;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .swipe-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .swipe-card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .swipe-actions {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+        }
+
+        .swipe-action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.5rem;
+        }
+
+        .swipe-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .swipe-action-btn.reject {
+            color: var(--theme-5);
+            border-color: var(--theme-5);
+        }
+
+        .swipe-action-btn.accept {
+            color: var(--theme-2);
+            border-color: var(--theme-2);
+        }
+
+        /* MODAL SYSTEM */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-close {
+            position: sticky;
+            top: 1rem;
+            right: 1rem;
+            float: right;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+            margin: 1rem;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1);
+            background: var(--bg-secondary);
+        }
+
+        /* Legislation Modal */
+        .modal-legislation {
+            padding: 2rem;
+        }
+
+        .legislation-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-pending {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--theme-4);
+        }
+
+        .status-passed {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--theme-2);
+        }
+
+        .status-failed {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .status-in-progress {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .legislation-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            line-height: 1.3;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            text-wrap: balance;
+        }
+
+        .legislation-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .progress-section {
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--theme-1);
+            transition: width 0.3s ease;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .timeline-dot.completed {
+            background: var(--theme-2);
+            border-color: var(--theme-2);
+        }
+
+        .timeline-dot.current {
+            background: var(--theme-1);
+            border-color: var(--theme-1);
+        }
+
+        /* Content Modal (Reddit/News) */
+        .modal-content-body {
+            padding: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .modal-meta-bar {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-excerpt {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .modal-actions {
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-action-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-action-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--theme-1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modal-action-btn:hover {
+            background: #3a7bc8;
+            transform: translateY(-1px);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .intro h1 {
+                font-size: 2rem;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .source-dropdown {
+                width: 90vw;
+                max-width: 350px;
+                right: -1rem;
+            }
+            
+            .swipe-view {
+                height: calc(100vh - 350px);
+            }
+            
+            .legislation-title {
+                font-size: 1.5rem;
+            }
+            
+            .header-content {
+                padding: 1rem;
+            }
+            
+            .nav-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo banner -->
+    <div class="demo-banner">
+        🚧 Live integration with Metro Nashville, Reddit, Google News & 20+ local RSS feeds
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">CHANGE LOG <span class="logo-slash">//</span> NASHVILLE</div>
+            <div class="nav-actions">
+                <div class="source-selector">
+                    <button class="source-btn" id="source-btn">
+                        <span>⚙️</span> Sources
+                    </button>
+                    <div class="source-dropdown" id="source-dropdown">
+                        <div class="dropdown-header">
+                            <h4>Select Data Sources</h4>
+                            <button class="close-dropdown" onclick="toggleSourceDropdown()">×</button>
+                        </div>
+                        <div class="dropdown-content">
+                            <div class="source-section">
+                                <h5>Core Sources</h5>
+                                <label class="source-item permanent">
+                                    <input type="checkbox" id="source-googlenews" checked disabled>
+                                    <span>🌐 Google News Nashville</span>
+                                </label>
+                                <label class="source-item">
+                                    <input type="checkbox" id="source-legislation" checked disabled>
+                                    <span>📜 Metro Legislation</span>
+                                </label>
+                                <label class="source-item">
+                                    <input type="checkbox" id="source-reddit" checked>
+                                    <span>💬 Reddit r/Nashville</span>
+                                </label>
+                            </div>
+                            
+                            <div class="source-section">
+                                <h5>Major News</h5>
+                                <div id="sources-major"></div>
+                            </div>
+                            
+                            <div class="source-section">
+                                <h5>Alternative & Independent</h5>
+                                <div id="sources-alternative"></div>
+                            </div>
+                            
+                            <div class="source-section">
+                                <h5>Lifestyle & Culture</h5>
+                                <div id="sources-lifestyle"></div>
+                            </div>
+                            
+                            <div class="source-section">
+                                <h5>Specialty</h5>
+                                <div id="sources-specialty"></div>
+                            </div>
+                            
+                            <div class="source-section">
+                                <h5>State News</h5>
+                                <div id="sources-state"></div>
+                            </div>
+                        </div>
+                        <div class="dropdown-footer">
+                            <button class="apply-sources-btn" onclick="applySources()">Apply Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Intro -->
+    <section class="intro">
+        <h1>Your City, Your Voice</h1>
+        <p>Real-time civic updates from Metro Council, community discussions, and local news — all in one place.</p>
+    </section>
+
+    <!-- Search -->
+    <div class="search-container">
+        <div class="search-box">
+            <input 
+                type="text" 
+                id="search-input" 
+                class="search-input" 
+                placeholder="Search legislation, discussions, and news..."
+            />
+            <button class="search-clear" id="search-clear">×</button>
+        </div>
+    </div>
+
+    <!-- View Mode Switcher -->
+    <div class="view-controls">
+        <div class="view-switcher">
+            <button class="view-btn active" data-view="cards">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+                <span>Cards</span>
+            </button>
+            <button class="view-btn" data-view="reddit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <span>List</span>
+            </button>
+            <button class="view-btn" data-view="swipe">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="3" width="14" height="18" rx="2"/>
+                </svg>
+                <span>Swipe</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="stats-bar" style="display: none;">
+        <div class="stat-item">
+            <div class="stat-value" id="stat-active">0</div>
+            <div class="stat-label">Active Legislation</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="stat-discussions">0</div>
+            <div class="stat-label">Community Discussions</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="stat-weekly">0</div>
+            <div class="stat-label">Updated This Week</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-wrapper">
+        <!-- Content type tabs -->
+        <div class="content-types">
+            <button class="type-tab active" data-filter="all">
+                <span class="type-icon">📊</span>
+                All Updates
+                <span class="type-count" id="count-all">0</span>
+            </button>
+            <button class="type-tab" data-filter="legislation">
+                <span class="type-icon">📜</span>
+                Legislation
+                <span class="type-count" id="count-legislation">0</span>
+            </button>
+            <button class="type-tab" data-filter="discussion">
+                <span class="type-icon">💬</span>
+                Discussions
+                <span class="type-count" id="count-discussion">0</span>
+            </button>
+            <button class="type-tab" data-filter="news">
+                <span class="type-icon">📰</span>
+                News
+                <span class="type-count" id="count-news">0</span>
+            </button>
+        </div>
+
+        <!-- Theme filters -->
+        <div class="theme-filters">
+            <span class="theme-label">Filter by theme:</span>
+            <button class="theme-pill active" data-theme="all">
+                <span class="theme-dot" style="background: var(--text-tertiary);"></span>
+                All Themes
+            </button>
+            <button class="theme-pill" data-theme="1">
+                <span class="theme-dot" style="background: var(--theme-1);"></span>
+                Governing without Coercion
+                <span class="theme-count" id="theme-count-1"></span>
+            </button>
+            <button class="theme-pill" data-theme="2">
+                <span class="theme-dot" style="background: var(--theme-2);"></span>
+                Feedback & Truth-Telling
+                <span class="theme-count" id="theme-count-2"></span>
+            </button>
+            <button class="theme-pill" data-theme="3">
+                <span class="theme-dot" style="background: var(--theme-3);"></span>
+                Beyond Binaries
+                <span class="theme-count" id="theme-count-3"></span>
+            </button>
+            <button class="theme-pill" data-theme="4">
+                <span class="theme-dot" style="background: var(--theme-4);"></span>
+                Contextual Leadership
+                <span class="theme-count" id="theme-count-4"></span>
+            </button>
+            <button class="theme-pill" data-theme="5">
+                <span class="theme-dot" style="background: var(--theme-5);"></span>
+                Ritual & Myth
+                <span class="theme-count" id="theme-count-5"></span>
+            </button>
+            <button class="theme-pill" data-theme="6">
+                <span class="theme-dot" style="background: var(--theme-6);"></span>
+                Power & Resources
+                <span class="theme-count" id="theme-count-6"></span>
+            </button>
+            <button class="theme-pill" data-theme="7">
+                <span class="theme-dot" style="background: var(--theme-7);"></span>
+                Planetary Care
+                <span class="theme-count" id="theme-count-7"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <div class="view-container" id="view-container">
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Loading Nashville civic data...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal System -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-content">
+            <!-- Modal content will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Configuration with all RSS sources
+        const CONFIG = {
+            xanoBaseUrl: 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO',
+            endpoints: {
+                legislation: '/archiverecords'
+            },
+            corsProxy: 'https://corsproxy.io/?',
+            redditUrl: 'https://www.reddit.com/r/nashville/hot.json?limit=50',
+            updateInterval: 300000, // 5 minutes
+            
+            rssSources: {
+                // Core (permanent)
+                'googlenews': {
+                    name: 'Google News Nashville',
+                    url: 'https://news.google.com/rss/search?q=Nashville%20TN&hl=en',
+                    enabled: true,
+                    category: 'core',
+                    permanent: true
+                },
+                
+                // Major News
+                'tennessean': {
+                    name: 'The Tennessean',
+                    url: 'https://rssfeeds.tennessean.com/nashville/home',
+                    enabled: false,
+                    category: 'major'
+                },
+                'newschannel5': {
+                    name: 'NewsChannel 5 (WTVF)',
+                    url: 'https://www.newschannel5.com/index.rss',
+                    enabled: false,
+                    category: 'major'
+                },
+                'wkrn': {
+                    name: 'WKRN News 2',
+                    url: 'https://www.wkrn.com/feed',
+                    enabled: false,
+                    category: 'major'
+                },
+                'wpln': {
+                    name: 'WPLN Public Radio',
+                    url: 'https://wpln.org/feed',
+                    enabled: false,
+                    category: 'major'
+                },
+                
+                // Alternative
+                'scene': {
+                    name: 'Nashville Scene',
+                    url: 'https://www.nashvillescene.com/search/?f=feed',
+                    enabled: false,
+                    category: 'alternative'
+                },
+                'tennesseestar': {
+                    name: 'Tennessee Star',
+                    url: 'https://tennesseestar.com/feed',
+                    enabled: false,
+                    category: 'alternative'
+                },
+                
+                // Lifestyle
+                'nashvillecom': {
+                    name: 'Nashville.com',
+                    url: 'https://nashville.com/feed',
+                    enabled: false,
+                    category: 'lifestyle'
+                },
+                'eater': {
+                    name: 'Nashville Eater',
+                    url: 'https://nashville.eater.com/rss/index.xml',
+                    enabled: false,
+                    category: 'lifestyle'
+                },
+                
+                // Specialty
+                'musicrow': {
+                    name: 'MusicRow',
+                    url: 'https://musicrow.com/feed',
+                    enabled: false,
+                    category: 'specialty'
+                },
+                
+                // State
+                'lookout': {
+                    name: 'Tennessee Lookout',
+                    url: 'https://tennesseelookout.com/feed',
+                    enabled: false,
+                    category: 'state'
+                }
+            }
+        };
+
+        // Theme definitions
+        const THEMES = {
+            1: 'Governing without Coercion',
+            2: 'Feedback & Truth-Telling',
+            3: 'Decision-Making Beyond Binaries',
+            4: 'Contextual Leadership',
+            5: 'Ritual & Myth',
+            6: 'Power & Resources',
+            7: 'Planetary Care'
+        };
+
+        // Theme detection keywords
+        const THEME_KEYWORDS = {
+            1: ['community', 'resident', 'neighborhood', 'democratic', 'participatory', 'grassroots', 'local', 'citizen', 'public input', 'town hall', 'civic'],
+            2: ['audit', 'transparency', 'report', 'investigation', 'accountability', 'disclosure', 'truth', 'data', 'open', 'public record', 'FOIA'],
+            3: ['alternative', 'options', 'compromise', 'phases', 'middle ground', 'nuanced', 'flexible', 'pilot', 'experiment', 'test'],
+            4: ['leadership', 'mayor', 'council', 'governance', 'administration', 'executive', 'management', 'cooper', 'freddie', 'district'],
+            5: ['history', 'tradition', 'culture', 'heritage', 'memorial', 'celebration', 'art', 'music', 'festival', 'mural', 'landmark'],
+            6: ['budget', 'funding', 'affordable', 'housing', 'economic', 'money', 'cost', 'finance', 'tax', 'development', 'gentrification', 'rent', 'property'],
+            7: ['environment', 'trees', 'climate', 'sustainability', 'green', 'park', 'nature', 'pollution', 'flood', 'greenway', 'recycling', 'conservation']
+        };
+
+        // State management
+        class DataManager {
+            constructor() {
+                this.allCards = [];
+                this.filteredCards = [];
+                this.currentView = localStorage.getItem('preferredView') || 'cards';
+                this.swipeIndex = 0;
+                this.filters = {
+                    type: 'all',
+                    themes: new Set(),
+                    search: ''
+                };
+                this.sourcePreferences = this.loadSourcePreferences();
+                this.counts = {
+                    all: 0,
+                    legislation: 0,
+                    discussion: 0,
+                    news: 0,
+                    themes: {}
+                };
+                this.stats = {
+                    active: 0,
+                    discussions: 0,
+                    weeklyUpdates: 0
+                };
+                
+                // Initialize theme counts
+                for (let i = 1; i <= 7; i++) {
+                    this.counts.themes[i] = 0;
+                }
+            }
+
+            loadSourcePreferences() {
+                const saved = localStorage.getItem('nashville-sources');
+                if (saved) {
+                    try {
+                        const prefs = JSON.parse(saved);
+                        Object.keys(CONFIG.rssSources).forEach(key => {
+                            if (prefs.rss && prefs.rss[key] !== undefined && !CONFIG.rssSources[key].permanent) {
+                                CONFIG.rssSources[key].enabled = prefs.rss[key];
+                            }
+                        });
+                        return prefs;
+                    } catch (e) {
+                        console.error('Error loading preferences:', e);
+                    }
+                }
+                
+                return {
+                    reddit: true,
+                    legislation: true,
+                    rss: {}
+                };
+            }
+
+            saveSourcePreferences() {
+                const prefs = {
+                    reddit: document.getElementById('source-reddit').checked,
+                    legislation: true,
+                    rss: {}
+                };
+                
+                Object.keys(CONFIG.rssSources).forEach(key => {
+                    if (!CONFIG.rssSources[key].permanent) {
+                        const checkbox = document.getElementById(`source-${key}`);
+                        if (checkbox) {
+                            prefs.rss[key] = checkbox.checked;
+                            CONFIG.rssSources[key].enabled = checkbox.checked;
+                        }
+                    }
+                });
+                
+                this.sourcePreferences = prefs;
+                localStorage.setItem('nashville-sources', JSON.stringify(prefs));
+                
+                window.dataFetcher.fetchAllData();
+            }
+
+            detectThemes(title, content = '') {
+                const text = `${title} ${content}`.toLowerCase();
+                const detectedThemes = [];
+                
+                for (const [themeId, keywords] of Object.entries(THEME_KEYWORDS)) {
+                    let score = 0;
+                    keywords.forEach(keyword => {
+                        const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                        const matches = text.match(regex);
+                        if (matches) {
+                            score += matches.length;
+                        }
+                    });
+                    
+                    if (score > 0) {
+                        detectedThemes.push({
+                            id: parseInt(themeId),
+                            score: score
+                        });
+                    }
+                }
+                
+                const topThemes = detectedThemes
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 2)
+                    .map(t => t.id);
+                
+                if (topThemes.length === 0) {
+                    return [Math.floor(Math.random() * 7) + 1];
+                }
+                
+                return topThemes;
+            }
+
+            formatLegislationTitle(title) {
+                const abbreviations = {
+                    'Resolution Authorizing': 'Res.',
+                    'Ordinance Amending': 'Ord. Amend.',
+                    'Metropolitan Development and Housing Agency': 'MDHA',
+                    'Metropolitan Government': 'Metro'
+                };
+                
+                let formatted = title;
+                Object.entries(abbreviations).forEach(([long, short]) => {
+                    formatted = formatted.replace(long, short);
+                });
+                
+                if (formatted.length > 80) {
+                    const keywordIndex = formatted.search(/\b(to|for|regarding)\b/i);
+                    if (keywordIndex > 0 && keywordIndex < 40) {
+                        return formatted.substring(0, 35) + '...' + 
+                               formatted.substring(keywordIndex).substring(0, 35);
+                    }
+                    return formatted.substring(0, 77) + '...';
+                }
+                
+                return formatted;
+            }
+
+            normalizeLegislation(matter) {
+                const title = matter.MatterTitle || matter.MatterName || 'Untitled Legislation';
+                const themes = this.detectThemes(title, matter.MatterTypeName || '');
+                
+                let status = matter.MatterStatusName || 'Pending';
+                let statusClass = 'pending';
+                if (status.toLowerCase().includes('pass')) statusClass = 'passed';
+                else if (status.toLowerCase().includes('fail')) statusClass = 'failed';
+                else if (status.toLowerCase().includes('progress')) statusClass = 'in-progress';
+                
+                return {
+                    id: `leg-${matter.MatterId || Math.random()}`,
+                    type: 'legislation',
+                    source: 'metro',
+                    title: title,
+                    displayTitle: this.formatLegislationTitle(title),
+                    fullContent: matter.MatterText || '',
+                    excerpt: `${matter.MatterTypeName || 'Legislation'} - ${status}`,
+                    themes: themes,
+                    status: status,
+                    statusClass: statusClass,
+                    date: new Date(matter.MatterIntroDate || Date.now()),
+                    dateFormatted: this.formatDate(matter.MatterIntroDate),
+                    sponsor: matter.MatterSponsor || '',
+                    committee: matter.MatterBodyName || '',
+                    fileNumber: matter.MatterFile || '',
+                    rawData: matter
+                };
+            }
+
+            normalizeRedditPost(post) {
+                const postData = post.data;
+                const themes = this.detectThemes(postData.title, postData.selftext || '');
+                
+                let type = 'discussion';
+                if (postData.link_flair_text?.toLowerCase().includes('news')) {
+                    type = 'news';
+                }
+                
+                let imageUrl = null;
+                if (postData.url && postData.url.includes('.jpg')) imageUrl = postData.url;
+                else if (postData.preview?.images?.[0]?.source) {
+                    imageUrl = postData.preview.images[0].source.url.replace(/&amp;/g, '&');
+                }
+                
+                return {
+                    id: `reddit-${postData.id}`,
+                    type: type,
+                    source: 'reddit',
+                    title: postData.title,
+                    displayTitle: postData.title,
+                    fullContent: postData.selftext || '',
+                    excerpt: postData.selftext ? 
+                        postData.selftext.substring(0, 200) + '...' : 
+                        'Join the discussion on r/Nashville',
+                    themes: themes,
+                    date: new Date(postData.created_utc * 1000),
+                    dateFormatted: this.formatDate(new Date(postData.created_utc * 1000)),
+                    author: postData.author,
+                    upvotes: postData.ups || 0,
+                    comments: postData.num_comments || 0,
+                    link: `https://reddit.com${postData.permalink}`,
+                    imageUrl: imageUrl
+                };
+            }
+
+            normalizeRSSItem(item, sourceName) {
+                const title = item.querySelector('title')?.textContent || '';
+                const description = item.querySelector('description')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || '';
+                const pubDate = item.querySelector('pubDate')?.textContent;
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = description;
+                const cleanDescription = tempDiv.textContent || '';
+                
+                const themes = this.detectThemes(title, cleanDescription);
+                
+                return {
+                    id: `rss-${sourceName}-${Date.now()}-${Math.random()}`,
+                    type: 'news',
+                    source: sourceName,
+                    title: title,
+                    displayTitle: title.length > 80 ? title.substring(0, 77) + '...' : title,
+                    fullContent: cleanDescription,
+                    excerpt: cleanDescription.substring(0, 200) + '...',
+                    themes: themes,
+                    date: pubDate ? new Date(pubDate) : new Date(),
+                    dateFormatted: this.formatDate(pubDate ? new Date(pubDate) : new Date()),
+                    link: link,
+                    sourceName: CONFIG.rssSources[sourceName]?.name || sourceName
+                };
+            }
+
+            formatDate(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                const now = new Date();
+                const diff = now - d;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const days = Math.floor(hours / 24);
+                
+                if (hours < 1) return 'Just now';
+                if (hours < 24) return `${hours}h ago`;
+                if (days === 1) return 'Yesterday';
+                if (days < 7) return `${days}d ago`;
+                if (days < 30) return `${Math.floor(days / 7)}w ago`;
+                return `${Math.floor(days / 30)}mo ago`;
+            }
+
+            applyFilters() {
+                let filtered = [...this.allCards];
+                
+                if (this.filters.type !== 'all') {
+                    filtered = filtered.filter(card => card.type === this.filters.type);
+                }
+                
+                if (this.filters.themes.size > 0) {
+                    filtered = filtered.filter(card => 
+                        card.themes.some(theme => this.filters.themes.has(theme))
+                    );
+                }
+                
+                if (this.filters.search) {
+                    const searchLower = this.filters.search.toLowerCase();
+                    filtered = filtered.filter(card =>
+                        card.title.toLowerCase().includes(searchLower) ||
+                        card.excerpt.toLowerCase().includes(searchLower)
+                    );
+                }
+                
+                filtered.sort((a, b) => b.date - a.date);
+                
+                this.filteredCards = filtered;
+                this.updateCounts();
+                return filtered;
+            }
+
+            updateCounts() {
+                this.counts.all = this.allCards.length;
+                this.counts.legislation = 0;
+                this.counts.discussion = 0;
+                this.counts.news = 0;
+                
+                const now = new Date();
+                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                this.stats.active = 0;
+                this.stats.discussions = 0;
+                this.stats.weeklyUpdates = 0;
+                
+                this.allCards.forEach(card => {
+                    if (card.type === 'legislation') {
+                        this.counts.legislation++;
+                        if (card.statusClass === 'pending' || card.statusClass === 'in-progress') {
+                            this.stats.active++;
+                        }
+                    }
+                    if (card.type === 'discussion') {
+                        this.counts.discussion++;
+                        this.stats.discussions++;
+                    }
+                    if (card.type === 'news') this.counts.news++;
+                    
+                    if (card.date >= weekAgo) {
+                        this.stats.weeklyUpdates++;
+                    }
+                    
+                    card.themes.forEach(theme => {
+                        this.counts.themes[theme] = (this.counts.themes[theme] || 0) + 1;
+                    });
+                });
+                
+                this.updateCountsUI();
+            }
+
+            updateCountsUI() {
+                document.getElementById('count-all').textContent = this.counts.all;
+                document.getElementById('count-legislation').textContent = this.counts.legislation;
+                document.getElementById('count-discussion').textContent = this.counts.discussion;
+                document.getElementById('count-news').textContent = this.counts.news;
+                
+                document.getElementById('stat-active').textContent = this.stats.active;
+                document.getElementById('stat-discussions').textContent = this.stats.discussions;
+                document.getElementById('stat-weekly').textContent = this.stats.weeklyUpdates;
+                document.getElementById('stats-bar').style.display = 'flex';
+                
+                for (let i = 1; i <= 7; i++) {
+                    const countEl = document.getElementById(`theme-count-${i}`);
+                    if (countEl) {
+                        const count = this.counts.themes[i] || 0;
+                        countEl.textContent = count > 0 ? `(${count})` : '';
+                    }
+                }
+            }
+        }
+
+        // Data fetching
+        class DataFetcher {
+            constructor(manager) {
+                this.manager = manager;
+            }
+
+            async fetchLegislation() {
+                try {
+                    const response = await fetch(
+                        `${CONFIG.xanoBaseUrl}${CONFIG.endpoints.legislation}?page=1&per_page=30&sort=[-MatterIntroDate]`
+                    );
+                    const data = await response.json();
+                    const items = Array.isArray(data) ? data : (data.items || []);
+                    return items.map(item => this.manager.normalizeLegislation(item));
+                } catch (error) {
+                    console.error('Error fetching legislation:', error);
+                    return [];
+                }
+            }
+
+            async fetchRedditPosts() {
+                if (!this.manager.sourcePreferences.reddit) return [];
+                
+                try {
+                    const proxyUrl = CONFIG.corsProxy + encodeURIComponent(CONFIG.redditUrl);
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    const posts = data.data?.children || [];
+                    
+                    const civicKeywords = ['council', 'mayor', 'metro', 'housing', 'transit', 'development', 'budget', 'community', 'downtown', 'traffic', 'nashville'];
+                    
+                    return posts
+                        .filter(post => {
+                            const combined = `${post.data.title} ${post.data.selftext}`.toLowerCase();
+                            return civicKeywords.some(keyword => combined.includes(keyword));
+                        })
+                        .slice(0, 20)
+                        .map(post => this.manager.normalizeRedditPost(post));
+                } catch (error) {
+                    console.error('Error fetching Reddit:', error);
+                    return [];
+                }
+            }
+
+            async fetchRSSFeed(sourceKey, sourceConfig) {
+                if (!sourceConfig.enabled) return [];
+                
+                try {
+                    const proxyUrl = CONFIG.corsProxy + encodeURIComponent(sourceConfig.url);
+                    const response = await fetch(proxyUrl);
+                    const text = await response.text();
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(text, 'text/xml');
+                    
+                    const items = xml.querySelectorAll('item');
+                    return Array.from(items)
+                        .slice(0, 10)
+                        .map(item => this.manager.normalizeRSSItem(item, sourceKey));
+                } catch (error) {
+                    console.error(`Error fetching ${sourceConfig.name}:`, error);
+                    return [];
+                }
+            }
+
+            async fetchAllData() {
+                const [legislation, redditPosts] = await Promise.all([
+                    this.fetchLegislation(),
+                    this.fetchRedditPosts()
+                ]);
+                
+                const rssPromises = Object.entries(CONFIG.rssSources)
+                    .filter(([key, config]) => config.enabled)
+                    .map(([key, config]) => this.fetchRSSFeed(key, config));
+                
+                const rssResults = await Promise.allSettled(rssPromises);
+                const rssItems = rssResults
+                    .filter(result => result.status === 'fulfilled')
+                    .flatMap(result => result.value);
+                
+                this.manager.allCards = [...legislation, ...redditPosts, ...rssItems];
+                this.manager.applyFilters();
+                renderView();
+            }
+        }
+
+        // View rendering
+        function renderView() {
+            const container = document.getElementById('view-container');
+            const cards = window.dataManager.filteredCards;
+            
+            if (cards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No items found</h3>
+                        <p>Try adjusting your filters or check back later</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.classList.add('transitioning');
+            
+            setTimeout(() => {
+                switch(window.dataManager.currentView) {
+                    case 'reddit':
+                        container.innerHTML = renderRedditView(cards);
+                        break;
+                    case 'swipe':
+                        container.innerHTML = renderSwipeView(cards);
+                        setupSwipeInteractions();
+                        break;
+                    case 'cards':
+                    default:
+                        container.innerHTML = renderCardsView(cards);
+                        break;
+                }
+                container.classList.remove('transitioning');
+            }, 300);
+        }
+
+        function renderCardsView(cards) {
+            return `<div class="card-grid">
+                ${cards.map(card => `
+                    <article class="card" data-type="${card.type}" onclick="openModal('${card.id}')">
+                        <div class="card-type-bar"></div>
+                        ${card.imageUrl ? 
+                            `<img class="card-image" src="${card.imageUrl}" alt="" loading="lazy">` :
+                            `<div class="card-image-placeholder gradient-${card.themes[0] || 1}">${getTypeIcon(card.type)}</div>`
+                        }
+                        <div class="card-content">
+                            <div class="card-header">
+                                <span class="card-type-label">
+                                    ${getTypeIcon(card.type)} ${card.type}
+                                </span>
+                                ${card.status ? `<span class="status-${card.statusClass}">${card.status}</span>` : ''}
+                            </div>
+                            <h3 class="card-title">${card.displayTitle}</h3>
+                            <div class="theme-tags">
+                                ${card.themes.map(t => `<span class="theme-tag" data-theme="${t}">${THEMES[t]}</span>`).join('')}
+                            </div>
+                            <p class="card-excerpt">${card.excerpt}</p>
+                            <div class="card-footer">
+                                <div class="card-stats">
+                                    ${card.type === 'legislation' ? `📋 ${card.fileNumber || 'No file'}` : ''}
+                                    ${card.type === 'discussion' ? `⬆️ ${card.upvotes} 💬 ${card.comments}` : ''}
+                                    ${card.type === 'news' ? `📰 ${card.sourceName || 'News'}` : ''}
+                                </div>
+                                <span>${card.dateFormatted}</span>
+                            </div>
+                        </div>
+                    </article>
+                `).join('')}
+            </div>`;
+        }
+
+        function renderRedditView(cards) {
+            return `<div class="reddit-view">
+                ${cards.map(card => `
+                    <div class="reddit-post">
+                        <div class="reddit-post-content" onclick="openModal('${card.id}')">
+                            <div class="reddit-votes">
+                                <button class="vote-btn" onclick="event.stopPropagation(); vote(this, 'up')">▲</button>
+                                <span class="vote-count">${card.upvotes || 0}</span>
+                                <button class="vote-btn" onclick="event.stopPropagation(); vote(this, 'down')">▼</button>
+                            </div>
+                            <div class="reddit-main">
+                                <div class="reddit-meta">
+                                    <span class="reddit-type-badge">${card.type}</span>
+                                    <span>${card.source === 'reddit' ? `u/${card.author}` : card.source}</span>
+                                    <span>•</span>
+                                    <span>${card.dateFormatted}</span>
+                                    ${card.comments ? `<span>• ${card.comments} comments</span>` : ''}
+                                </div>
+                                <h3 class="reddit-title">${card.displayTitle}</h3>
+                                <p class="reddit-preview">${card.excerpt}</p>
+                            </div>
+                            ${card.imageUrl ? `<img class="reddit-thumbnail" src="${card.imageUrl}" alt="">` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>`;
+        }
+
+        function renderSwipeView(cards) {
+            const manager = window.dataManager;
+            const currentCard = cards[manager.swipeIndex % cards.length];
+            const nextCard = cards[(manager.swipeIndex + 1) % cards.length];
+            
+            if (!currentCard) return '<div class="empty-state"><h3>No items to swipe</h3></div>';
+            
+            return `<div class="swipe-view">
+                <div class="swipe-card" id="current-swipe-card" onclick="openModal('${currentCard.id}')">
+                    <div class="swipe-card-image gradient-${currentCard.themes[0] || 1}">
+                        ${getTypeIcon(currentCard.type)}
+                        <div class="swipe-indicator like">SUPPORT</div>
+                        <div class="swipe-indicator nope">SKIP</div>
+                    </div>
+                    <div class="swipe-card-content">
+                        <h3 class="swipe-card-title">${currentCard.displayTitle}</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
+                            ${currentCard.excerpt}
+                        </p>
+                        <div class="swipe-card-meta">
+                            <span>${currentCard.type}</span>
+                            <span>${currentCard.dateFormatted}</span>
+                        </div>
+                    </div>
+                </div>
+                ${nextCard ? `
+                    <div class="swipe-card" style="z-index: 1; transform: scale(0.95); opacity: 0.5;">
+                        <div class="swipe-card-image gradient-${nextCard.themes[0] || 1}">${getTypeIcon(nextCard.type)}</div>
+                    </div>
+                ` : ''}
+                <div class="swipe-actions">
+                    <button class="swipe-action-btn reject" onclick="swipeCard('left')">✕</button>
+                    <button class="swipe-action-btn accept" onclick="swipeCard('right')">✓</button>
+                </div>
+            </div>`;
+        }
+
+        // Swipe interactions
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let cardElement = null;
+
+        function setupSwipeInteractions() {
+            const card = document.getElementById('current-swipe-card');
+            if (!card) return;
+            
+            card.addEventListener('mousedown', handleStart);
+            card.addEventListener('touchstart', handleStart);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('touchmove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchend', handleEnd);
+        }
+
+        function handleStart(e) {
+            if (e.target.closest('.swipe-action-btn')) return;
+            isDragging = true;
+            cardElement = e.currentTarget;
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            cardElement.classList.add('dragging');
+        }
+
+        function handleMove(e) {
+            if (!isDragging) return;
+            
+            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const deltaX = currentX - startX;
+            const rotation = deltaX * 0.1;
+            
+            cardElement.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg)`;
+            
+            if (deltaX > 50) {
+                cardElement.classList.add('tilted-right');
+                cardElement.classList.remove('tilted-left');
+            } else if (deltaX < -50) {
+                cardElement.classList.add('tilted-left');
+                cardElement.classList.remove('tilted-right');
+            } else {
+                cardElement.classList.remove('tilted-left', 'tilted-right');
+            }
+        }
+
+        function handleEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const deltaX = currentX - startX;
+            
+            if (Math.abs(deltaX) > 100) {
+                swipeCard(deltaX > 0 ? 'right' : 'left');
+            } else {
+                cardElement.style.transform = '';
+                cardElement.classList.remove('dragging', 'tilted-left', 'tilted-right');
+            }
+        }
+
+        function swipeCard(direction) {
+            const card = document.getElementById('current-swipe-card');
+            if (!card) return;
+            
+            card.classList.add(`swiped-${direction}`);
+            
+            setTimeout(() => {
+                window.dataManager.swipeIndex++;
+                renderView();
+            }, 300);
+        }
+
+        // Modal system
+        function openModal(cardId) {
+            const card = window.dataManager.allCards.find(c => c.id === cardId);
+            if (!card) return;
+            
+            const overlay = document.getElementById('modal-overlay');
+            const modalContent = document.getElementById('modal-content');
+            
+            if (card.type === 'legislation') {
+                modalContent.innerHTML = renderLegislationModal(card);
+            } else {
+                modalContent.innerHTML = renderContentModal(card);
+            }
+            
+            overlay.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+        }
+
+        function renderLegislationModal(card) {
+            const progress = card.statusClass === 'passed' ? 100 : 
+                           card.statusClass === 'failed' ? 0 : 
+                           card.statusClass === 'in-progress' ? 60 : 30;
+            
+            return `
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-legislation">
+                    <span class="legislation-status status-${card.statusClass}">${card.status}</span>
+                    <h2 class="legislation-title">${card.title}</h2>
+                    
+                    <div class="legislation-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">File Number</span>
+                            <span class="meta-value">${card.fileNumber || 'Not assigned'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Committee</span>
+                            <span class="meta-value">${card.committee || 'Not assigned'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Sponsor</span>
+                            <span class="meta-value">${card.sponsor || 'Unknown'}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Introduced</span>
+                            <span class="meta-value">${card.dateFormatted}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot ${progress >= 30 ? 'completed' : ''}"></div>
+                                <span>First Reading</span>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot ${progress >= 60 ? 'completed' : ''} ${progress === 60 ? 'current' : ''}"></div>
+                                <span>Committee Review</span>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot ${progress >= 80 ? 'completed' : ''}"></div>
+                                <span>Second Reading</span>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot ${progress >= 100 ? 'completed' : ''}"></div>
+                                <span>Final Vote</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${card.fullContent ? `<div class="modal-excerpt">${card.fullContent}</div>` : ''}
+                    
+                    <div class="modal-actions">
+                        <span class="modal-action-text">View full legislation details</span>
+                        <a href="https://nashville.legistar.com" target="_blank" class="modal-action-btn">
+                            Open in Legistar →
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderContentModal(card) {
+            return `
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div class="modal-content-body">
+                    <h2 class="modal-title">${card.title}</h2>
+                    <div class="modal-meta-bar">
+                        <span>${getTypeIcon(card.type)} ${card.type}</span>
+                        <span>•</span>
+                        <span>${card.source === 'reddit' ? `u/${card.author}` : card.sourceName || card.source}</span>
+                        <span>•</span>
+                        <span>${card.dateFormatted}</span>
+                        ${card.upvotes ? `<span>• ⬆️ ${card.upvotes}</span>` : ''}
+                        ${card.comments ? `<span>• 💬 ${card.comments}</span>` : ''}
+                    </div>
+                    
+                    <div class="modal-excerpt">
+                        ${card.fullContent || card.excerpt}
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <span class="modal-action-text">
+                            ${card.source === 'reddit' ? 'Continue on Reddit' : 
+                              card.type === 'news' ? `Read full article on ${card.sourceName || 'source'}` :
+                              'View original source'}
+                        </span>
+                        <a href="${card.link}" target="_blank" class="modal-action-btn">
+                            Open Source →
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper functions
+        function getTypeIcon(type) {
+            const icons = {
+                'legislation': '📜',
+                'discussion': '💬',
+                'news': '📰'
+            };
+            return icons[type] || '📊';
+        }
+
+        function vote(btn, direction) {
+            const votes = btn.parentElement;
+            const count = votes.querySelector('.vote-count');
+            const current = parseInt(count.textContent) || 0;
+            
+            if (direction === 'up') {
+                btn.classList.toggle('upvoted');
+                count.textContent = btn.classList.contains('upvoted') ? current + 1 : current - 1;
+            } else {
+                btn.classList.toggle('downvoted');
+                count.textContent = btn.classList.contains('downvoted') ? current - 1 : current + 1;
+            }
+        }
+
+        function toggleSourceDropdown() {
+            document.getElementById('source-dropdown').classList.toggle('show');
+        }
+
+        function applySources() {
+            window.dataManager.saveSourcePreferences();
+            toggleSourceDropdown();
+        }
+
+        // Initialize
+        function initializeEventListeners() {
+            const manager = window.dataManager;
+            
+            // Search
+            const searchInput = document.getElementById('search-input');
+            const searchClear = document.getElementById('search-clear');
+            let searchTimer;
+            
+            searchInput.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                searchClear.classList.toggle('visible', value.length > 0);
+                
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => {
+                    manager.filters.search = value;
+                    manager.applyFilters();
+                    renderView();
+                }, 300);
+            });
+            
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchClear.classList.remove('visible');
+                manager.filters.search = '';
+                manager.applyFilters();
+                renderView();
+            });
+            
+            // View switcher
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    manager.currentView = this.dataset.view;
+                    localStorage.setItem('preferredView', manager.currentView);
+                    renderView();
+                });
+            });
+            
+            // Type filters
+            document.querySelectorAll('.type-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    manager.filters.type = this.getAttribute('data-filter');
+                    manager.applyFilters();
+                    renderView();
+                });
+            });
+            
+            // Theme filters
+            document.querySelectorAll('.theme-pill').forEach(pill => {
+                pill.addEventListener('click', function() {
+                    const theme = this.getAttribute('data-theme');
+                    
+                    if (theme === 'all') {
+                        document.querySelectorAll('.theme-pill').forEach(p => p.classList.remove('active'));
+                        this.classList.add('active');
+                        manager.filters.themes.clear();
+                    } else {
+                        document.querySelector('.theme-pill[data-theme="all"]').classList.remove('active');
+                        this.classList.toggle('active');
+                        
+                        const themeId = parseInt(theme);
+                        if (manager.filters.themes.has(themeId)) {
+                            manager.filters.themes.delete(themeId);
+                        } else {
+                            manager.filters.themes.add(themeId);
+                        }
+                        
+                        if (manager.filters.themes.size === 0) {
+                            document.querySelector('.theme-pill[data-theme="all"]').classList.add('active');
+                        }
+                    }
+                    
+                    manager.applyFilters();
+                    renderView();
+                });
+            });
+            
+            // Modal close on overlay click
+            document.getElementById('modal-overlay').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closeModal();
+            });
+            
+            // Escape key to close modal
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+            
+            // Set active view button
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                if (btn.dataset.view === manager.currentView) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function initializeSourceDropdown() {
+            Object.entries(CONFIG.rssSources).forEach(([key, source]) => {
+                if (source.permanent) return;
+                
+                const container = document.getElementById(`sources-${source.category}`);
+                if (container) {
+                    const label = document.createElement('label');
+                    label.className = 'source-item';
+                    label.innerHTML = `
+                        <input type="checkbox" id="source-${key}" ${source.enabled ? 'checked' : ''}>
+                        <span>📡 ${source.name}</span>
+                    `;
+                    container.appendChild(label);
+                }
+            });
+            
+            document.getElementById('source-btn').addEventListener('click', toggleSourceDropdown);
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.source-selector')) {
+                    document.getElementById('source-dropdown').classList.remove('show');
+                }
+            });
+        }
+
+        // Initialize app
+        async function initialize() {
+            window.dataManager = new DataManager();
+            window.dataFetcher = new DataFetcher(window.dataManager);
+            
+            initializeSourceDropdown();
+            initializeEventListeners();
+            
+            // Auto-switch to swipe on mobile
+            if (window.innerWidth < 768 && !localStorage.getItem('preferredView')) {
+                window.dataManager.currentView = 'swipe';
+            }
+            
+            await window.dataFetcher.fetchAllData();
+            
+            // Refresh every 5 minutes
+            setInterval(() => {
+                window.dataFetcher.fetchAllData();
+            }, CONFIG.updateInterval);
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
