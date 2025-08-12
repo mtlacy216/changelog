@@ -511,6 +511,10 @@
             margin-bottom: 1rem;
         }
 
+        .hidden {
+            display: none;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -1273,6 +1277,11 @@
                 <p>Loading Nashville civic data...</p>
             </div>
         </div>
+        <div id="loading-more" class="loading-container hidden">
+            <div class="spinner"></div>
+            <p>Loading more...</p>
+        </div>
+        <div id="scroll-sentinel"></div>
     </main>
 
     <!-- Modal System -->
@@ -1416,7 +1425,12 @@
                     news: 0,
                     themes: {}
                 };
-                
+
+                this.page = 1;
+                this.pageSize = 20;
+                this.hasMore = true;
+                this.loading = false;
+
                 // Initialize theme counts
                 for (let i = 1; i <= 7; i++) {
                     this.counts.themes[i] = 0;
@@ -1466,7 +1480,7 @@
                 this.sourcePreferences = prefs;
                 localStorage.setItem('nashville-sources', JSON.stringify(prefs));
                 
-                window.dataFetcher.fetchAllData();
+                window.dataFetcher.fetchAllData(1);
             }
 
             detectThemes(title, content = '') {
@@ -1712,10 +1726,10 @@
                 this.manager = manager;
             }
 
-            async fetchLegislation() {
+            async fetchLegislation(page = 1, perPage = this.manager.pageSize) {
                 try {
                     const response = await fetch(
-                        `${CONFIG.xanoBaseUrl}${CONFIG.endpoints.legislation}?page=1&per_page=30&sort=[-MatterIntroDate]`
+                        `${CONFIG.xanoBaseUrl}${CONFIG.endpoints.legislation}?page=${page}&per_page=${perPage}&sort=[-MatterIntroDate]`
                     );
                     const data = await response.json();
                     const items = Array.isArray(data) ? data : (data.items || []);
@@ -1770,24 +1784,41 @@
                 }
             }
 
-            async fetchAllData() {
+            async fetchAllData(page = 1) {
+                this.manager.loading = true;
+
+                if (page === 1) {
+                    this.manager.allCards = [];
+                    this.manager.hasMore = true;
+                }
+
                 const [legislation, redditPosts] = await Promise.all([
-                    this.fetchLegislation(),
-                    this.fetchRedditPosts()
+                    this.fetchLegislation(page, this.manager.pageSize),
+                    page === 1 ? this.fetchRedditPosts() : []
                 ]);
-                
-                const rssPromises = Object.entries(CONFIG.rssSources)
-                    .filter(([key, config]) => config.enabled)
-                    .map(([key, config]) => this.fetchRSSFeed(key, config));
-                
-                const rssResults = await Promise.allSettled(rssPromises);
-                const rssItems = rssResults
-                    .filter(result => result.status === 'fulfilled')
-                    .flatMap(result => result.value);
-                
-                this.manager.allCards = [...legislation, ...redditPosts, ...rssItems];
+
+                let rssItems = [];
+                if (page === 1) {
+                    const rssPromises = Object.entries(CONFIG.rssSources)
+                        .filter(([key, config]) => config.enabled)
+                        .map(([key, config]) => this.fetchRSSFeed(key, config));
+
+                    const rssResults = await Promise.allSettled(rssPromises);
+                    rssItems = rssResults
+                        .filter(result => result.status === 'fulfilled')
+                        .flatMap(result => result.value);
+                }
+
+                if (legislation.length < this.manager.pageSize) {
+                    this.manager.hasMore = false;
+                }
+
+                const newCards = [...legislation, ...redditPosts, ...rssItems];
+                this.manager.allCards = [...this.manager.allCards, ...newCards];
+                this.manager.page = page;
                 this.manager.applyFilters();
                 renderView();
+                this.manager.loading = false;
             }
         }
 
@@ -2138,6 +2169,21 @@
                     btn.classList.remove('active');
                 }
             });
+
+            // Infinite scroll
+            const sentinel = document.getElementById('scroll-sentinel');
+            const loadingMore = document.getElementById('loading-more');
+            const observer = new IntersectionObserver(async (entries) => {
+                if (entries[0].isIntersecting && manager.hasMore && !manager.loading) {
+                    loadingMore.classList.remove('hidden');
+                    await window.dataFetcher.fetchAllData(manager.page + 1);
+                    loadingMore.classList.add('hidden');
+                    if (!manager.hasMore) {
+                        observer.unobserve(sentinel);
+                    }
+                }
+            }, { rootMargin: '200px' });
+            observer.observe(sentinel);
         }
 
         function initializeSourceDropdown() {
@@ -2169,15 +2215,14 @@
         async function initialize() {
             window.dataManager = new DataManager();
             window.dataFetcher = new DataFetcher(window.dataManager);
-            
+
             initializeSourceDropdown();
+            await window.dataFetcher.fetchAllData(1);
             initializeEventListeners();
-            
-            await window.dataFetcher.fetchAllData();
-            
+
             // Refresh every 5 minutes
             setInterval(() => {
-                window.dataFetcher.fetchAllData();
+                window.dataFetcher.fetchAllData(1);
             }, CONFIG.updateInterval);
         }
 
