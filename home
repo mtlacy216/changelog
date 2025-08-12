@@ -1111,10 +1111,6 @@
                         <div class="dropdown-content">
                             <div class="source-section">
                                 <h5>Core Sources</h5>
-                                <label class="source-item permanent">
-                                    <input type="checkbox" id="source-googlenews" checked disabled>
-                                    <span>🌐 Google News Nashville</span>
-                                </label>
                                 <label class="source-item">
                                     <input type="checkbox" id="source-legislation" checked disabled>
                                     <span>📜 Metro Legislation</span>
@@ -1124,31 +1120,7 @@
                                     <span>💬 Reddit r/Nashville</span>
                                 </label>
                             </div>
-                            
-                            <div class="source-section">
-                                <h5>Major News</h5>
-                                <div id="sources-major"></div>
-                            </div>
-                            
-                            <div class="source-section">
-                                <h5>Alternative & Independent</h5>
-                                <div id="sources-alternative"></div>
-                            </div>
-                            
-                            <div class="source-section">
-                                <h5>Lifestyle & Culture</h5>
-                                <div id="sources-lifestyle"></div>
-                            </div>
-                            
-                            <div class="source-section">
-                                <h5>Specialty</h5>
-                                <div id="sources-specialty"></div>
-                            </div>
-                            
-                            <div class="source-section">
-                                <h5>State News</h5>
-                                <div id="sources-state"></div>
-                            </div>
+                            <div id="dynamic-source-sections"></div>
                         </div>
                         <div class="dropdown-footer">
                             <button class="apply-sources-btn" onclick="applySources()">Apply Changes</button>
@@ -1300,88 +1272,7 @@
             },
             corsProxy: 'https://corsproxy.io/?',
             redditUrl: 'https://www.reddit.com/r/nashville/hot.json?limit=50',
-            updateInterval: 300000, // 5 minutes
-            
-            rssSources: {
-                // Core (permanent)
-                'googlenews': {
-                    name: 'Google News Nashville',
-                    url: 'https://news.google.com/rss/search?q=Nashville%20TN&hl=en',
-                    enabled: true,
-                    category: 'core',
-                    permanent: true
-                },
-                
-                // Major News
-                'tennessean': {
-                    name: 'The Tennessean',
-                    url: 'https://rssfeeds.tennessean.com/nashville/home',
-                    enabled: false,
-                    category: 'major'
-                },
-                'newschannel5': {
-                    name: 'NewsChannel 5 (WTVF)',
-                    url: 'https://www.newschannel5.com/index.rss',
-                    enabled: false,
-                    category: 'major'
-                },
-                'wkrn': {
-                    name: 'WKRN News 2',
-                    url: 'https://www.wkrn.com/feed',
-                    enabled: false,
-                    category: 'major'
-                },
-                'wpln': {
-                    name: 'WPLN Public Radio',
-                    url: 'https://wpln.org/feed',
-                    enabled: false,
-                    category: 'major'
-                },
-                
-                // Alternative
-                'scene': {
-                    name: 'Nashville Scene',
-                    url: 'https://www.nashvillescene.com/search/?f=feed',
-                    enabled: false,
-                    category: 'alternative'
-                },
-                'tennesseestar': {
-                    name: 'Tennessee Star',
-                    url: 'https://tennesseestar.com/feed',
-                    enabled: false,
-                    category: 'alternative'
-                },
-                
-                // Lifestyle
-                'nashvillecom': {
-                    name: 'Nashville.com',
-                    url: 'https://nashville.com/feed',
-                    enabled: false,
-                    category: 'lifestyle'
-                },
-                'eater': {
-                    name: 'Nashville Eater',
-                    url: 'https://nashville.eater.com/rss/index.xml',
-                    enabled: false,
-                    category: 'lifestyle'
-                },
-                
-                // Specialty
-                'musicrow': {
-                    name: 'MusicRow',
-                    url: 'https://musicrow.com/feed',
-                    enabled: false,
-                    category: 'specialty'
-                },
-                
-                // State
-                'lookout': {
-                    name: 'Tennessee Lookout',
-                    url: 'https://tennesseelookout.com/feed',
-                    enabled: false,
-                    category: 'state'
-                }
-            }
+            updateInterval: 300000 // 5 minutes
         };
 
         // Theme definitions
@@ -1417,7 +1308,10 @@
                     themes: new Set(),
                     search: ''
                 };
-                this.sourcePreferences = this.loadSourcePreferences();
+                this.sourcePreferences = { reddit: true, legislation: true, rss: {} };
+                this.rssSources = {};
+                this.categories = [];
+                this.refreshTimers = {};
                 this.counts = {
                     all: 0,
                     legislation: 0,
@@ -1437,26 +1331,59 @@
                 }
             }
 
+            async initializeSources(fetcher) {
+                const cache = localStorage.getItem('rss-source-cache');
+                if (cache) {
+                    try {
+                        const parsed = JSON.parse(cache);
+                        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+                            this.rssSources = parsed.sources || {};
+                            this.categories = parsed.categories || [];
+                        }
+                    } catch (e) {
+                        console.error('Error parsing source cache:', e);
+                    }
+                }
+
+                if (Object.keys(this.rssSources).length === 0) {
+                    const data = await fetcher.fetchRSSSources();
+                    const sources = {};
+                    const categories = [];
+                    (data.categories || []).forEach(cat => {
+                        categories.push({ id: cat.id, name: cat.name });
+                        (cat.sources || []).forEach(src => {
+                            sources[src.id] = { ...src, category: cat.id, enabled: src.enabled || false };
+                        });
+                    });
+                    this.rssSources = sources;
+                    this.categories = categories;
+                    localStorage.setItem('rss-source-cache', JSON.stringify({ timestamp: Date.now(), sources, categories }));
+                }
+
+                this.loadSourcePreferences();
+            }
+
             loadSourcePreferences() {
                 const saved = localStorage.getItem('nashville-sources');
                 if (saved) {
                     try {
                         const prefs = JSON.parse(saved);
-                        Object.keys(CONFIG.rssSources).forEach(key => {
-                            if (prefs.rss && prefs.rss[key] !== undefined && !CONFIG.rssSources[key].permanent) {
-                                CONFIG.rssSources[key].enabled = prefs.rss[key];
+                        Object.keys(this.rssSources).forEach(key => {
+                            if (prefs.rss && prefs.rss[key] !== undefined) {
+                                this.rssSources[key].enabled = prefs.rss[key];
                             }
                         });
-                        return prefs;
+                        this.sourcePreferences = prefs;
+                        return;
                     } catch (e) {
                         console.error('Error loading preferences:', e);
                     }
                 }
-                
-                return {
+
+                this.sourcePreferences = {
                     reddit: true,
                     legislation: true,
-                    rss: {}
+                    rss: {},
                 };
             }
 
@@ -1467,20 +1394,36 @@
                     rss: {}
                 };
                 
-                Object.keys(CONFIG.rssSources).forEach(key => {
-                    if (!CONFIG.rssSources[key].permanent) {
-                        const checkbox = document.getElementById(`source-${key}`);
-                        if (checkbox) {
-                            prefs.rss[key] = checkbox.checked;
-                            CONFIG.rssSources[key].enabled = checkbox.checked;
-                        }
+                Object.keys(this.rssSources).forEach(key => {
+                    const checkbox = document.getElementById(`source-${key}`);
+                    if (checkbox) {
+                        prefs.rss[key] = checkbox.checked;
+                        this.rssSources[key].enabled = checkbox.checked;
                     }
                 });
                 
                 this.sourcePreferences = prefs;
                 localStorage.setItem('nashville-sources', JSON.stringify(prefs));
-                
-                window.dataFetcher.fetchAllData(1);
+
+                window.dataFetcher.fetchAllData(1, true);
+                this.scheduleRefreshes();
+            }
+
+            scheduleRefreshes() {
+                Object.values(this.rssSources).forEach(src => {
+                    if (this.refreshTimers[src.id]) {
+                        clearInterval(this.refreshTimers[src.id]);
+                    }
+                    if (src.enabled && src.fetch_interval_minutes) {
+                        this.refreshTimers[src.id] = setInterval(async () => {
+                            const items = await window.dataFetcher.fetchRSSFeed(src.id, src);
+                            this.allCards = this.allCards.filter(card => card.source !== src.id);
+                            this.allCards = [...items, ...this.allCards];
+                            this.applyFilters();
+                            renderView();
+                        }, src.fetch_interval_minutes * 60000);
+                    }
+                });
             }
 
             detectThemes(title, content = '') {
@@ -1632,7 +1575,7 @@
                     date: pubDate ? new Date(pubDate) : new Date(),
                     dateFormatted: this.formatDate(pubDate ? new Date(pubDate) : new Date()),
                     link: link,
-                    sourceName: CONFIG.rssSources[sourceName]?.name || sourceName
+                    sourceName: this.rssSources[sourceName]?.name || sourceName
                 };
             }
 
@@ -1726,6 +1669,16 @@
                 this.manager = manager;
             }
 
+            async fetchRSSSources() {
+                try {
+                    const response = await fetch(`${CONFIG.xanoBaseUrl}/rss_feed`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching RSS sources:', error);
+                    return [];
+                }
+            }
+
             async fetchLegislation(page = 1, perPage = this.manager.pageSize) {
                 try {
                     const response = await fetch(
@@ -1784,7 +1737,7 @@
                 }
             }
 
-            async fetchAllData(page = 1) {
+            async fetchAllData(page = 1, includeRSS = true) {
                 this.manager.loading = true;
 
                 if (page === 1) {
@@ -1798,8 +1751,8 @@
                 ]);
 
                 let rssItems = [];
-                if (page === 1) {
-                    const rssPromises = Object.entries(CONFIG.rssSources)
+                if (page === 1 && includeRSS) {
+                    const rssPromises = Object.entries(this.manager.rssSources)
                         .filter(([key, config]) => config.enabled)
                         .map(([key, config]) => this.fetchRSSFeed(key, config));
 
@@ -2187,9 +2140,17 @@
         }
 
         function initializeSourceDropdown() {
-            Object.entries(CONFIG.rssSources).forEach(([key, source]) => {
-                if (source.permanent) return;
-                
+            const sectionsContainer = document.getElementById('dynamic-source-sections');
+            sectionsContainer.innerHTML = '';
+
+            window.dataManager.categories.forEach(cat => {
+                const section = document.createElement('div');
+                section.className = 'source-section';
+                section.innerHTML = `<h5>${cat.name}</h5><div id="sources-${cat.id}"></div>`;
+                sectionsContainer.appendChild(section);
+            });
+
+            Object.entries(window.dataManager.rssSources).forEach(([key, source]) => {
                 const container = document.getElementById(`sources-${source.category}`);
                 if (container) {
                     const label = document.createElement('label');
@@ -2201,9 +2162,9 @@
                     container.appendChild(label);
                 }
             });
-            
+
             document.getElementById('source-btn').addEventListener('click', toggleSourceDropdown);
-            
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.source-selector')) {
                     document.getElementById('source-dropdown').classList.remove('show');
@@ -2216,13 +2177,15 @@
             window.dataManager = new DataManager();
             window.dataFetcher = new DataFetcher(window.dataManager);
 
+            await window.dataManager.initializeSources(window.dataFetcher);
             initializeSourceDropdown();
-            await window.dataFetcher.fetchAllData(1);
+            await window.dataFetcher.fetchAllData(1, true);
+            window.dataManager.scheduleRefreshes();
             initializeEventListeners();
 
-            // Refresh every 5 minutes
+            // Refresh legislation and reddit periodically
             setInterval(() => {
-                window.dataFetcher.fetchAllData(1);
+                window.dataFetcher.fetchAllData(1, false);
             }, CONFIG.updateInterval);
         }
 
