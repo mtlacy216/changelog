@@ -1253,7 +1253,6 @@
             <div class="spinner"></div>
             <p>Loading more...</p>
         </div>
-        <div id="scroll-sentinel"></div>
     </main>
 
     <!-- Modal System -->
@@ -1324,6 +1323,9 @@
                 this.pageSize = 20;
                 this.hasMore = true;
                 this.loading = false;
+                this.pages = new Map();
+                this.totalItems = 0;
+                this.extraCount = 0;
 
                 // Initialize theme counts
                 for (let i = 1; i <= 7; i++) {
@@ -1361,6 +1363,10 @@
                 }
 
                 this.loadSourcePreferences();
+            get loadedCount() {
+                let count = 0;
+                this.pages.forEach(items => count += items.length);
+                return count;
             }
 
             loadSourcePreferences() {
@@ -1685,11 +1691,15 @@
                         `${CONFIG.xanoBaseUrl}${CONFIG.endpoints.legislation}?page=${page}&per_page=${perPage}&sort=[-MatterIntroDate]`
                     );
                     const data = await response.json();
-                    const items = Array.isArray(data) ? data : (data.items || []);
-                    return items.map(item => this.manager.normalizeLegislation(item));
+                    const items = Array.isArray(data) ? data : (data.items || data.data || data.results || []);
+                    const total = data.itemsTotal || data.total || data.total_count || items.length;
+                    return {
+                        items: items.map(item => this.manager.normalizeLegislation(item)),
+                        total
+                    };
                 } catch (error) {
                     console.error('Error fetching legislation:', error);
-                    return [];
+                    return { items: [], total: 0 };
                 }
             }
 
@@ -1738,15 +1748,27 @@
             }
 
             async fetchAllData(page = 1, includeRSS = true) {
+            async fetchAllData(page = 1, pageSize = this.manager.pageSize) {
                 this.manager.loading = true;
 
                 if (page === 1) {
+                    this.manager.pages.clear();
                     this.manager.allCards = [];
                     this.manager.hasMore = true;
+                    this.manager.totalItems = 0;
+                    this.manager.extraCount = 0;
+                } else if (this.manager.pages.has(page)) {
+                    this.manager.page = page;
+                    this.manager.allCards = Array.from(this.manager.pages.values()).flat();
+                    this.manager.hasMore = this.manager.loadedCount < this.manager.totalItems;
+                    this.manager.applyFilters();
+                    renderView();
+                    this.manager.loading = false;
+                    return this.manager.hasMore;
                 }
 
-                const [legislation, redditPosts] = await Promise.all([
-                    this.fetchLegislation(page, this.manager.pageSize),
+                const [{ items: legislation, total: legislationTotal }, redditPosts] = await Promise.all([
+                    this.fetchLegislation(page, pageSize),
                     page === 1 ? this.fetchRedditPosts() : []
                 ]);
 
@@ -1760,18 +1782,26 @@
                     rssItems = rssResults
                         .filter(result => result.status === 'fulfilled')
                         .flatMap(result => result.value);
+                    this.manager.extraCount = redditPosts.length + rssItems.length;
                 }
 
-                if (legislation.length < this.manager.pageSize) {
-                    this.manager.hasMore = false;
-                }
+                this.manager.totalItems = legislationTotal + this.manager.extraCount;
 
                 const newCards = [...legislation, ...redditPosts, ...rssItems];
-                this.manager.allCards = [...this.manager.allCards, ...newCards];
+                this.manager.pages.set(page, newCards);
+                this.manager.allCards = Array.from(this.manager.pages.values()).flat();
                 this.manager.page = page;
+                this.manager.hasMore = this.manager.loadedCount < this.manager.totalItems;
                 this.manager.applyFilters();
                 renderView();
                 this.manager.loading = false;
+
+                if (!this.manager.hasMore) {
+                    const loadingMore = document.getElementById('loading-more');
+                    if (loadingMore) loadingMore.classList.add('hidden');
+                }
+
+                return this.manager.hasMore;
             }
         }
 
@@ -2124,19 +2154,21 @@
             });
 
             // Infinite scroll
-            const sentinel = document.getElementById('scroll-sentinel');
             const loadingMore = document.getElementById('loading-more');
-            const observer = new IntersectionObserver(async (entries) => {
-                if (entries[0].isIntersecting && manager.hasMore && !manager.loading) {
+            window.addEventListener('scroll', async () => {
+                if (!manager.hasMore || manager.loading) {
+                    if (!manager.hasMore) loadingMore.classList.add('hidden');
+                    return;
+                }
+                const scrollPosition = window.innerHeight + window.scrollY;
+                const threshold = document.documentElement.scrollHeight - 200;
+                if (scrollPosition >= threshold) {
                     loadingMore.classList.remove('hidden');
                     await window.dataFetcher.fetchAllData(manager.page + 1);
-                    loadingMore.classList.add('hidden');
-                    if (!manager.hasMore) {
-                        observer.unobserve(sentinel);
-                    }
+                    if (!manager.loading) loadingMore.classList.add('hidden');
+                    if (!manager.hasMore) loadingMore.classList.add('hidden');
                 }
-            }, { rootMargin: '200px' });
-            observer.observe(sentinel);
+            });
         }
 
         function initializeSourceDropdown() {
