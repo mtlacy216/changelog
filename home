@@ -1057,6 +1057,34 @@
             color: var(--text-primary);
         }
 
+        /* Events section */
+        .events {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .events h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .events ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .events li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .events time {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .intro h1 {
@@ -1253,6 +1281,12 @@
             <div class="spinner"></div>
             <p>Loading more...</p>
         </div>
+        <section id="events-section" class="events">
+            <h2>Upcoming Events</h2>
+            <ul id="events-list">
+                <li>Loading...</li>
+            </ul>
+        </section>
     </main>
 
     <!-- Modal System -->
@@ -2204,6 +2238,27 @@
             });
         }
 
+        async function loadEvents() {
+            const list = document.getElementById('events-list');
+            if (!list) return;
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const url = `${CONFIG.corsProxy}https://webapi.legistar.com/v1/nashville/events?$filter=EventDate ge datetime'${today}'&$orderby=EventDate&$top=5`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                list.innerHTML = '';
+                data.forEach(ev => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${ev.EventBodyName || 'Meeting'}</strong><time>${new Date(ev.EventDate).toLocaleString()}</time>`;
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                const li = document.createElement('li');
+                li.textContent = 'Failed to load events.';
+                list.appendChild(li);
+            }
+        }
+
         // Initialize app
         async function initialize() {
             window.dataManager = new DataManager();
@@ -2214,6 +2269,9 @@
             await window.dataFetcher.fetchAllData(1, true);
             window.dataManager.scheduleRefreshes();
             initializeEventListeners();
+
+            // Load upcoming events
+            loadEvents();
 
             // Refresh legislation and reddit periodically
             setInterval(() => {
