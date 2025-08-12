@@ -1,0 +1,32 @@
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-auto-rows: 150px;
+  gap: 1rem;
+}
+
+.card[data-size="large"] {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.card[data-size="medium"] {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.card[data-size="small"] {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+@media (max-width: 600px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card[data-size] {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+}
