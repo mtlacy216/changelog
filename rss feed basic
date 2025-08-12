@@ -35,6 +35,51 @@
             border-bottom: 2px solid #e0e0e0;
         }
         
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 12px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sync-status.syncing {
+            background: #FFF3CD;
+            border: 1px solid #FFC107;
+        }
+        
+        .sync-status.success {
+            background: #D4EDDA;
+            border: 1px solid #28A745;
+        }
+        
+        .sync-status.error {
+            background: #F8D7DA;
+            border: 1px solid #DC3545;
+        }
+        
+        .cache-stats {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cache-stats span {
+            margin-right: 15px;
+        }
+        
         .theme-filter-section {
             margin-bottom: 25px;
             padding: 15px;
@@ -362,10 +407,14 @@
             line-height: 1.5;
         }
         
-        .article-relevance {
-            margin-top: 8px;
+        .article-cached {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 6px;
+            background: #E3F2FD;
+            color: #1976D2;
+            border-radius: 4px;
             font-size: 11px;
-            color: #999;
         }
         
         .error {
@@ -480,6 +529,21 @@
     <div class="container">
         <h1>Nashville Civic News Aggregator</h1>
         
+        <div class="sync-status" id="syncStatus">
+            <span>Ready</span>
+        </div>
+        
+        <div class="cache-stats" id="cacheStats">
+            <div>
+                <span>🗄️ Cached: <strong id="cachedCount">0</strong></span>
+                <span>🆕 New: <strong id="newCount">0</strong></span>
+                <span>📡 From RSS: <strong id="rssCount">0</strong></span>
+            </div>
+            <div>
+                <span>Last sync: <strong id="lastSync">Never</strong></span>
+            </div>
+        </div>
+        
         <div class="theme-filter-section">
             <div class="theme-filter-label">Filter by civic theme:</div>
             <div class="theme-processing-indicator" id="themeProcessing">
@@ -515,26 +579,23 @@
         </div>
         
         <div class="controls">
-            <button onclick="startIterativeLoad()" id="loadBtn">Start Loading Feeds</button>
-            <button onclick="stopLoading()" id="stopBtn" disabled>Stop Loading</button>
+            <button onclick="syncWithCache()" id="syncBtn">🔄 Sync & Load</button>
+            <button onclick="forceRefresh()" id="refreshBtn">🔃 Force Refresh</button>
             <button onclick="clearArticles()">Clear Articles</button>
             <button onclick="toggleDebug()">Toggle Debug</button>
             
             <div class="load-settings">
                 <label>
-                    <input type="checkbox" id="autoScroll" checked>
-                    Auto-scroll
+                    <input type="checkbox" id="autoSync" checked>
+                    Auto-sync
                 </label>
                 <label>
-                    <input type="checkbox" id="liveMode" checked>
-                    Live mode
-                </label>
-                <label>
-                    Speed:
-                    <select id="loadSpeed">
-                        <option value="0" selected>Fast (no delay)</option>
-                        <option value="100">Normal</option>
-                        <option value="500">Slow</option>
+                    Time window:
+                    <select id="timeWindow">
+                        <option value="24">24 hours</option>
+                        <option value="48" selected>48 hours</option>
+                        <option value="72">3 days</option>
+                        <option value="168">1 week</option>
                     </select>
                 </label>
             </div>
@@ -552,7 +613,7 @@
         <div class="debug-panel" id="debugPanel"></div>
         
         <div class="stats" id="stats">
-            Ready to load feeds. Click "Start Loading Feeds" to begin.
+            Ready to sync. Click "Sync & Load" to begin.
             <div class="theme-analytics" id="themeAnalytics"></div>
         </div>
         
@@ -579,7 +640,7 @@
         
         <div id="articlesContainer">
             <div class="loading-indicator">
-                <div>Click "Start Loading Feeds" to begin fetching articles</div>
+                <div>Click "Sync & Load" to fetch articles</div>
             </div>
         </div>
         
@@ -603,9 +664,18 @@
 
     <script>
         // Configuration
-        const SOURCES_API = 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO/rss_feed';
+        const XANO_API = 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO';
+        const SOURCES_API = `${XANO_API}/rss_feed`;
+        const CONTENT_API = `${XANO_API}/content`;
         const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        
+        // Cache configuration
+        const CACHE_CONFIG = {
+            defaultTimeWindow: 48 * 60 * 60 * 1000,  // 48 hours
+            batchSize: 20,                            // Articles to POST at once
+            syncInterval: 5 * 60 * 1000,              // 5 minutes auto-sync
+            localCacheKey: 'nashville_civic_cache'
+        };
         
         // Theme definitions with keywords and weights
         const THEMES = {
@@ -672,10 +742,18 @@
         let filteredArticles = [];
         let feedSources = [];
         let debugMode = false;
-        let cache = {};
         let isLoading = false;
         let activeThemeFilter = 'all';
         let themeCounts = {};
+        let cachedUrls = new Set();
+        let lastSyncTime = null;
+        
+        // Cache statistics
+        let cacheStats = {
+            fromCache: 0,
+            fromRSS: 0,
+            new: 0
+        };
         
         // Pagination state
         let currentPage = 1;
@@ -720,8 +798,8 @@
                 }
                 
                 // Source-based hints
-                if (article.source) {
-                    const sourceLower = article.source.toLowerCase();
+                if (article.source_name) {
+                    const sourceLower = article.source_name.toLowerCase();
                     if (themeKey === 'care' && sourceLower.includes('environment')) score += 2;
                     if (themeKey === 'governance' && (sourceLower.includes('council') || sourceLower.includes('government'))) score += 2;
                 }
@@ -743,7 +821,415 @@
             return themes;
         }
         
-        // Filter articles by theme
+        // Load from Xano cache with intelligent filtering
+        async function loadFromCache() {
+            const timeWindow = parseInt(document.getElementById('timeWindow').value) || 48;
+            const cutoffDate = new Date(Date.now() - (timeWindow * 60 * 60 * 1000));
+            
+            const params = new URLSearchParams({
+                published_after: cutoffDate.toISOString()
+            });
+            
+            try {
+                updateSyncStatus('syncing', 'Loading from cache...');
+                const response = await fetch(`${CONTENT_API}?${params}`);
+                
+                if (!response.ok) throw new Error('Failed to load cache');
+                
+                const cachedArticles = await response.json();
+                
+                // Process cached articles
+                cachedArticles.forEach(article => {
+                    cachedUrls.add(article.url);
+                    
+                    // Convert Xano format to our format
+                    article.fromCache = true;
+                    if (article.published_at) {
+                        article.date = new Date(article.published_at);
+                    }
+                    
+                    // Restore category array as themes
+                    if (article.category && article.category.length > 0) {
+                        article.themes = {
+                            primary: article.category[0],
+                            secondary: article.category.slice(1, 3),
+                            scores: {}
+                        };
+                    }
+                });
+                
+                cacheStats.fromCache = cachedArticles.length;
+                return cachedArticles;
+                
+            } catch (error) {
+                console.error('Cache load error:', error);
+                updateSyncStatus('error', 'Cache load failed');
+                return [];
+            }
+        }
+        
+        // Check if URL exists in cache
+        async function checkUrlInCache(url) {
+            // First check local set
+            if (cachedUrls.has(url)) return true;
+            
+            // Then check Xano - 404 means not cached, which is expected
+            try {
+                const response = await fetch(`${CONTENT_API}/${encodeURIComponent(url)}`);
+                if (response.ok) {
+                    cachedUrls.add(url); // Add to local cache
+                    return true;
+                }
+                // 404 means not in cache, which is what we want to know
+                return false;
+            } catch (error) {
+                // Network error - assume not cached
+                return false;
+            }
+        }
+        
+        // Post new articles to Xano
+        async function postToCache(articles) {
+            if (articles.length === 0) return;
+            
+            console.log(`Posting ${articles.length} articles to Xano...`);
+            
+            const batches = [];
+            for (let i = 0; i < articles.length; i += CACHE_CONFIG.batchSize) {
+                batches.push(articles.slice(i, i + CACHE_CONFIG.batchSize));
+            }
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (const batch of batches) {
+                for (const article of batch) {
+                    try {
+                        // Prepare article for Xano
+                        const xanoArticle = {
+                            url: article.link || article.url,
+                            title: article.title,
+                            description: article.description || '',
+                            published_at: article.date ? article.date.toISOString() : new Date().toISOString(),
+                            source_name: article.source_name || article.source,
+                            author: article.author || '',
+                            category: [],
+                            keywords: []
+                        };
+                        
+                        // Add themes as categories
+                        if (article.themes) {
+                            if (article.themes.primary) {
+                                xanoArticle.category.push(article.themes.primary);
+                            }
+                            if (article.themes.secondary) {
+                                xanoArticle.category = xanoArticle.category.concat(article.themes.secondary);
+                            }
+                        }
+                        
+                        // Extract keywords from description
+                        if (article.description) {
+                            const words = article.description.toLowerCase()
+                                .split(/\W+/)
+                                .filter(word => word.length > 5)
+                                .slice(0, 10);
+                            xanoArticle.keywords = [...new Set(words)];
+                        }
+                        
+                        const response = await fetch(CONTENT_API, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(xanoArticle)
+                        });
+                        
+                        if (response.ok) {
+                            cachedUrls.add(xanoArticle.url);
+                            cacheStats.new++;
+                            successCount++;
+                        } else {
+                            console.error(`Failed to post article: ${response.status}`, await response.text());
+                            errorCount++;
+                        }
+                        
+                    } catch (error) {
+                        console.error('Failed to cache article:', error);
+                        errorCount++;
+                    }
+                }
+                
+                // Small delay between batches
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            console.log(`Posted ${successCount} articles successfully, ${errorCount} errors`);
+        }
+        
+        // Load RSS sources
+        async function loadSources() {
+            try {
+                const response = await fetch(SOURCES_API);
+                if (!response.ok) throw new Error('Failed to load sources');
+                
+                const data = await response.json();
+                feedSources = data;
+                updateSourcesDisplay();
+                return data;
+            } catch (error) {
+                console.error('Error loading sources:', error);
+                showError('Failed to load feed sources');
+                return [];
+            }
+        }
+        
+        // Parse RSS feed
+        function parseRSSFeed(xmlText, sourceName) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const articles = [];
+            
+            if (xml.querySelector('parsererror')) {
+                console.error('XML parse error for', sourceName);
+                return articles;
+            }
+            
+            let items = xml.querySelectorAll('item');
+            if (items.length === 0) {
+                items = xml.querySelectorAll('entry');
+            }
+            
+            items.forEach(item => {
+                const title = item.querySelector('title')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || 
+                           item.querySelector('link')?.getAttribute('href') || '';
+                const description = item.querySelector('description')?.textContent || 
+                                  item.querySelector('summary')?.textContent || '';
+                const pubDate = item.querySelector('pubDate')?.textContent || 
+                              item.querySelector('published')?.textContent || '';
+                const author = item.querySelector('author')?.textContent || 
+                             item.querySelector('dc\\:creator')?.textContent || '';
+                
+                if (title || description) {
+                    const article = {
+                        title: cleanText(title || 'Untitled'),
+                        link: link || '#',
+                        url: link || '#',
+                        description: cleanHTML(description || ''),
+                        date: parseDate(pubDate),
+                        published_at: parseDate(pubDate),
+                        author: cleanText(author),
+                        source: sourceName,
+                        source_name: sourceName,
+                        themes: null
+                    };
+                    
+                    articles.push(article);
+                }
+            });
+            
+            return articles;
+        }
+        
+        // Fetch RSS feed
+        async function fetchFeed(source) {
+            const url = source.url || source.link;
+            const name = source.name || source.title || 'Unknown';
+            
+            if (!url) return [];
+            
+            try {
+                const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const text = await response.text();
+                const articles = parseRSSFeed(text, name);
+                
+                return articles;
+            } catch (error) {
+                console.error(`Error fetching ${name}:`, error);
+                return [];
+            }
+        }
+        
+        // Main sync function
+        async function syncWithCache() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const syncBtn = document.getElementById('syncBtn');
+            const progressBar = document.getElementById('progressBar');
+            const container = document.getElementById('articlesContainer');
+            
+            syncBtn.disabled = true;
+            progressBar.style.display = 'block';
+            
+            // Reset stats
+            cacheStats = { fromCache: 0, fromRSS: 0, new: 0 };
+            allArticles = [];
+            
+            updateProgress(10, 'Loading cached articles...');
+            
+            // Step 1: Load from cache
+            const cachedArticles = await loadFromCache();
+            allArticles = allArticles.concat(cachedArticles);
+            
+            updateProgress(30, 'Loading RSS sources...');
+            
+            // Step 2: Load RSS sources
+            const sources = await loadSources();
+            
+            if (sources.length === 0) {
+                isLoading = false;
+                syncBtn.disabled = false;
+                progressBar.style.display = 'none';
+                container.innerHTML = '<div class="error">No feed sources found</div>';
+                return;
+            }
+            
+            // Step 3: Fetch RSS feeds and check against cache
+            let newArticles = [];
+            let processed = 0;
+            let allNewArticles = []; // Collect all for final sort
+            
+            for (const source of sources) {
+                if (!isLoading) break;
+                
+                processed++;
+                const progress = 30 + (processed / sources.length) * 60; // Adjusted progress
+                updateProgress(progress, `Fetching ${source.name || 'Unknown'}...`);
+                updateSourceStatus(source.name || source.title, 'loading');
+                
+                const articles = await fetchFeed(source);
+                let sourceNewArticles = [];
+                
+                for (const article of articles) {
+                    // Skip checking individual URLs during initial load if cache is empty
+                    const shouldCheckCache = cachedUrls.size > 0 || cacheStats.fromCache > 0;
+                    const inCache = shouldCheckCache ? await checkUrlInCache(article.url) : false;
+                    
+                    if (!inCache) {
+                        // Calculate themes for new article
+                        article.themes = calculateThemeRelevance(article);
+                        article.fromCache = false;
+                        sourceNewArticles.push(article);
+                        cacheStats.fromRSS++;
+                    }
+                }
+                
+                // Post this source's new articles immediately
+                if (sourceNewArticles.length > 0) {
+                    allNewArticles = allNewArticles.concat(sourceNewArticles);
+                    
+                    // Add to display immediately
+                    allArticles = allArticles.concat(sourceNewArticles);
+                    allArticles.sort((a, b) => {
+                        if (!a.date) return 1;
+                        if (!b.date) return -1;
+                        return b.date - a.date;
+                    });
+                    
+                    // Update display in real-time
+                    updateThemeCounts();
+                    filterArticles();
+                    updateCacheStats();
+                    
+                    // Post to Xano in background (don't await)
+                    postToCache(sourceNewArticles).then(() => {
+                        updateCacheStats();
+                    });
+                }
+                
+                updateSourceStatus(source.name || source.title, articles.length > 0 ? 'active' : 'error');
+            }
+            
+            updateProgress(95, 'Finalizing...');
+            
+            updateProgress(100, 'Sync complete!');
+            
+            // Final update
+            updateThemeCounts();
+            filterArticles();
+            updateCacheStats();
+            lastSyncTime = new Date();
+            updateLastSyncTime();
+            
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+                updateSyncStatus('success', 'Sync complete');
+            }, 1000);
+            
+            isLoading = false;
+            syncBtn.disabled = false;
+            
+            if (debugMode) {
+                updateDebug();
+            }
+        }
+        
+        // Force refresh (bypass cache)
+        async function forceRefresh() {
+            cachedUrls.clear();
+            await syncWithCache();
+        }
+        
+        // Update sync status
+        function updateSyncStatus(status, message) {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.className = `sync-status ${status}`;
+            statusEl.innerHTML = `<span>${message}</span>`;
+            
+            if (status === 'success' || status === 'error') {
+                setTimeout(() => {
+                    statusEl.className = 'sync-status';
+                    statusEl.innerHTML = '<span>Ready</span>';
+                }, 3000);
+            }
+        }
+        
+        // Update cache statistics display
+        function updateCacheStats() {
+            document.getElementById('cachedCount').textContent = cacheStats.fromCache;
+            document.getElementById('newCount').textContent = cacheStats.new;
+            document.getElementById('rssCount').textContent = cacheStats.fromRSS;
+        }
+        
+        // Update last sync time
+        function updateLastSyncTime() {
+            const el = document.getElementById('lastSync');
+            if (lastSyncTime) {
+                el.textContent = lastSyncTime.toLocaleTimeString();
+            } else {
+                el.textContent = 'Never';
+            }
+        }
+        
+        // Clean text content
+        function cleanText(text) {
+            if (!text) return '';
+            return text.replace(/<[^>]*>/g, '').trim();
+        }
+        
+        // Clean HTML content
+        function cleanHTML(html) {
+            if (!html) return '';
+            html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+            html = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+            html = html.replace(/<[^>]*>/g, ' ');
+            html = html.replace(/\s+/g, ' ').trim();
+            return html;
+        }
+        
+        // Parse date strings
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? null : date;
+        }
+        
+        // Filter by theme
         function filterByTheme(theme) {
             activeThemeFilter = theme;
             
@@ -809,7 +1295,7 @@
             updateThemeAnalytics();
         }
         
-        // Update theme analytics display
+        // Update theme analytics
         function updateThemeAnalytics() {
             const container = document.getElementById('themeAnalytics');
             let html = '';
@@ -830,480 +1316,16 @@
             container.innerHTML = html;
         }
         
-        // Simple fuzzy string matching
-        function similarity(s1, s2) {
-            s1 = s1.toLowerCase();
-            s2 = s2.toLowerCase();
-            
-            if (s1 === s2) return 1.0;
-            if (s1.length < 2 || s2.length < 2) return 0.0;
-            
-            let matches = 0;
-            const range = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
-            
-            for (let i = 0; i < s1.length; i++) {
-                const start = Math.max(0, i - range);
-                const end = Math.min(i + range + 1, s2.length);
-                
-                for (let j = start; j < end; j++) {
-                    if (s1[i] === s2[j]) {
-                        matches++;
-                        break;
-                    }
-                }
-            }
-            
-            return matches / Math.max(s1.length, s2.length);
-        }
-        
-        // Fuzzy field matching
-        function findBestFieldMatch(obj, targetFields, threshold = 0.6) {
-            if (!obj || typeof obj !== 'object') return null;
-            
-            const objKeys = Object.keys(obj);
-            let bestMatch = null;
-            let bestScore = 0;
-            
-            for (const target of targetFields) {
-                for (const key of objKeys) {
-                    const score = similarity(key, target);
-                    if (score > bestScore && score >= threshold) {
-                        bestScore = score;
-                        bestMatch = obj[key];
-                    }
-                }
-            }
-            
-            return bestMatch;
-        }
-        
-        // Smart field extraction with fuzzy matching
-        function extractField(item, fieldType) {
-            const fieldMappings = {
-                title: ['title', 'headline', 'name', 'subject', 'heading'],
-                link: ['link', 'url', 'guid', 'id', 'permalink', 'href'],
-                description: ['description', 'summary', 'content', 'excerpt', 'abstract', 'contentsnippet', 'content:encoded'],
-                date: ['pubdate', 'published', 'date', 'updated', 'created', 'modified', 'publishedat', 'isodate'],
-                author: ['author', 'creator', 'dc:creator', 'contributor', 'by'],
-                category: ['category', 'categories', 'tags', 'tag', 'subject', 'topics']
-            };
-            
-            const result = findBestFieldMatch(item, fieldMappings[fieldType]);
-            
-            if (!result && item) {
-                if (fieldType === 'description' && item['content:encoded']) {
-                    return item['content:encoded'];
-                }
-                if (fieldType === 'link' && item.link && typeof item.link === 'object') {
-                    return item.link.href || item.link.url || item.link.$;
-                }
-            }
-            
-            return result || '';
-        }
-        
-        // Parse RSS/Atom feeds
-        function parseRSSFeed(xmlText, sourceName) {
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
-            const articles = [];
-            
-            if (xml.querySelector('parsererror')) {
-                console.error('XML parse error for', sourceName);
-                return articles;
-            }
-            
-            let items = xml.querySelectorAll('item');
-            if (items.length === 0) {
-                items = xml.querySelectorAll('entry');
-            }
-            
-            items.forEach(item => {
-                const itemObj = {};
-                for (const child of item.children) {
-                    const tagName = child.tagName.toLowerCase();
-                    itemObj[tagName] = child.textContent || child.innerHTML;
-                    
-                    if (child.attributes.length > 0) {
-                        for (const attr of child.attributes) {
-                            itemObj[`${tagName}_${attr.name}`] = attr.value;
-                        }
-                    }
-                }
-                
-                const title = extractField(itemObj, 'title');
-                const link = extractField(itemObj, 'link');
-                const description = extractField(itemObj, 'description');
-                const dateStr = extractField(itemObj, 'date');
-                const author = extractField(itemObj, 'author');
-                const category = extractField(itemObj, 'category');
-                
-                if (title || description) {
-                    const article = {
-                        title: cleanText(title || 'Untitled'),
-                        link: link || '#',
-                        description: cleanHTML(description || ''),
-                        date: parseDate(dateStr),
-                        author: cleanText(author),
-                        category: cleanText(category),
-                        source: sourceName,
-                        themes: null // Will be calculated later
-                    };
-                    
-                    articles.push(article);
-                }
-            });
-            
-            return articles;
-        }
-        
-        // Clean text content
-        function cleanText(text) {
-            if (!text) return '';
-            return text.replace(/<[^>]*>/g, '').trim();
-        }
-        
-        // Clean HTML content
-        function cleanHTML(html) {
-            if (!html) return '';
-            html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-            html = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-            html = html.replace(/<[^>]*>/g, ' ');
-            html = html.replace(/\s+/g, ' ').trim();
-            return html;
-        }
-        
-        // Parse date strings
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? null : date;
-        }
-        
-        // Load RSS sources from API
-        async function loadSources() {
-            try {
-                const response = await fetch(SOURCES_API);
-                if (!response.ok) throw new Error('Failed to load sources');
-                
-                const data = await response.json();
-                feedSources = data;
-                updateSourcesDisplay();
-                return data;
-            } catch (error) {
-                console.error('Error loading sources:', error);
-                showError('Failed to load feed sources');
-                return [];
-            }
-        }
-        
-        // Fetch RSS feed content
-        async function fetchFeed(source) {
-            const url = source.url || source.link;
-            const name = source.name || source.title || 'Unknown';
-            
-            if (!url) return [];
-            
-            const cacheKey = url;
-            const cached = cache[cacheKey];
-            if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
-                return cached.articles;
-            }
-            
-            try {
-                const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-                const response = await fetch(proxyUrl);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const text = await response.text();
-                const articles = parseRSSFeed(text, name);
-                
-                cache[cacheKey] = {
-                    articles: articles,
-                    timestamp: Date.now()
-                };
-                
-                return articles;
-            } catch (error) {
-                console.error(`Error fetching ${name}:`, error);
-                return [];
-            }
-        }
-        
-        // Process themes for articles in background - OPTIMIZED FOR SPEED
-        async function processThemesIteratively() {
-            const progressBar = document.getElementById('progressBar');
-            const themeIndicator = document.getElementById('themeProcessing');
-            const articlesToProcess = allArticles.filter(a => a.themes === null);
-            
-            if (articlesToProcess.length === 0) return;
-            
-            // Show theme processing indicators
-            progressBar.style.display = 'block';
-            themeIndicator.classList.add('active');
-            updateProgress(0, 'Analyzing themes...');
-            
-            const batchSize = 25; // Increased batch size for faster processing
-            let processed = 0;
-            
-            // Process all articles as quickly as possible
-            for (let i = 0; i < articlesToProcess.length; i += batchSize) {
-                const batch = articlesToProcess.slice(i, Math.min(i + batchSize, articlesToProcess.length));
-                
-                // Process batch immediately without animation frame
-                batch.forEach(article => {
-                    article.themes = calculateThemeRelevance(article);
-                    processed++;
-                });
-                
-                // Update progress less frequently for speed
-                if (processed % 50 === 0 || processed === articlesToProcess.length) {
-                    const progress = Math.round((processed / articlesToProcess.length) * 100);
-                    updateProgress(progress, `Analyzing themes: ${processed} of ${articlesToProcess.length} articles`);
-                    
-                    // Update theme counts
-                    updateThemeCounts();
-                    
-                    // Update display only every 50 articles for performance
-                    const articlesToShow = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
-                        filteredArticles : allArticles;
-                    displayArticles(articlesToShow);
-                }
-                
-                // Minimal delay only if not finished
-                if (i + batchSize < articlesToProcess.length) {
-                    await new Promise(resolve => setTimeout(resolve, 1));
-                }
-            }
-            
-            // Final update
-            updateProgress(100, 'Theme analysis complete!');
-            updateThemeCounts();
-            const articlesToShow = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
-                filteredArticles : allArticles;
-            displayArticles(articlesToShow);
-            updateStats();
-            
-            // Hide indicators
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-                themeIndicator.classList.remove('active');
-            }, 1000);
-        }
-        
-        // Start iterative loading
-        async function startIterativeLoad() {
-            if (isLoading) return;
-            
-            isLoading = true;
-            const loadBtn = document.getElementById('loadBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const progressBar = document.getElementById('progressBar');
-            const container = document.getElementById('articlesContainer');
-            
-            loadBtn.disabled = true;
-            stopBtn.disabled = false;
-            progressBar.style.display = 'block';
-            
-            // Show immediate feedback
-            container.innerHTML = '<div class="loading-indicator"><div class="spinner"></div><div>Starting to load feeds...</div></div>';
-            updateProgress(0, 'Loading sources...');
-            
-            const liveMode = document.getElementById('liveMode').checked;
-            if (!liveMode) {
-                allArticles = [];
-                filteredArticles = [];
-                currentPage = 1;
-            }
-            
-            updateStats('Loading feed sources...');
-            const sources = await loadSources();
-            
-            if (sources.length === 0) {
-                isLoading = false;
-                loadBtn.disabled = false;
-                stopBtn.disabled = true;
-                progressBar.style.display = 'none';
-                container.innerHTML = '<div class="error">No feed sources found</div>';
-                return;
-            }
-            
-            // Clear loading indicator once we start getting articles
-            let firstArticlesLoaded = false;
-            const autoScroll = document.getElementById('autoScroll').checked;
-            let loadedCount = 0;
-            
-            // Load first 5 feeds in parallel for faster initial content
-            const initialBatchSize = Math.min(5, sources.length);
-            const initialBatch = sources.slice(0, initialBatchSize);
-            const remainingSources = sources.slice(initialBatchSize);
-            
-            // Start first batch in parallel
-            updateProgress(0, `Loading initial feeds...`);
-            const initialPromises = initialBatch.map(async (source, index) => {
-                updateSourceStatus(source.name || source.title, 'loading');
-                try {
-                    const articles = await fetchFeed(source);
-                    return { source, articles, index };
-                } catch (error) {
-                    console.error(`Error loading ${source.name}:`, error);
-                    return { source, articles: [], index };
-                }
-            });
-            
-            // Process initial batch results as they come in
-            const initialResults = await Promise.all(initialPromises);
-            
-            for (const result of initialResults) {
-                if (!isLoading) break;
-                
-                loadedCount++;
-                
-                if (result.articles.length > 0) {
-                    if (!firstArticlesLoaded) {
-                        firstArticlesLoaded = true;
-                        container.innerHTML = '';
-                    }
-                    
-                    updateSourceStatus(result.source.name || result.source.title, 'active');
-                    allArticles = allArticles.concat(result.articles);
-                } else {
-                    updateSourceStatus(result.source.name || result.source.title, 'error');
-                }
-            }
-            
-            // Sort once after initial batch
-            allArticles.sort((a, b) => {
-                if (!a.date) return 1;
-                if (!b.date) return -1;
-                return b.date - a.date;
-            });
-            
-            // Display initial articles
-            filterArticles();
-            updateStats(`Loaded ${loadedCount}/${sources.length} feeds | ${allArticles.length} total articles`);
-            
-            if (autoScroll && firstArticlesLoaded) {
-                document.getElementById('articlesContainer').scrollIntoView({ behavior: 'smooth' });
-            }
-            
-            // Start processing themes immediately for initial articles
-            if (allArticles.length > 0) {
-                processThemesIteratively();
-            }
-            
-            // Process remaining feeds
-            for (let i = 0; i < remainingSources.length; i++) {
-                if (!isLoading) break;
-                
-                const source = remainingSources[i];
-                const totalIndex = i + initialBatchSize;
-                const progress = Math.round((totalIndex / sources.length) * 100);
-                
-                updateProgress(progress, `Loading feed ${totalIndex + 1} of ${sources.length}: ${source.name || 'Unknown'}`);
-                updateSourceStatus(source.name || source.title, 'loading');
-                
-                // Fetch single feed
-                try {
-                    const articles = await fetchFeed(source);
-                    loadedCount++;
-                    
-                    if (articles.length > 0) {
-                        if (!firstArticlesLoaded) {
-                            firstArticlesLoaded = true;
-                            container.innerHTML = '';
-                        }
-                        
-                        updateSourceStatus(source.name || source.title, 'active');
-                        
-                        // Add new articles and process themes immediately
-                        const newArticlesStartIndex = allArticles.length;
-                        allArticles = allArticles.concat(articles);
-                        
-                        // Calculate themes for new articles right away
-                        for (let j = newArticlesStartIndex; j < allArticles.length; j++) {
-                            allArticles[j].themes = calculateThemeRelevance(allArticles[j]);
-                        }
-                        
-                        // Sort all articles by date
-                        allArticles.sort((a, b) => {
-                            if (!a.date) return 1;
-                            if (!b.date) return -1;
-                            return b.date - a.date;
-                        });
-                        
-                        // Update counts and display
-                        updateThemeCounts();
-                        filterArticles();
-                    } else {
-                        updateSourceStatus(source.name || source.title, 'error');
-                    }
-                    
-                    updateStats(`Loaded ${loadedCount}/${sources.length} feeds | ${allArticles.length} total articles`);
-                    
-                } catch (error) {
-                    console.error(`Error loading ${source.name}:`, error);
-                    updateSourceStatus(source.name || source.title, 'error');
-                }
-                
-                // Only delay if speed is not set to fast
-                const loadSpeed = parseInt(document.getElementById('loadSpeed').value) || 0;
-                if (i < remainingSources.length - 1 && isLoading && loadSpeed > 0) {
-                    await new Promise(resolve => setTimeout(resolve, loadSpeed));
-                }
-            }
-            
-            // If no articles were loaded at all
-            if (!firstArticlesLoaded) {
-                container.innerHTML = '<div class="error">No articles found in any feeds</div>';
-            }
-            
-            updateProgress(100, 'Loading complete!');
-            updateStats(`Loaded all ${sources.length} feeds | ${allArticles.length} total articles`);
-            
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-            }, 2000);
-            
-            isLoading = false;
-            loadBtn.disabled = false;
-            stopBtn.disabled = true;
-            
-            if (debugMode) {
-                updateDebug();
-            }
-        }
-        
-        // Stop loading
-        function stopLoading() {
-            isLoading = false;
-            const loadBtn = document.getElementById('loadBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const progressBar = document.getElementById('progressBar');
-            
-            loadBtn.disabled = false;
-            stopBtn.disabled = true;
-            
-            updateStats('Loading stopped by user');
-            updateProgress(0, 'Stopped');
-            
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-            }, 1000);
-        }
-        
         // Clear articles
         function clearArticles() {
             allArticles = [];
             filteredArticles = [];
             currentPage = 1;
-            cache = {};
             activeThemeFilter = 'all';
             
             displayArticles([]);
             updateThemeCounts();
-            updateStats('Articles cleared. Cache reset.');
+            updateStats('Articles cleared. Cache preserved.');
             
             feedSources.forEach(source => {
                 updateSourceStatus(source.name || source.title, '');
@@ -1349,12 +1371,19 @@
                 // Header with title and theme badges
                 html += '<div class="article-header">';
                 html += '<div class="article-title">';
-                html += `<a href="${escapeHtml(article.link)}" target="_blank" rel="noopener">`;
+                html += `<a href="${escapeHtml(article.link || article.url)}" target="_blank" rel="noopener">`;
                 html += escapeHtml(article.title);
-                html += '</a></div>';
+                html += '</a>';
+                
+                // Show if from cache
+                if (article.fromCache) {
+                    html += '<span class="article-cached">cached</span>';
+                }
+                
+                html += '</div>';
                 
                 // Theme badges
-                if (article.themes && article.themes.primary && (article.themes.primary || article.themes.secondary.length > 0)) {
+                if (article.themes && article.themes.primary) {
                     html += '<div class="article-themes">';
                     
                     if (article.themes.primary) {
@@ -1378,7 +1407,7 @@
                 
                 // Meta information
                 html += '<div class="article-meta">';
-                html += `<span class="article-source">${escapeHtml(article.source)}</span>`;
+                html += `<span class="article-source">${escapeHtml(article.source_name || article.source)}</span>`;
                 if (article.date) {
                     html += ` • ${article.date.toLocaleString()}`;
                 }
@@ -1393,20 +1422,6 @@
                     const desc = article.description.substring(0, 300);
                     html += escapeHtml(desc);
                     if (article.description.length > 300) html += '...';
-                    html += '</div>';
-                }
-                
-                // Debug: show relevance scores
-                if (debugMode && article.themes && article.themes.scores) {
-                    html += '<div class="article-relevance">';
-                    const relevantScores = Object.entries(article.themes.scores)
-                        .filter(([_, score]) => score > 0)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([theme, score]) => `${theme}: ${score.toFixed(1)}`)
-                        .join(', ');
-                    if (relevantScores) {
-                        html += `Relevance scores: ${relevantScores}`;
-                    }
                     html += '</div>';
                 }
                 
@@ -1472,8 +1487,7 @@
             filteredArticles = baseArticles.filter(article => {
                 return article.title.toLowerCase().includes(searchTerm) ||
                        article.description.toLowerCase().includes(searchTerm) ||
-                       article.source.toLowerCase().includes(searchTerm) ||
-                       (article.category && article.category.toLowerCase().includes(searchTerm));
+                       (article.source_name || article.source).toLowerCase().includes(searchTerm);
             });
             
             currentPage = 1;
@@ -1538,15 +1552,6 @@
             
             if (debugMode) {
                 updateDebug();
-                // Re-display articles to show relevance scores
-                const articlesToShow = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
-                    filteredArticles : allArticles;
-                displayArticles(articlesToShow);
-            } else {
-                // Re-display without scores
-                const articlesToShow = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
-                    filteredArticles : allArticles;
-                displayArticles(articlesToShow);
             }
         }
         
@@ -1559,9 +1564,14 @@
             debug += `Total Articles: ${allArticles.length}\n`;
             debug += `Filtered Articles: ${filteredArticles.length}\n`;
             debug += `Active Theme Filter: ${activeThemeFilter}\n`;
-            debug += `Cache Entries: ${Object.keys(cache).length}\n`;
+            debug += `Cached URLs: ${cachedUrls.size}\n`;
             debug += `Current Page: ${currentPage}/${totalPages}\n`;
             debug += `Page Size: ${pageSize}\n\n`;
+            
+            debug += 'Cache Statistics:\n';
+            debug += `  From Cache: ${cacheStats.fromCache}\n`;
+            debug += `  From RSS: ${cacheStats.fromRSS}\n`;
+            debug += `  New Cached: ${cacheStats.new}\n\n`;
             
             debug += 'Theme Distribution:\n';
             Object.entries(themeCounts).forEach(([theme, count]) => {
@@ -1575,7 +1585,8 @@
             debug += '\nArticles by Source:\n';
             const sourceCounts = {};
             allArticles.forEach(article => {
-                sourceCounts[article.source] = (sourceCounts[article.source] || 0) + 1;
+                const source = article.source_name || article.source;
+                sourceCounts[source] = (sourceCounts[source] || 0) + 1;
             });
             
             Object.entries(sourceCounts)
@@ -1583,18 +1594,6 @@
                 .forEach(([source, count]) => {
                     debug += `  ${source}: ${count} articles\n`;
                 });
-            
-            if (allArticles.length > 0) {
-                debug += '\nMost Recent Article with Themes:\n';
-                const recentWithTheme = allArticles.find(a => a.themes && a.themes.primary);
-                if (recentWithTheme) {
-                    debug += JSON.stringify({
-                        title: recentWithTheme.title,
-                        themes: recentWithTheme.themes,
-                        source: recentWithTheme.source
-                    }, null, 2);
-                }
-            }
             
             panel.textContent = debug;
         }
@@ -1607,22 +1606,51 @@
             return div.innerHTML;
         }
         
-        // Auto-refresh timer
-        let refreshInterval = null;
+        // Auto-sync timer
+        let syncInterval = null;
         
-        function startAutoRefresh() {
-            if (refreshInterval) clearInterval(refreshInterval);
-            refreshInterval = setInterval(() => {
-                if (!isLoading && document.getElementById('liveMode').checked) {
-                    startIterativeLoad();
-                }
-            }, 5 * 60 * 1000); // 5 minutes
+        function startAutoSync() {
+            if (syncInterval) clearInterval(syncInterval);
+            
+            if (document.getElementById('autoSync').checked) {
+                syncInterval = setInterval(() => {
+                    if (!isLoading) {
+                        syncWithCache();
+                    }
+                }, CACHE_CONFIG.syncInterval);
+            }
         }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            updateStats('Ready to load feeds. Click "Start Loading Feeds" to begin.');
-            startAutoRefresh();
+            updateStats('Ready to sync. Click "Sync & Load" to begin.');
+            updateCacheStats();
+            updateLastSyncTime();
+            
+            // Set up auto-sync
+            document.getElementById('autoSync').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    startAutoSync();
+                } else {
+                    if (syncInterval) clearInterval(syncInterval);
+                }
+            });
+            
+            // Load local storage preferences
+            const savedTimeWindow = localStorage.getItem(CACHE_CONFIG.localCacheKey + '_timeWindow');
+            if (savedTimeWindow) {
+                document.getElementById('timeWindow').value = savedTimeWindow;
+            }
+            
+            // Save preferences on change
+            document.getElementById('timeWindow').addEventListener('change', (e) => {
+                localStorage.setItem(CACHE_CONFIG.localCacheKey + '_timeWindow', e.target.value);
+            });
+            
+            // Start auto-sync if enabled
+            if (document.getElementById('autoSync').checked) {
+                startAutoSync();
+            }
         });
     </script>
 </body>
