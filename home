@@ -515,34 +515,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Stats bar */
-        .stats-bar {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 1rem 2rem;
-            background: var(--bg-card);
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--theme-1);
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
         /* CARDS VIEW (Default) */
         .card-grid {
             display: grid;
@@ -829,144 +801,6 @@
             background: var(--bg-card);
         }
 
-        /* SWIPE VIEW */
-        .swipe-view {
-            position: relative;
-            height: calc(100vh - 400px);
-            min-height: 500px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .swipe-card {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: grab;
-            transition: transform 0.2s ease, opacity 0.2s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .swipe-card.dragging {
-            cursor: grabbing;
-            transition: none;
-        }
-
-        .swipe-card.swiped-left {
-            transform: translateX(-150%) rotate(-30deg);
-            opacity: 0;
-        }
-
-        .swipe-card.swiped-right {
-            transform: translateX(150%) rotate(30deg);
-            opacity: 0;
-        }
-
-        .swipe-card-image {
-            height: 50%;
-            background: linear-gradient(135deg, var(--theme-1) 0%, var(--theme-3) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 4rem;
-            position: relative;
-        }
-
-        .swipe-indicator {
-            position: absolute;
-            top: 20px;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .swipe-indicator.like {
-            right: 20px;
-            background: var(--theme-2);
-            color: white;
-        }
-
-        .swipe-indicator.nope {
-            left: 20px;
-            background: var(--theme-5);
-            color: white;
-        }
-
-        .swipe-card.tilted-right .like {
-            opacity: 1;
-        }
-
-        .swipe-card.tilted-left .nope {
-            opacity: 1;
-        }
-
-        .swipe-card-content {
-            padding: 1.5rem;
-            height: 50%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .swipe-card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            flex: 1;
-            line-height: 1.3;
-        }
-
-        .swipe-card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .swipe-actions {
-            position: absolute;
-            bottom: -80px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 2rem;
-        }
-
-        .swipe-action-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            background: var(--bg-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1.5rem;
-        }
-
-        .swipe-action-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .swipe-action-btn.reject {
-            color: var(--theme-5);
-            border-color: var(--theme-5);
-        }
-
-        .swipe-action-btn.accept {
-            color: var(--theme-2);
-            border-color: var(--theme-2);
-        }
-
         /* MODAL SYSTEM */
         .modal-overlay {
             position: fixed;
@@ -1235,10 +1069,6 @@
                 right: -1rem;
             }
             
-            .swipe-view {
-                height: calc(100vh - 350px);
-            }
-            
             .legislation-title {
                 font-size: 1.5rem;
             }
@@ -1362,31 +1192,8 @@
                 </svg>
                 <span>List</span>
             </button>
-            <button class="view-btn" data-view="swipe">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="5" y="3" width="14" height="18" rx="2"/>
-                </svg>
-                <span>Swipe</span>
-            </button>
         </div>
     </div>
-
-    <!-- Stats Bar -->
-    <div class="stats-bar" id="stats-bar" style="display: none;">
-        <div class="stat-item">
-            <div class="stat-value" id="stat-active">0</div>
-            <div class="stat-label">Active Legislation</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="stat-discussions">0</div>
-            <div class="stat-label">Community Discussions</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value" id="stat-weekly">0</div>
-            <div class="stat-label">Updated This Week</div>
-        </div>
-    </div>
-
     <!-- Filters -->
     <div class="filters-wrapper">
         <!-- Content type tabs -->
@@ -1596,7 +1403,6 @@
                 this.allCards = [];
                 this.filteredCards = [];
                 this.currentView = localStorage.getItem('preferredView') || 'cards';
-                this.swipeIndex = 0;
                 this.filters = {
                     type: 'all',
                     themes: new Set(),
@@ -1609,11 +1415,6 @@
                     discussion: 0,
                     news: 0,
                     themes: {}
-                };
-                this.stats = {
-                    active: 0,
-                    discussions: 0,
-                    weeklyUpdates: 0
                 };
                 
                 // Initialize theme counts
@@ -1871,29 +1672,15 @@
                 this.counts.discussion = 0;
                 this.counts.news = 0;
                 
-                const now = new Date();
-                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-                this.stats.active = 0;
-                this.stats.discussions = 0;
-                this.stats.weeklyUpdates = 0;
-                
                 this.allCards.forEach(card => {
                     if (card.type === 'legislation') {
                         this.counts.legislation++;
-                        if (card.statusClass === 'pending' || card.statusClass === 'in-progress') {
-                            this.stats.active++;
-                        }
                     }
                     if (card.type === 'discussion') {
                         this.counts.discussion++;
-                        this.stats.discussions++;
                     }
                     if (card.type === 'news') this.counts.news++;
-                    
-                    if (card.date >= weekAgo) {
-                        this.stats.weeklyUpdates++;
-                    }
-                    
+                    // weekly update counts removed
                     card.themes.forEach(theme => {
                         this.counts.themes[theme] = (this.counts.themes[theme] || 0) + 1;
                     });
@@ -1908,11 +1695,7 @@
                 document.getElementById('count-discussion').textContent = this.counts.discussion;
                 document.getElementById('count-news').textContent = this.counts.news;
                 
-                document.getElementById('stat-active').textContent = this.stats.active;
-                document.getElementById('stat-discussions').textContent = this.stats.discussions;
-                document.getElementById('stat-weekly').textContent = this.stats.weeklyUpdates;
-                document.getElementById('stats-bar').style.display = 'flex';
-                
+
                 for (let i = 1; i <= 7; i++) {
                     const countEl = document.getElementById(`theme-count-${i}`);
                     if (countEl) {
@@ -2030,10 +1813,6 @@
                     case 'reddit':
                         container.innerHTML = renderRedditView(cards);
                         break;
-                    case 'swipe':
-                        container.innerHTML = renderSwipeView(cards);
-                        setupSwipeInteractions();
-                        break;
                     case 'cards':
                     default:
                         container.innerHTML = renderCardsView(cards);
@@ -2106,114 +1885,6 @@
             </div>`;
         }
 
-        function renderSwipeView(cards) {
-            const manager = window.dataManager;
-            const currentCard = cards[manager.swipeIndex % cards.length];
-            const nextCard = cards[(manager.swipeIndex + 1) % cards.length];
-            
-            if (!currentCard) return '<div class="empty-state"><h3>No items to swipe</h3></div>';
-            
-            return `<div class="swipe-view">
-                <div class="swipe-card" id="current-swipe-card" onclick="openModal('${currentCard.id}')">
-                    <div class="swipe-card-image gradient-${currentCard.themes[0] || 1}">
-                        ${getTypeIcon(currentCard.type)}
-                        <div class="swipe-indicator like">SUPPORT</div>
-                        <div class="swipe-indicator nope">SKIP</div>
-                    </div>
-                    <div class="swipe-card-content">
-                        <h3 class="swipe-card-title">${currentCard.displayTitle}</h3>
-                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
-                            ${currentCard.excerpt}
-                        </p>
-                        <div class="swipe-card-meta">
-                            <span>${currentCard.type}</span>
-                            <span>${currentCard.dateFormatted}</span>
-                        </div>
-                    </div>
-                </div>
-                ${nextCard ? `
-                    <div class="swipe-card" style="z-index: 1; transform: scale(0.95); opacity: 0.5;">
-                        <div class="swipe-card-image gradient-${nextCard.themes[0] || 1}">${getTypeIcon(nextCard.type)}</div>
-                    </div>
-                ` : ''}
-                <div class="swipe-actions">
-                    <button class="swipe-action-btn reject" onclick="swipeCard('left')">✕</button>
-                    <button class="swipe-action-btn accept" onclick="swipeCard('right')">✓</button>
-                </div>
-            </div>`;
-        }
-
-        // Swipe interactions
-        let isDragging = false;
-        let startX = 0;
-        let currentX = 0;
-        let cardElement = null;
-
-        function setupSwipeInteractions() {
-            const card = document.getElementById('current-swipe-card');
-            if (!card) return;
-            
-            card.addEventListener('mousedown', handleStart);
-            card.addEventListener('touchstart', handleStart);
-            document.addEventListener('mousemove', handleMove);
-            document.addEventListener('touchmove', handleMove);
-            document.addEventListener('mouseup', handleEnd);
-            document.addEventListener('touchend', handleEnd);
-        }
-
-        function handleStart(e) {
-            if (e.target.closest('.swipe-action-btn')) return;
-            isDragging = true;
-            cardElement = e.currentTarget;
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            cardElement.classList.add('dragging');
-        }
-
-        function handleMove(e) {
-            if (!isDragging) return;
-            
-            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            const deltaX = currentX - startX;
-            const rotation = deltaX * 0.1;
-            
-            cardElement.style.transform = `translateX(${deltaX}px) rotate(${rotation}deg)`;
-            
-            if (deltaX > 50) {
-                cardElement.classList.add('tilted-right');
-                cardElement.classList.remove('tilted-left');
-            } else if (deltaX < -50) {
-                cardElement.classList.add('tilted-left');
-                cardElement.classList.remove('tilted-right');
-            } else {
-                cardElement.classList.remove('tilted-left', 'tilted-right');
-            }
-        }
-
-        function handleEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            const deltaX = currentX - startX;
-            
-            if (Math.abs(deltaX) > 100) {
-                swipeCard(deltaX > 0 ? 'right' : 'left');
-            } else {
-                cardElement.style.transform = '';
-                cardElement.classList.remove('dragging', 'tilted-left', 'tilted-right');
-            }
-        }
-
-        function swipeCard(direction) {
-            const card = document.getElementById('current-swipe-card');
-            if (!card) return;
-            
-            card.classList.add(`swiped-${direction}`);
-            
-            setTimeout(() => {
-                window.dataManager.swipeIndex++;
-                renderView();
-            }, 300);
-        }
 
         // Modal system
         function openModal(cardId) {
@@ -2501,11 +2172,6 @@
             
             initializeSourceDropdown();
             initializeEventListeners();
-            
-            // Auto-switch to swipe on mobile
-            if (window.innerWidth < 768 && !localStorage.getItem('preferredView')) {
-                window.dataManager.currentView = 'swipe';
-            }
             
             await window.dataFetcher.fetchAllData();
             
