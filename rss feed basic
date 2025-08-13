@@ -347,6 +347,11 @@
             animation: pulse 2s infinite;
         }
 
+        .article-category.analyzing {
+            background: rgba(255,255,255,0.8);
+            color: #666;
+        }
+
         .theme-count {
             transition: background 0.3s ease, transform 0.2s ease;
         }
@@ -1293,12 +1298,13 @@
             const imageDiv = card.querySelector('.article-image');
             const badge = card.querySelector('.article-category');
             const themeColor = THEMES[article.themes.primary]?.color || '#666';
+            const imageUrl = article.image_url;
+            badge.classList.remove('analyzing');
             badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
             badge.style.color = themeColor;
+            badge.style.background = imageUrl ? 'rgba(255,255,255,0.95)' : '';
             imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
             badge.style.opacity = '1';
-
-            const imageUrl = article.image_url;
             if (imageUrl) {
                 const img = new Image();
                 img.onload = function() {
@@ -1497,10 +1503,12 @@
             card.innerHTML = `
                 <div class="article-image" id="${imageId}" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
                     ${article.themes?.primary ? `
-                        <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}">
-                            ${THEMES[article.themes.primary].name}
+                        <div class=\"article-category\" style=\"${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}\">
+                            <span>${THEMES[article.themes.primary].name}</span>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div class=\"article-category analyzing\"><span>⚡ Analyzing...</span></div>
+                    `}
                 </div>
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
