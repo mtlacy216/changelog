@@ -1103,6 +1103,7 @@
         const SOURCES_API = `${XANO_API}/rss_feed`;
         const CONTENT_API = `${XANO_API}/content`;
         const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+        const IMAGE_PROXY = 'https://images.weserv.nl/?url=';
         
         // Theme configuration
         const THEMES = {
@@ -1333,9 +1334,21 @@
         // Create article card
         function getProxiedImageUrl(originalUrl) {
             if (!originalUrl) return null;
+            // Skip proxy for data URLs or blobs
+            if (/^data:|^blob:/.test(originalUrl)) return originalUrl;
 
-            // Return original URL for now; proxy options can be added if needed
-            return originalUrl;
+            try {
+                const url = new URL(originalUrl, window.location.href);
+                // Normalize HTTP links to HTTPS
+                if (url.protocol === 'http:') {
+                    url.protocol = 'https:';
+                }
+                // Use an HTTPS image proxy to avoid mixed content issues
+                return IMAGE_PROXY + encodeURIComponent(url.href);
+            } catch (e) {
+                // Fallback: proxy the original value directly
+                return IMAGE_PROXY + encodeURIComponent(originalUrl);
+            }
         }
 
         function createArticleCard(article) {
