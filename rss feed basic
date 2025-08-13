@@ -873,7 +873,8 @@
             <button onclick="forceRefresh()" id="refreshBtn">🔃 Force Refresh</button>
             <button onclick="clearArticles()">Clear Articles</button>
             <button onclick="toggleDebug()">Toggle Debug</button>
-            
+            <button onclick="rebalanceExistingThemes()">⚖️ Rebalance Themes</button>
+
             <div class="load-settings">
                 <label>
                     Time window:
@@ -1036,6 +1037,7 @@
         let feedSources = [];
         let feedSourcesMap = {};  // Map source name to source object with ID
         let debugMode = false;
+        let debugLogs = [];
         let isLoading = false;
         let isFaucetOn = false;  // Content faucet state
         let activeThemeFilter = 'all';
@@ -1051,6 +1053,14 @@
             new: 0,
             filtered: 0
         };
+
+        function logDebug(message) {
+            if (!debugMode) return;
+            console.log(message);
+            debugLogs.push(message);
+            if (debugLogs.length > 50) debugLogs.shift();
+            updateDebug();
+        }
         
         // Pagination state
         let currentPage = 1;
@@ -1148,66 +1158,196 @@
             }
         }
         
-        // Calculate theme relevance for an article
+        // Calculate theme relevance for an article with better balancing
         function calculateThemeRelevance(article) {
             const text = `${article.title} ${article.description}`.toLowerCase();
             const titleText = article.title.toLowerCase();
             const scores = {};
-            
-            for (const [themeKey, theme] of Object.entries(THEMES)) {
-                let score = 0;
-                
-                // Check primary keywords (3x weight in title, 1x in description)
-                theme.primary.forEach(keyword => {
-                    const keywordLower = keyword.toLowerCase();
-                    if (titleText.includes(keywordLower)) score += 3;
-                    if (text.includes(keywordLower)) score += 1;
-                });
-                
-                // Check secondary keywords (1.5x weight in title, 0.5x in description)
-                theme.secondary.forEach(keyword => {
-                    const keywordLower = keyword.toLowerCase();
-                    if (titleText.includes(keywordLower)) score += 1.5;
-                    if (text.includes(keywordLower)) score += 0.5;
-                });
-                
-                // Check phrases (2x weight)
-                theme.phrases.forEach(phrase => {
-                    const phraseLower = phrase.toLowerCase();
-                    if (text.includes(phraseLower)) score += 2;
-                });
-                
-                // Apply negative keywords (reduce score)
-                if (theme.negative) {
-                    theme.negative.forEach(keyword => {
-                        const keywordLower = keyword.toLowerCase();
-                        if (text.includes(keywordLower)) score -= 2;
-                    });
+
+            // Enhanced keyword definitions with better balance
+            const BALANCED_THEMES = {
+                governance: {
+                    primary: ['council', 'mayor', 'commission', 'board', 'vote', 'election', 'ordinance', 'resolution', 'government', 'authority', 'policy'],
+                    secondary: ['approve', 'meeting', 'session', 'committee', 'legislative', 'executive'],
+                    contextual: ['city hall', 'metro council', 'county commission'],
+                    weight_modifier: 0.8  // Reduce governance weight since it's overmatching
+                },
+                transparency: {
+                    primary: ['transparency', 'disclosure', 'audit', 'report', 'investigation', 'accountability', 'oversight', 'review', 'records', 'information'],
+                    secondary: ['public', 'open', 'reveal', 'expose', 'examine', 'monitor', 'watchdog'],
+                    contextual: ['public records', 'open meeting', 'sunshine law', 'freedom of information'],
+                    weight_modifier: 1.2
+                },
+                decisions: {
+                    primary: ['decision', 'proposal', 'plan', 'strategy', 'initiative', 'approach', 'solution', 'recommendation', 'option', 'alternative'],
+                    secondary: ['consider', 'evaluate', 'assess', 'weigh', 'choose', 'select', 'determine'],
+                    contextual: ['public input', 'community feedback', 'stakeholder', 'deliberation'],
+                    weight_modifier: 1.5  // Boost to increase matches
+                },
+                leadership: {
+                    primary: ['leader', 'director', 'chief', 'head', 'coordinator', 'manager', 'administrator', 'officer', 'chair', 'president'],
+                    secondary: ['appoint', 'hire', 'promote', 'lead', 'guide', 'direct', 'manage'],
+                    contextual: ['new leadership', 'leadership change', 'executive search'],
+                    weight_modifier: 1.3
+                },
+                culture: {
+                    primary: ['culture', 'arts', 'heritage', 'tradition', 'festival', 'celebration', 'community', 'neighborhood', 'historic', 'cultural'],
+                    secondary: ['event', 'gathering', 'ceremony', 'program', 'preserve', 'honor', 'commemorate'],
+                    contextual: ['community event', 'cultural heritage', 'neighborhood association', 'historic preservation'],
+                    weight_modifier: 1.8  // Significant boost needed
+                },
+                resources: {
+                    primary: ['budget', 'funding', 'grant', 'revenue', 'expense', 'cost', 'investment', 'development', 'economic', 'financial'],
+                    secondary: ['allocate', 'spend', 'finance', 'fund', 'invest', 'distribute', 'tax'],
+                    contextual: ['capital improvement', 'tax revenue', 'economic development', 'affordable housing'],
+                    weight_modifier: 1.6  // Boost to capture more economic articles
+                },
+                care: {
+                    primary: ['health', 'safety', 'education', 'housing', 'transit', 'infrastructure', 'environment', 'parks', 'services', 'welfare'],
+                    secondary: ['protect', 'maintain', 'improve', 'support', 'assist', 'serve', 'provide'],
+                    contextual: ['public health', 'public safety', 'social services', 'environmental protection'],
+                    weight_modifier: 1.0
                 }
-                
-                // Source-based hints
+            };
+
+            // Calculate scores with balanced weights
+            for (const [themeKey, keywords] of Object.entries(BALANCED_THEMES)) {
+                let score = 0;
+                const modifier = keywords.weight_modifier || 1.0;
+
+                // Primary keywords (higher weight in title)
+                keywords.primary.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    const titleMatches = (titleText.match(regex) || []).length;
+                    const textMatches = (text.match(regex) || []).length;
+                    score += (titleMatches * 4 + textMatches * 1.5) * modifier;
+                });
+
+                // Secondary keywords
+                keywords.secondary.forEach(keyword => {
+                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                    const titleMatches = (titleText.match(regex) || []).length;
+                    const textMatches = (text.match(regex) || []).length;
+                    score += (titleMatches * 2 + textMatches * 0.75) * modifier;
+                });
+
+                // Contextual phrases (bonus points)
+                keywords.contextual.forEach(phrase => {
+                    if (text.includes(phrase)) score += 3 * modifier;
+                });
+
+                // Source-based hints with more nuance
                 if (article.source_name) {
                     const sourceLower = article.source_name.toLowerCase();
-                    if (themeKey === 'care' && sourceLower.includes('environment')) score += 2;
-                    if (themeKey === 'governance' && (sourceLower.includes('council') || sourceLower.includes('government'))) score += 2;
-                    if (themeKey === 'transparency' && sourceLower.includes('news')) score += 0.5;
+
+                    // Governance sources
+                    if (themeKey === 'governance' && 
+                        (sourceLower.includes('council') || sourceLower.includes('mayor'))) {
+                        score += 2;
+                    }
+
+                    // Resource/economic sources
+                    if (themeKey === 'resources' && 
+                        (sourceLower.includes('business') || sourceLower.includes('economic') || 
+                         sourceLower.includes('development') || sourceLower.includes('finance'))) {
+                        score += 3;
+                    }
+
+                    // Culture sources
+                    if (themeKey === 'culture' && 
+                        (sourceLower.includes('arts') || sourceLower.includes('culture') || 
+                         sourceLower.includes('neighborhood') || sourceLower.includes('community'))) {
+                        score += 3;
+                    }
+
+                    // Care/services sources
+                    if (themeKey === 'care' && 
+                        (sourceLower.includes('health') || sourceLower.includes('education') || 
+                         sourceLower.includes('transit') || sourceLower.includes('environment'))) {
+                        score += 2;
+                    }
                 }
-                
+
+                // Apply penalty for generic news if not governance
+                if (themeKey !== 'governance' && themeKey !== 'transparency') {
+                    const genericTerms = ['meeting', 'vote', 'approve', 'council'];
+                    genericTerms.forEach(term => {
+                        if (text.includes(term) && score < 5) {
+                            score *= 0.7;  // Reduce score if it's just a generic government article
+                        }
+                    });
+                }
+
                 scores[themeKey] = Math.max(0, score);
             }
-            
-            // Determine primary and secondary themes
+
+            // Normalize scores to prevent one theme from dominating
+            const maxScore = Math.max(...Object.values(scores));
+            if (maxScore > 0) {
+                Object.keys(scores).forEach(key => {
+                    scores[key] = (scores[key] / maxScore) * 10;  // Normalize to 0-10 scale
+                });
+            }
+
+            // Determine themes with adaptive threshold
             const sortedThemes = Object.entries(scores)
-                .filter(([_, score]) => score > 1)
+                .filter(([_, score]) => score > 2.5)  // Slightly higher threshold
                 .sort((a, b) => b[1] - a[1]);
-            
+
+            // If governance is dominant but not significantly higher, check for secondary themes
+            if (sortedThemes.length > 0 && sortedThemes[0][0] === 'governance') {
+                if (sortedThemes.length > 1 && sortedThemes[0][1] - sortedThemes[1][1] < 2) {
+                    // If governance is only slightly ahead, prefer the more specific theme
+                    const temp = sortedThemes[0];
+                    sortedThemes[0] = sortedThemes[1];
+                    sortedThemes[1] = temp;
+                }
+            }
+
+            // Build theme object
             const themes = {
                 primary: sortedThemes[0] ? sortedThemes[0][0] : null,
                 secondary: sortedThemes.slice(1, 3).map(([key]) => key),
-                scores: scores
+                scores: scores,
+                confidence: sortedThemes[0] ? 
+                    (sortedThemes[0][1] > 7 ? 'high' : 
+                     sortedThemes[0][1] > 4 ? 'medium' : 'low') : 'none'
             };
-            
+
+            // Debug logging for testing
+            if (debugMode && themes.primary) {
+                console.log(`Article: "${article.title.substring(0, 50)}..." => ${themes.primary} (${scores[themes.primary].toFixed(2)})`);
+            }
+
             return themes;
+        }
+
+        // Analyze and rebalance existing articles with new algorithm
+        function rebalanceExistingThemes() {
+            console.log('Rebalancing themes for all articles...');
+            const beforeCounts = { ...themeCounts };
+
+            allArticles.forEach(article => {
+                article.themes = calculateThemeRelevance(article);
+            });
+
+            updateThemeCounts();
+            filterArticles();
+
+            console.log('Theme distribution before:', beforeCounts);
+            console.log('Theme distribution after:', themeCounts);
+
+            const statsEl = document.getElementById('stats');
+            const improvement = Object.entries(themeCounts).map(([theme, count]) => {
+                if (theme === 'all') return '';
+                const before = beforeCounts[theme] || 0;
+                const change = count - before;
+                return `${THEMES[theme]?.name}: ${before} → ${count} (${change >= 0 ? '+' : ''}${change})`;
+            }).filter(s => s).join(', ');
+
+            statsEl.innerHTML = `Themes rebalanced! ${improvement}` + 
+                '<div class="theme-analytics" id="themeAnalytics"></div>';
+            updateThemeAnalytics();
         }
         
         // Load cached content first
@@ -1486,15 +1626,19 @@
         // Load RSS sources
         async function loadSources() {
             try {
+                logDebug('Loading RSS sources...');
                 const response = await fetch(SOURCES_API);
                 if (!response.ok) throw new Error('Failed to load sources');
-                
+
                 const data = await response.json();
                 feedSources = data;
+                logDebug(`Loaded ${data.length} sources`);
+                data.forEach(src => logDebug(`Source: ${src.name || src.title || 'Unknown'} (ID: ${src.id})`));
                 updateSourcesDisplay();
                 return data;
             } catch (error) {
                 console.error('Error loading sources:', error);
+                logDebug(`Error loading sources: ${error.message}`);
                 showError('Failed to load feed sources');
                 return [];
             }
@@ -1552,6 +1696,10 @@
                 }
                 
                 if (title || description) {
+                    if (debugMode) {
+                        logDebug(`${imageUrl ? 'Found' : 'Missing'} image for "${(title || '').substring(0, 40)}"`);
+                    }
+
                     const article = {
                         title: cleanText(title || 'Untitled'),
                         link: link || '#',
@@ -1566,7 +1714,7 @@
                         rss_feed_id: sourceId,  // Add source ID
                         themes: null
                     };
-                    
+
                     articles.push(article);
                 }
             });
@@ -1579,21 +1727,27 @@
             const url = source.url || source.link;
             const name = source.name || source.title || 'Unknown';
             const sourceId = source.id;
-            
-            if (!url) return [];
-            
+
+            if (!url) {
+                logDebug(`Skipping source ${name} (ID: ${sourceId}) - missing URL`);
+                return [];
+            }
+
             try {
+                logDebug(`Fetching feed: ${name} (ID: ${sourceId}) from ${url}`);
                 const proxyUrl = CORS_PROXY + encodeURIComponent(url);
                 const response = await fetch(proxyUrl);
-                
+
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const text = await response.text();
                 const articles = parseRSSFeed(text, name, sourceId);
-                
+                logDebug(`Fetched ${articles.length} articles from ${name}`);
+
                 return articles;
             } catch (error) {
                 console.error(`Error fetching ${name}:`, error);
+                logDebug(`Error fetching ${name}: ${error.message}`);
                 return [];
             }
         }
@@ -1657,7 +1811,7 @@
                             source_name: article.source_name || article.source || 'Unknown',
                             author: article.author || '',
                             image_url: article.image_url || '',
-                            rss_feed: article.rss_feed_id || null,  // Include RSS feed ID
+                            rss_feed: article.rss_feed_id || null,  // Ensure RSS feed ID included
                             category: [],
                             keywords: []
                         };
@@ -2204,7 +2358,17 @@
                 .forEach(([source, count]) => {
                     debug += `  ${source}: ${count} articles\n`;
                 });
-            
+
+            debug += '\nRSS Feed ID Mapping:\n';
+            allArticles.slice(0, 5).forEach(article => {
+                debug += `  "${article.title.substring(0, 30)}..." → Feed ID: ${article.rss_feed_id || 'MISSING'}\n`;
+            });
+
+            debug += '\nFeed Processing Log:\n';
+            debugLogs.slice(-20).forEach(msg => {
+                debug += `  ${msg}\n`;
+            });
+
             panel.textContent = debug;
         }
         
