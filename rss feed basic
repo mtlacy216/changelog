@@ -80,6 +80,99 @@
             margin-right: 15px;
         }
         
+        /* New Content Faucet Styles */
+        .content-faucet {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .faucet-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .faucet-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .faucet-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .faucet-toggle.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .faucet-icon {
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .faucet-toggle.active .faucet-icon {
+            transform: rotate(90deg);
+        }
+        
+        .faucet-status {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .faucet-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .new-content-indicator {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            font-size: 13px;
+            z-index: 999;
+            display: none;
+            animation: slideInRight 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .new-content-indicator.active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         .theme-filter-section {
             margin-bottom: 25px;
             padding: 15px;
@@ -162,17 +255,17 @@
         .theme-transparency { border-color: #7FBA00; color: #7FBA00; }
         .theme-transparency.active { background: #7FBA00; }
         
-        .theme-inclusive { border-color: #B854D4; color: #B854D4; }
-        .theme-inclusive.active { background: #B854D4; }
+        .theme-decisions { border-color: #B854D4; color: #B854D4; }
+        .theme-decisions.active { background: #B854D4; }
         
         .theme-leadership { border-color: #FF8C00; color: #FF8C00; }
         .theme-leadership.active { background: #FF8C00; }
         
-        .theme-ritual { border-color: #E81E63; color: #E81E63; }
-        .theme-ritual.active { background: #E81E63; }
+        .theme-culture { border-color: #E81E63; color: #E81E63; }
+        .theme-culture.active { background: #E81E63; }
         
-        .theme-power { border-color: #009688; color: #009688; }
-        .theme-power.active { background: #009688; }
+        .theme-resources { border-color: #009688; color: #009688; }
+        .theme-resources.active { background: #009688; }
         
         .theme-care { border-color: #8BC34A; color: #8BC34A; }
         .theme-care.active { background: #8BC34A; }
@@ -327,6 +420,12 @@
             padding: 20px 0;
             border-bottom: 1px solid #e0e0e0;
             animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        
+        .article.new-article {
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+            animation: slideInNew 0.5s ease;
         }
         
         @keyframes slideIn {
@@ -337,6 +436,18 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInNew {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+                background: rgba(76, 175, 80, 0.2);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
         
@@ -380,6 +491,7 @@
             font-weight: 500;
             color: white;
             white-space: nowrap;
+            position: relative;
         }
         
         .theme-badge.primary {
@@ -389,6 +501,23 @@
         .theme-badge.secondary {
             opacity: 0.7;
         }
+        
+        .theme-badge.low-confidence {
+            opacity: 0.5;
+        }
+        
+        .confidence-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        
+        .confidence-high { background: #4CAF50; }
+        .confidence-medium { background: #FFC107; }
+        .confidence-low { background: #FF9800; }
         
         .article-meta {
             font-size: 13px;
@@ -415,6 +544,17 @@
             color: #1976D2;
             border-radius: 4px;
             font-size: 11px;
+        }
+        
+        .article-new {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 6px;
+            background: #E8F5E9;
+            color: #4CAF50;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
         }
         
         .error {
@@ -517,6 +657,91 @@
             border-radius: 4px;
         }
         
+        .theme-legend {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .theme-legend.active {
+            display: block;
+        }
+        
+        .theme-legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .theme-legend-item {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .theme-legend-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--theme-color);
+        }
+        
+        .theme-legend-item strong {
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+        
+        .theme-legend-item small {
+            display: block;
+            color: #666;
+        }
+        
+        .theme-help-btn {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .theme-help-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .load-settings {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .load-settings label {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .load-settings input[type="number"] {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
         .load-settings select {
             padding: 4px 8px;
             border: 1px solid #ddd;
@@ -533,19 +758,51 @@
             <span>Ready</span>
         </div>
         
+        <div class="new-content-indicator" id="newContentIndicator" onclick="showNewContent()">
+            <span>🆕</span>
+            <span id="newContentCount">0</span> new articles available
+        </div>
+        
         <div class="cache-stats" id="cacheStats">
             <div>
                 <span>🗄️ Cached: <strong id="cachedCount">0</strong></span>
                 <span>🆕 New: <strong id="newCount">0</strong></span>
                 <span>📡 From RSS: <strong id="rssCount">0</strong></span>
+                <span>🚫 Filtered: <strong id="filteredCount">0</strong></span>
             </div>
             <div>
                 <span>Last sync: <strong id="lastSync">Never</strong></span>
             </div>
         </div>
         
+        <!-- New Content Faucet -->
+        <div class="content-faucet">
+            <div class="faucet-info">
+                <span class="faucet-icon">💧</span>
+                <div>
+                    <div class="faucet-status" id="faucetStatus">New Content Stream</div>
+                    <div style="font-size: 12px; opacity: 0.9;" id="faucetInfo">Click to turn on/off new articles</div>
+                </div>
+            </div>
+            <div class="faucet-toggle" id="faucetToggle" onclick="toggleContentFaucet()">
+                <span id="faucetState">OFF</span>
+                <span class="faucet-count" id="pendingCount">0 pending</span>
+            </div>
+        </div>
+        
         <div class="theme-filter-section">
-            <div class="theme-filter-label">Filter by civic theme:</div>
+            <div class="theme-filter-label">
+                Filter by theme: 
+                <span style="font-size: 12px; color: #999; cursor: help;" title="Themes categorize articles based on systemic patterns:
+• Governance Models - How groups organize authority
+• Transparency Topics - Information flow and openness
+• Decision Approaches - Methods for making choices
+• Leadership Patterns - How leadership emerges and adapts
+• Cultural Dynamics - Rituals and meaning-making
+• Resource Distribution - How power and wealth flow
+• Care Systems - Structural and planetary-scale care">ⓘ</span>
+                <span class="theme-help-btn" onclick="toggleThemeLegend()">Show Guide</span>
+            </div>
             <div class="theme-processing-indicator" id="themeProcessing">
                 <div class="mini-spinner"></div>
                 <span>Analyzing themes...</span>
@@ -555,40 +812,69 @@
                     All Themes <span class="count">0</span>
                 </button>
                 <button class="theme-filter-btn theme-governance" onclick="filterByTheme('governance')">
-                    Collaborative Governance <span class="count">0</span>
+                    Governance Models <span class="count">0</span>
                 </button>
                 <button class="theme-filter-btn theme-transparency" onclick="filterByTheme('transparency')">
-                    Civic Transparency <span class="count">0</span>
+                    Transparency Topics <span class="count">0</span>
                 </button>
-                <button class="theme-filter-btn theme-inclusive" onclick="filterByTheme('inclusive')">
-                    Inclusive Solutions <span class="count">0</span>
+                <button class="theme-filter-btn theme-decisions" onclick="filterByTheme('decisions')">
+                    Decision Approaches <span class="count">0</span>
                 </button>
                 <button class="theme-filter-btn theme-leadership" onclick="filterByTheme('leadership')">
-                    Contextual Leadership <span class="count">0</span>
+                    Leadership Patterns <span class="count">0</span>
                 </button>
-                <button class="theme-filter-btn theme-ritual" onclick="filterByTheme('ritual')">
-                    Culture <span class="count">0</span>
+                <button class="theme-filter-btn theme-culture" onclick="filterByTheme('culture')">
+                    Cultural Dynamics <span class="count">0</span>
                 </button>
-                <button class="theme-filter-btn theme-power" onclick="filterByTheme('power')">
-                    Power & Resources <span class="count">0</span>
+                <button class="theme-filter-btn theme-resources" onclick="filterByTheme('resources')">
+                    Resource Distribution <span class="count">0</span>
                 </button>
                 <button class="theme-filter-btn theme-care" onclick="filterByTheme('care')">
-                    Systemic Care <span class="count">0</span>
+                    Care Systems <span class="count">0</span>
                 </button>
+            </div>
+            <div class="theme-legend" id="themeLegend">
+                <h4>Theme Classification Guide</h4>
+                <div class="theme-legend-item" style="--theme-color: #4A90E2;">
+                    <strong style="color: #4A90E2;">Governance Models</strong>
+                    <small>How groups organize authority, make collective decisions, and coordinate without coercion. Looks for: "who decides" questions, voting systems, organizational structures.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #7FBA00;">
+                    <strong style="color: #7FBA00;">Transparency Topics</strong>
+                    <small>Information flow, truth-telling, feedback mechanisms, and openness in systems. Looks for: "who knows what" questions, accountability, disclosure, audits.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #B854D4;">
+                    <strong style="color: #B854D4;">Decision Approaches</strong>
+                    <small>Methods for making choices, moving beyond binary either/or thinking. Looks for: trade-offs, deliberation processes, participatory vs delegated decisions.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #FF8C00;">
+                    <strong style="color: #FF8C00;">Leadership Patterns</strong>
+                    <small>How leadership emerges, adapts to context, and circulates rather than remaining fixed. Looks for: "who leads when" questions, contextual authority, expertise.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #E81E63;">
+                    <strong style="color: #E81E63;">Cultural Dynamics</strong>
+                    <small>Rituals, myths, meaning-making, and symbolic practices that bind groups. Looks for: "how we do things" references, traditions, shared values, ceremonies.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #009688;">
+                    <strong style="color: #009688;">Resource Distribution</strong>
+                    <small>How power, wealth, and resources flow, accumulate, or circulate in systems. Looks for: "who has what" questions, economic flows, commons management.</small>
+                </div>
+                <div class="theme-legend-item" style="--theme-color: #8BC34A;">
+                    <strong style="color: #8BC34A;">Care Systems</strong>
+                    <small>Structural and planetary-scale care, maintenance, and long-term sustainability. Looks for: collective wellbeing, infrastructure, ecosystem health, resilience.</small>
+                </div>
             </div>
         </div>
         
         <div class="controls">
-            <button onclick="syncWithCache()" id="syncBtn">🔄 Sync & Load</button>
+            <button onclick="loadCachedContent()" id="loadCacheBtn">📥 Load Cached</button>
+            <button onclick="startRSSFetch()" id="fetchRSSBtn">🔄 Fetch New RSS</button>
+            <button onclick="stopFetching()" id="stopBtn" style="display: none; background: #ff4444; color: white;">⏹ Stop</button>
             <button onclick="forceRefresh()" id="refreshBtn">🔃 Force Refresh</button>
             <button onclick="clearArticles()">Clear Articles</button>
             <button onclick="toggleDebug()">Toggle Debug</button>
             
             <div class="load-settings">
-                <label>
-                    <input type="checkbox" id="autoSync" checked>
-                    Auto-sync
-                </label>
                 <label>
                     Time window:
                     <select id="timeWindow">
@@ -613,7 +899,7 @@
         <div class="debug-panel" id="debugPanel"></div>
         
         <div class="stats" id="stats">
-            Ready to sync. Click "Sync & Load" to begin.
+            Ready to load. Click "Load Cached" to begin.
             <div class="theme-analytics" id="themeAnalytics"></div>
         </div>
         
@@ -640,7 +926,7 @@
         
         <div id="articlesContainer">
             <div class="loading-indicator">
-                <div>Click "Sync & Load" to fetch articles</div>
+                <div>Click "Load Cached" to fetch cached articles</div>
             </div>
         </div>
         
@@ -673,92 +959,194 @@
         const CACHE_CONFIG = {
             defaultTimeWindow: 48 * 60 * 60 * 1000,  // 48 hours
             batchSize: 20,                            // Articles to POST at once
-            syncInterval: 5 * 60 * 1000,              // 5 minutes auto-sync
             localCacheKey: 'nashville_civic_cache'
         };
         
-        // Theme definitions with keywords and weights
+        // Theme definitions with NLP matching patterns
         const THEMES = {
             governance: {
-                name: 'Collaborative Governance',
+                name: 'Governance Models',
                 color: '#4A90E2',
-                primary: ['governance', 'democracy', 'participation', 'collaboration', 'civic', 'council', 'commission', 'board', 'committee', 'referendum', 'vote', 'voting', 'election'],
-                secondary: ['public', 'community', 'citizen', 'resident', 'constituent', 'municipal', 'city', 'county', 'government', 'policy', 'ordinance', 'resolution'],
-                phrases: ['public comment', 'town hall', 'community meeting', 'civic engagement', 'public input', 'citizen advisory', 'participatory budgeting'],
+                primary: ['governance', 'authority', 'power-with', 'consent', 'coercion', 'control', 'coordination', 'holacracy', 'sociocracy', 'democracy', 'federalism', 'confederation', 'consensus'],
+                secondary: ['legitimacy', 'sovereignty', 'self-organization', 'distributed', 'subsidiary', 'governing', 'ruling', 'managing', 'coordinating', 'organizing', 'administering', 'council', 'commission', 'board'],
+                phrases: ['who decides', 'how decisions are made', 'collective action', 'organizational hierarchy', 'decision-making structures', 'voting system', 'consensus process'],
+                patterns: ['authority structure', 'power dynamics', 'organizational model'],
                 negative: ['sports', 'entertainment', 'game']
             },
             transparency: {
-                name: 'Civic Transparency',
+                name: 'Transparency Topics',
                 color: '#7FBA00',
-                primary: ['transparency', 'accountability', 'disclosure', 'audit', 'investigation', 'report', 'data', 'budget', 'finance', 'spending', 'contract', 'ethics'],
-                secondary: ['open', 'public', 'record', 'document', 'information', 'review', 'oversight', 'inspection', 'compliance', 'violation'],
-                phrases: ['public records', 'open data', 'financial disclosure', 'freedom of information', 'sunshine law', 'open meeting'],
+                primary: ['transparency', 'truth', 'honesty', 'feedback', 'grievance', 'disclosure', 'openness', 'whistleblowing', 'ombudsman', 'audit', 'reporting', 'accountability'],
+                secondary: ['information', 'concealment', 'exposure', 'parrhesia', 'candor', 'revealing', 'hiding', 'sharing', 'exposing', 'monitoring', 'oversight', 'inspection'],
+                phrases: ['who knows what', 'information asymmetry', 'feedback loops', 'communication channels', 'open records', 'public disclosure', 'information access'],
+                patterns: ['secrecy vs openness', 'information flow', 'accountability mechanisms'],
                 negative: ['sports', 'weather']
             },
-            inclusive: {
-                name: 'Inclusive Solutions',
+            decisions: {
+                name: 'Decision Approaches',
                 color: '#B854D4',
-                primary: ['inclusive', 'inclusion', 'diversity', 'equity', 'justice', 'equality', 'discrimination', 'bias', 'barrier', 'access', 'disability', 'immigrant'],
-                secondary: ['community', 'minority', 'underserved', 'marginalized', 'vulnerable', 'disparity', 'gap', 'representation', 'voice', 'participation'],
-                phrases: ['social justice', 'equal opportunity', 'civil rights', 'fair housing', 'language access', 'cultural competency'],
-                negative: ['exclusive event', 'luxury', 'premium']
+                primary: ['decision', 'choice', 'binary', 'either/or', 'both/and', 'third-way', 'alternatives', 'deliberation', 'voting', 'consultation', 'participation', 'delegation'],
+                secondary: ['closure', 'openness', 'speed', 'reflection', 'multi-criteria', 'polarity', 'choosing', 'deciding', 'deliberating', 'consulting', 'weighing', 'options'],
+                phrases: ['should we', 'trade-offs', 'dilemmas', 'decision process', 'quick vs reflective', 'participatory decision', 'delegated authority'],
+                patterns: ['binary thinking', 'alternative solutions', 'decision timing'],
+                negative: ['routine', 'automatic']
             },
             leadership: {
-                name: 'Contextual Leadership',
+                name: 'Leadership Patterns',
                 color: '#FF8C00',
-                primary: ['leadership', 'leader', 'director', 'chief', 'mayor', 'commissioner', 'administrator', 'manager', 'executive', 'superintendent'],
-                secondary: ['appoint', 'hire', 'resign', 'retire', 'candidate', 'nomination', 'selection', 'governance', 'administration', 'management'],
-                phrases: ['new leadership', 'leadership change', 'executive search', 'leadership development', 'succession planning'],
-                negative: ['sports coach', 'team captain']
+                primary: ['leadership', 'leader', 'authority', 'expertise', 'stewardship', 'guidance', 'rotating', 'contextual', 'distributed', 'emergence', 'facilitation'],
+                secondary: ['stability', 'adaptivity', 'center', 'periphery', 'context', 'leading', 'following', 'facilitating', 'coordinating', 'stewarding', 'temporary', 'situational'],
+                phrases: ['who leads when', 'contextual authority', 'rotating leadership', 'distributed leadership', 'situational leadership', 'expertise vs legitimacy'],
+                patterns: ['leadership emergence', 'authority adaptation', 'role circulation'],
+                negative: ['permanent boss', 'fixed hierarchy']
             },
-            ritual: {
-                name: 'Culture',
+            culture: {
+                name: 'Cultural Dynamics',
                 color: '#E81E63',
-                primary: ['tradition', 'heritage', 'culture', 'festival', 'celebration', 'ceremony', 'memorial', 'commemoration', 'anniversary', 'historic', 'landmark'],
-                secondary: ['community', 'gathering', 'event', 'parade', 'fair', 'market', 'arts', 'music', 'theater', 'museum', 'library'],
-                phrases: ['cultural event', 'community celebration', 'historic preservation', 'cultural heritage', 'public art', 'community tradition'],
-                negative: ['commercial', 'sale', 'discount']
+                primary: ['ritual', 'myth', 'culture', 'tradition', 'ceremony', 'symbol', 'meaning', 'values', 'norms', 'practices', 'customs', 'storytelling'],
+                secondary: ['form', 'essence', 'unity', 'difference', 'past', 'future', 'sacred', 'profane', 'celebrating', 'commemorating', 'meaning-making', 'identity'],
+                phrases: ['how we do things', 'origin stories', 'founding myths', 'shared values', 'organizational culture', 'cultural identity', 'ceremonial activities'],
+                patterns: ['symbolic practices', 'meaning systems', 'collective identity'],
+                negative: ['commercial', 'sale', 'profit-driven']
             },
-            power: {
-                name: 'Power & Resources',
+            resources: {
+                name: 'Resource Distribution',
                 color: '#009688',
-                primary: ['power', 'resource', 'funding', 'grant', 'budget', 'allocation', 'investment', 'development', 'infrastructure', 'utility', 'service'],
-                secondary: ['economic', 'financial', 'revenue', 'tax', 'fee', 'cost', 'expense', 'project', 'contract', 'procurement', 'bid'],
-                phrases: ['resource allocation', 'budget priority', 'economic development', 'public investment', 'capital improvement', 'tax revenue'],
-                negative: ['personal finance', 'stock market']
+                primary: ['resources', 'power', 'wealth', 'distribution', 'circulation', 'accumulation', 'economy', 'redistribution', 'commons', 'sharing', 'hoarding'],
+                secondary: ['scarcity', 'abundance', 'flow', 'stocks', 'equality', 'concentration', 'redistributing', 'circulating', 'accumulating', 'allocation', 'investment'],
+                phrases: ['who has what', 'wealth gaps', 'resource inequality', 'flow vs stockpiling', 'shared resources', 'economic justice', 'resource allocation'],
+                patterns: ['distribution patterns', 'accumulation dynamics', 'commons management'],
+                negative: ['personal finance', 'individual wealth']
             },
             care: {
-                name: 'Systemic Care',
+                name: 'Care Systems',
                 color: '#8BC34A',
-                primary: ['environment', 'climate', 'sustainability', 'green', 'clean', 'pollution', 'health', 'safety', 'welfare', 'housing', 'homeless', 'food'],
-                secondary: ['park', 'tree', 'water', 'air', 'waste', 'recycle', 'energy', 'solar', 'renewable', 'conservation', 'protection', 'preserve'],
-                phrases: ['climate action', 'environmental justice', 'public health', 'affordable housing', 'food security', 'community wellness'],
-                negative: ['real estate', 'luxury', 'profit']
+                primary: ['care', 'sustainability', 'resilience', 'fragility', 'protection', 'support', 'welfare', 'healthcare', 'ecosystem', 'planetary', 'boundaries', 'infrastructure'],
+                secondary: ['individual', 'collective', 'local', 'global', 'containment', 'connection', 'caring', 'protecting', 'maintaining', 'sustaining', 'supporting', 'wellbeing'],
+                phrases: ['long-term thinking', 'collective wellbeing', 'planetary scale', 'vulnerability protection', 'systemic care', 'infrastructure maintenance', 'ecosystem health'],
+                patterns: ['scale of care', 'temporal horizons', 'system maintenance'],
+                negative: ['individual gain', 'short-term profit']
             }
         };
         
         // State
         let allArticles = [];
+        let pendingArticles = [];  // New articles waiting to be displayed
         let filteredArticles = [];
         let feedSources = [];
+        let feedSourcesMap = {};  // Map source name to source object with ID
         let debugMode = false;
         let isLoading = false;
+        let isFaucetOn = false;  // Content faucet state
         let activeThemeFilter = 'all';
         let themeCounts = {};
         let cachedUrls = new Set();
         let lastSyncTime = null;
+        let abortController = null;  // For cancelling fetch operations
         
         // Cache statistics
         let cacheStats = {
             fromCache: 0,
             fromRSS: 0,
-            new: 0
+            new: 0,
+            filtered: 0
         };
         
         // Pagination state
         let currentPage = 1;
         let pageSize = 25;
         let totalPages = 1;
+        
+        // Toggle theme legend
+        function toggleThemeLegend() {
+            const legend = document.getElementById('themeLegend');
+            const btn = document.querySelector('.theme-help-btn');
+            
+            legend.classList.toggle('active');
+            
+            if (legend.classList.contains('active')) {
+                btn.textContent = 'Hide Guide';
+            } else {
+                btn.textContent = 'Show Guide';
+            }
+        }
+        
+        // Toggle content faucet
+        function toggleContentFaucet() {
+            isFaucetOn = !isFaucetOn;
+            const toggle = document.getElementById('faucetToggle');
+            const state = document.getElementById('faucetState');
+            const status = document.getElementById('faucetStatus');
+            
+            if (isFaucetOn) {
+                toggle.classList.add('active');
+                state.textContent = 'ON';
+                status.textContent = 'New Content Stream - Active';
+                document.getElementById('faucetInfo').textContent = 'New articles will appear automatically';
+                
+                // Start adding pending articles
+                if (pendingArticles.length > 0) {
+                    addPendingArticlesGradually();
+                }
+            } else {
+                toggle.classList.remove('active');
+                state.textContent = 'OFF';
+                status.textContent = 'New Content Stream - Paused';
+                document.getElementById('faucetInfo').textContent = `Click to turn on/off new articles`;
+            }
+        }
+        
+        // Add pending articles gradually when faucet is on
+        function addPendingArticlesGradually() {
+            if (!isFaucetOn || pendingArticles.length === 0) {
+                document.getElementById('newContentIndicator').classList.remove('active');
+                updatePendingCount();
+                return;
+            }
+            
+            // Add one article at a time
+            const article = pendingArticles.shift();
+            article.isNew = true;  // Mark as new for visual effect
+            
+            // Add to all articles
+            allArticles.unshift(article);  // Add to beginning
+            allArticles.sort((a, b) => {
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return b.date - a.date;
+            });
+            
+            // Update display
+            updateThemeCounts();
+            filterArticles();
+            updatePendingCount();
+            
+            // Continue adding if more pending
+            if (pendingArticles.length > 0) {
+                setTimeout(() => addPendingArticlesGradually(), 800);  // Stagger additions
+            } else {
+                document.getElementById('newContentIndicator').classList.remove('active');
+            }
+        }
+        
+        // Update pending count display
+        function updatePendingCount() {
+            document.getElementById('pendingCount').textContent = `${pendingArticles.length} pending`;
+            document.getElementById('newContentCount').textContent = pendingArticles.length;
+            
+            if (pendingArticles.length > 0 && !isFaucetOn) {
+                document.getElementById('newContentIndicator').classList.add('active');
+            } else {
+                document.getElementById('newContentIndicator').classList.remove('active');
+            }
+        }
+        
+        // Show new content (when clicking indicator)
+        function showNewContent() {
+            if (!isFaucetOn) {
+                toggleContentFaucet();
+            }
+        }
         
         // Calculate theme relevance for an article
         function calculateThemeRelevance(article) {
@@ -802,6 +1190,7 @@
                     const sourceLower = article.source_name.toLowerCase();
                     if (themeKey === 'care' && sourceLower.includes('environment')) score += 2;
                     if (themeKey === 'governance' && (sourceLower.includes('council') || sourceLower.includes('government'))) score += 2;
+                    if (themeKey === 'transparency' && sourceLower.includes('news')) score += 0.5;
                 }
                 
                 scores[themeKey] = Math.max(0, score);
@@ -809,7 +1198,7 @@
             
             // Determine primary and secondary themes
             const sortedThemes = Object.entries(scores)
-                .filter(([_, score]) => score > 0)
+                .filter(([_, score]) => score > 1)
                 .sort((a, b) => b[1] - a[1]);
             
             const themes = {
@@ -821,8 +1210,8 @@
             return themes;
         }
         
-        // Load from Xano cache with intelligent filtering
-        async function loadFromCache() {
+        // Load cached content first
+        async function loadCachedContent() {
             const timeWindow = parseInt(document.getElementById('timeWindow').value) || 48;
             const cutoffDate = new Date(Date.now() - (timeWindow * 60 * 60 * 1000));
             
@@ -831,7 +1220,7 @@
             });
             
             try {
-                updateSyncStatus('syncing', 'Loading from cache...');
+                updateSyncStatus('syncing', 'Loading cached articles...');
                 const response = await fetch(`${CONTENT_API}?${params}`);
                 
                 if (!response.ok) throw new Error('Failed to load cache');
@@ -842,128 +1231,256 @@
                 cachedArticles.forEach(article => {
                     cachedUrls.add(article.url);
                     
-                    // Convert Xano format to our format
                     article.fromCache = true;
+                    article.link = article.url;
+                    
                     if (article.published_at) {
                         article.date = new Date(article.published_at);
                     }
                     
-                    // Restore category array as themes
+                    // Restore themes from cache
                     if (article.category && article.category.length > 0) {
                         article.themes = {
                             primary: article.category[0],
                             secondary: article.category.slice(1, 3),
                             scores: {}
                         };
+                    } else {
+                        article.themes = calculateThemeRelevance(article);
                     }
                 });
                 
-                cacheStats.fromCache = cachedArticles.length;
-                return cachedArticles;
+                // Filter and sort
+                const themedArticles = cachedArticles.filter(article => 
+                    article.themes && article.themes.primary
+                );
+                
+                themedArticles.sort((a, b) => {
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return b.date - a.date;
+                });
+                
+                cacheStats.fromCache = themedArticles.length;
+                allArticles = themedArticles;
+                
+                // Update display
+                updateThemeCounts();
+                filterArticles();
+                updateCacheStats();
+                updateSyncStatus('success', `Loaded ${themedArticles.length} cached articles`);
+                
+                // Enable RSS fetch button
+                document.getElementById('fetchRSSBtn').disabled = false;
                 
             } catch (error) {
                 console.error('Cache load error:', error);
                 updateSyncStatus('error', 'Cache load failed');
-                return [];
+                document.getElementById('fetchRSSBtn').disabled = false;
             }
         }
         
-        // Check if URL exists in cache
-        async function checkUrlInCache(url) {
-            // First check local set
-            if (cachedUrls.has(url)) return true;
+        // Stop fetching operation
+        function stopFetching() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+            }
+            isLoading = false;
             
-            // Then check Xano - 404 means not cached, which is expected
+            const fetchBtn = document.getElementById('fetchRSSBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const progressBar = document.getElementById('progressBar');
+            
+            fetchBtn.disabled = false;
+            stopBtn.style.display = 'none';
+            progressBar.style.display = 'none';
+            
+            updateSyncStatus('error', 'Fetch cancelled by user');
+        }
+        
+        // Start RSS fetch with parallel processing
+        async function startRSSFetch() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            abortController = new AbortController();
+            
+            const fetchBtn = document.getElementById('fetchRSSBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const progressBar = document.getElementById('progressBar');
+            
+            fetchBtn.disabled = true;
+            stopBtn.style.display = 'inline-block';
+            progressBar.style.display = 'block';
+            
+            updateProgress(10, 'Loading RSS sources...');
+            
             try {
-                const response = await fetch(`${CONTENT_API}/${encodeURIComponent(url)}`);
-                if (response.ok) {
-                    cachedUrls.add(url); // Add to local cache
-                    return true;
-                }
-                // 404 means not in cache, which is what we want to know
-                return false;
-            } catch (error) {
-                // Network error - assume not cached
-                return false;
-            }
-        }
-        
-        // Post new articles to Xano
-        async function postToCache(articles) {
-            if (articles.length === 0) return;
-            
-            console.log(`Posting ${articles.length} articles to Xano...`);
-            
-            const batches = [];
-            for (let i = 0; i < articles.length; i += CACHE_CONFIG.batchSize) {
-                batches.push(articles.slice(i, i + CACHE_CONFIG.batchSize));
-            }
-            
-            let successCount = 0;
-            let errorCount = 0;
-            
-            for (const batch of batches) {
-                for (const article of batch) {
-                    try {
-                        // Prepare article for Xano
-                        const xanoArticle = {
-                            url: article.link || article.url,
-                            title: article.title,
-                            description: article.description || '',
-                            published_at: article.date ? article.date.toISOString() : new Date().toISOString(),
-                            source_name: article.source_name || article.source,
-                            author: article.author || '',
-                            category: [],
-                            keywords: []
-                        };
-                        
-                        // Add themes as categories
-                        if (article.themes) {
-                            if (article.themes.primary) {
-                                xanoArticle.category.push(article.themes.primary);
-                            }
-                            if (article.themes.secondary) {
-                                xanoArticle.category = xanoArticle.category.concat(article.themes.secondary);
-                            }
-                        }
-                        
-                        // Extract keywords from description
-                        if (article.description) {
-                            const words = article.description.toLowerCase()
-                                .split(/\W+/)
-                                .filter(word => word.length > 5)
-                                .slice(0, 10);
-                            xanoArticle.keywords = [...new Set(words)];
-                        }
-                        
-                        const response = await fetch(CONTENT_API, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(xanoArticle)
-                        });
-                        
-                        if (response.ok) {
-                            cachedUrls.add(xanoArticle.url);
-                            cacheStats.new++;
-                            successCount++;
-                        } else {
-                            console.error(`Failed to post article: ${response.status}`, await response.text());
-                            errorCount++;
-                        }
-                        
-                    } catch (error) {
-                        console.error('Failed to cache article:', error);
-                        errorCount++;
-                    }
+                // Load RSS sources and create ID map
+                const sources = await loadSources();
+                
+                if (sources.length === 0) {
+                    isLoading = false;
+                    fetchBtn.disabled = false;
+                    stopBtn.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    updateSyncStatus('error', 'No feed sources found');
+                    return;
                 }
                 
-                // Small delay between batches
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Create map of source names to IDs
+                sources.forEach(source => {
+                    feedSourcesMap[source.title || source.name] = source.id;
+                });
+                
+                updateProgress(20, `Fetching from ${sources.length} sources in parallel...`);
+                
+                // Reset pending articles
+                pendingArticles = [];
+                let processedCount = 0;
+                let totalNewArticles = 0;
+                
+                // Set all sources to loading state
+                sources.forEach(source => {
+                    updateSourceStatus(source.name || source.title, 'loading');
+                });
+                
+                // Define number of concurrent fetches (adjust based on performance needs)
+                const CONCURRENT_FETCHES = 5;
+                
+                // Process sources in batches for controlled parallelism
+                async function processBatch(batch) {
+                    const batchPromises = batch.map(async (source) => {
+                        // Check if aborted
+                        if (abortController.signal.aborted) {
+                            throw new Error('Fetch cancelled');
+                        }
+                        
+                        try {
+                            const articles = await fetchFeed(source);
+                            const sourceNewArticles = [];
+                            
+                            // Process articles for this source
+                            const cacheCheckPromises = articles.map(async (article) => {
+                                if (abortController.signal.aborted) return null;
+                                
+                                const inCache = await checkUrlInCache(article.url);
+                                
+                                if (!inCache) {
+                                    // Calculate themes
+                                    article.themes = calculateThemeRelevance(article);
+                                    
+                                    // Set the RSS feed ID
+                                    article.rss_feed_id = source.id;
+                                    
+                                    // Only keep articles WITH themes
+                                    if (article.themes && article.themes.primary) {
+                                        article.fromCache = false;
+                                        return article;
+                                    } else {
+                                        cacheStats.filtered++;
+                                        return null;
+                                    }
+                                }
+                                return null;
+                            });
+                            
+                            const checkedArticles = await Promise.all(cacheCheckPromises);
+                            const validArticles = checkedArticles.filter(a => a !== null);
+                            
+                            if (validArticles.length > 0) {
+                                sourceNewArticles.push(...validArticles);
+                                cacheStats.fromRSS += validArticles.length;
+                                
+                                // Post to cache in background (don't await)
+                                postToCache(validArticles).then(() => {
+                                    updateCacheStats();
+                                }).catch(err => console.error('Cache post error:', err));
+                            }
+                            
+                            updateSourceStatus(source.name || source.title, articles.length > 0 ? 'active' : 'error');
+                            
+                            return sourceNewArticles;
+                            
+                        } catch (error) {
+                            console.error(`Error processing ${source.name || source.title}:`, error);
+                            updateSourceStatus(source.name || source.title, 'error');
+                            return [];
+                        } finally {
+                            processedCount++;
+                            const progress = 20 + (processedCount / sources.length) * 70;
+                            updateProgress(progress, `Processed ${processedCount}/${sources.length} sources...`);
+                        }
+                    });
+                    
+                    const results = await Promise.all(batchPromises);
+                    return results.flat();
+                }
+                
+                // Split sources into batches
+                const batches = [];
+                for (let i = 0; i < sources.length; i += CONCURRENT_FETCHES) {
+                    batches.push(sources.slice(i, i + CONCURRENT_FETCHES));
+                }
+                
+                // Process all batches
+                const startTime = Date.now();
+                const allNewArticles = [];
+                
+                for (const batch of batches) {
+                    if (!isLoading || abortController.signal.aborted) break;
+                    
+                    const batchArticles = await processBatch(batch);
+                    allNewArticles.push(...batchArticles);
+                    totalNewArticles = allNewArticles.length;
+                    
+                    // Update pending count in real-time
+                    pendingArticles = [...allNewArticles];
+                    updatePendingCount();
+                }
+                
+                const fetchTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                updateProgress(95, `Finalizing... (fetched in ${fetchTime}s)`);
+                
+                // Sort pending articles by date
+                pendingArticles.sort((a, b) => {
+                    if (!a.date) return 1;
+                    if (!b.date) return -1;
+                    return b.date - a.date;
+                });
+                
+                updatePendingCount();
+                updateProgress(100, `RSS fetch complete! (${fetchTime}s)`);
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    stopBtn.style.display = 'none';
+                    updateSyncStatus('success', `Found ${pendingArticles.length} new articles in ${fetchTime}s`);
+                }, 1000);
+                
+                // Auto-start faucet if articles found
+                if (pendingArticles.length > 0 && !isFaucetOn) {
+                    setTimeout(() => {
+                        if (confirm(`Found ${pendingArticles.length} new articles. Turn on content stream?`)) {
+                            toggleContentFaucet();
+                        }
+                    }, 1500);
+                }
+                
+            } catch (error) {
+                if (error.message === 'Fetch cancelled') {
+                    console.log('Fetch operation cancelled');
+                } else {
+                    console.error('Fetch error:', error);
+                    updateSyncStatus('error', 'Fetch failed: ' + error.message);
+                }
+            } finally {
+                isLoading = false;
+                fetchBtn.disabled = false;
+                stopBtn.style.display = 'none';
+                abortController = null;
             }
-            
-            console.log(`Posted ${successCount} articles successfully, ${errorCount} errors`);
         }
         
         // Load RSS sources
@@ -984,7 +1501,7 @@
         }
         
         // Parse RSS feed
-        function parseRSSFeed(xmlText, sourceName) {
+        function parseRSSFeed(xmlText, sourceName, sourceId) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlText, 'text/xml');
             const articles = [];
@@ -1004,11 +1521,35 @@
                 const link = item.querySelector('link')?.textContent || 
                            item.querySelector('link')?.getAttribute('href') || '';
                 const description = item.querySelector('description')?.textContent || 
-                                  item.querySelector('summary')?.textContent || '';
+                                  item.querySelector('summary')?.textContent || 
+                                  item.querySelector('content\\:encoded')?.textContent || '';
                 const pubDate = item.querySelector('pubDate')?.textContent || 
-                              item.querySelector('published')?.textContent || '';
+                              item.querySelector('published')?.textContent || 
+                              item.querySelector('updated')?.textContent || '';
                 const author = item.querySelector('author')?.textContent || 
-                             item.querySelector('dc\\:creator')?.textContent || '';
+                             item.querySelector('dc\\:creator')?.textContent || 
+                             item.querySelector('creator')?.textContent || '';
+                
+                // Extract image URL
+                let imageUrl = '';
+                const mediaContent = item.querySelector('media\\:content, content');
+                if (mediaContent && mediaContent.getAttribute('url')) {
+                    imageUrl = mediaContent.getAttribute('url');
+                }
+                
+                if (!imageUrl) {
+                    const enclosure = item.querySelector('enclosure');
+                    if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
+                        imageUrl = enclosure.getAttribute('url');
+                    }
+                }
+                
+                if (!imageUrl) {
+                    const thumbnail = item.querySelector('media\\:thumbnail, thumbnail');
+                    if (thumbnail) {
+                        imageUrl = thumbnail.getAttribute('url');
+                    }
+                }
                 
                 if (title || description) {
                     const article = {
@@ -1021,6 +1562,8 @@
                         author: cleanText(author),
                         source: sourceName,
                         source_name: sourceName,
+                        image_url: imageUrl,
+                        rss_feed_id: sourceId,  // Add source ID
                         themes: null
                     };
                     
@@ -1035,6 +1578,7 @@
         async function fetchFeed(source) {
             const url = source.url || source.link;
             const name = source.name || source.title || 'Unknown';
+            const sourceId = source.id;
             
             if (!url) return [];
             
@@ -1045,7 +1589,7 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const text = await response.text();
-                const articles = parseRSSFeed(text, name);
+                const articles = parseRSSFeed(text, name, sourceId);
                 
                 return articles;
             } catch (error) {
@@ -1054,125 +1598,143 @@
             }
         }
         
-        // Main sync function
-        async function syncWithCache() {
-            if (isLoading) return;
+        // Check if URL exists in cache (with request throttling)
+        async function checkUrlInCache(url) {
+            if (cachedUrls.has(url)) return true;
             
-            isLoading = true;
-            const syncBtn = document.getElementById('syncBtn');
-            const progressBar = document.getElementById('progressBar');
-            const container = document.getElementById('articlesContainer');
+            // Skip individual API checks during bulk operations
+            // Rely on local cache set for better performance
+            return false;
+        }
+        
+        // Batch check URLs in cache (more efficient for multiple URLs)
+        async function batchCheckUrlsInCache(urls) {
+            const uncachedUrls = urls.filter(url => !cachedUrls.has(url));
             
-            syncBtn.disabled = true;
-            progressBar.style.display = 'block';
+            if (uncachedUrls.length === 0) {
+                return new Map(urls.map(url => [url, true]));
+            }
             
-            // Reset stats
-            cacheStats = { fromCache: 0, fromRSS: 0, new: 0 };
-            allArticles = [];
+            // For now, assume uncached (could implement batch endpoint if available)
+            const results = new Map();
+            urls.forEach(url => {
+                results.set(url, cachedUrls.has(url));
+            });
             
-            updateProgress(10, 'Loading cached articles...');
+            return results;
+        }
+        
+        // Post new articles to Xano with RSS feed ID (parallel batch processing)
+        async function postToCache(articles) {
+            if (articles.length === 0) return;
             
-            // Step 1: Load from cache
-            const cachedArticles = await loadFromCache();
-            allArticles = allArticles.concat(cachedArticles);
+            const themedArticles = articles.filter(a => a.themes && a.themes.primary);
             
-            updateProgress(30, 'Loading RSS sources...');
-            
-            // Step 2: Load RSS sources
-            const sources = await loadSources();
-            
-            if (sources.length === 0) {
-                isLoading = false;
-                syncBtn.disabled = false;
-                progressBar.style.display = 'none';
-                container.innerHTML = '<div class="error">No feed sources found</div>';
+            if (themedArticles.length === 0) {
+                console.log('No themed articles to post to cache');
                 return;
             }
             
-            // Step 3: Fetch RSS feeds and check against cache
-            let newArticles = [];
-            let processed = 0;
-            let allNewArticles = []; // Collect all for final sort
+            console.log(`Posting ${themedArticles.length} themed articles to Xano...`);
             
-            for (const source of sources) {
-                if (!isLoading) break;
+            let successCount = 0;
+            let errorCount = 0;
+            
+            // Process in parallel batches for better performance
+            const PARALLEL_POSTS = 5;
+            const postPromises = [];
+            
+            for (let i = 0; i < themedArticles.length; i += PARALLEL_POSTS) {
+                const batch = themedArticles.slice(i, i + PARALLEL_POSTS);
                 
-                processed++;
-                const progress = 30 + (processed / sources.length) * 60; // Adjusted progress
-                updateProgress(progress, `Fetching ${source.name || 'Unknown'}...`);
-                updateSourceStatus(source.name || source.title, 'loading');
-                
-                const articles = await fetchFeed(source);
-                let sourceNewArticles = [];
-                
-                for (const article of articles) {
-                    // Skip checking individual URLs during initial load if cache is empty
-                    const shouldCheckCache = cachedUrls.size > 0 || cacheStats.fromCache > 0;
-                    const inCache = shouldCheckCache ? await checkUrlInCache(article.url) : false;
-                    
-                    if (!inCache) {
-                        // Calculate themes for new article
-                        article.themes = calculateThemeRelevance(article);
-                        article.fromCache = false;
-                        sourceNewArticles.push(article);
-                        cacheStats.fromRSS++;
+                const batchPromise = Promise.all(batch.map(async (article) => {
+                    try {
+                        const xanoArticle = {
+                            url: article.link || article.url || '',
+                            title: article.title || 'Untitled',
+                            description: article.description || '',
+                            published_at: article.date ? article.date.toISOString() : new Date().toISOString(),
+                            source_name: article.source_name || article.source || 'Unknown',
+                            author: article.author || '',
+                            image_url: article.image_url || '',
+                            rss_feed: article.rss_feed_id || null,  // Include RSS feed ID
+                            category: [],
+                            keywords: []
+                        };
+                        
+                        // Add themes as categories
+                        if (article.themes && article.themes.primary) {
+                            xanoArticle.category.push(article.themes.primary);
+                            
+                            if (article.themes.secondary && article.themes.secondary.length > 0) {
+                                xanoArticle.category = xanoArticle.category.concat(article.themes.secondary);
+                            }
+                        }
+                        
+                        // Extract keywords
+                        const combinedText = `${article.title} ${article.description}`.toLowerCase();
+                        const stopWords = new Set(['the', 'is', 'at', 'which', 'on', 'and', 'a', 'an', 'as', 'are', 'was', 'been', 'be', 'have', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'to', 'of', 'in', 'for', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once']);
+                        
+                        const words = combinedText
+                            .replace(/[^\w\s]/g, ' ')
+                            .split(/\s+/)
+                            .filter(word => word.length > 4 && !stopWords.has(word))
+                            .slice(0, 15);
+                        
+                        xanoArticle.keywords = [...new Set(words)];
+                        
+                        const response = await fetch(CONTENT_API, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(xanoArticle)
+                        });
+                        
+                        if (response.ok) {
+                            cachedUrls.add(xanoArticle.url);
+                            cacheStats.new++;
+                            successCount++;
+                            return { success: true };
+                        } else {
+                            const errorText = await response.text();
+                            console.error(`Failed to post article: ${response.status}`, errorText);
+                            errorCount++;
+                            return { success: false, error: errorText };
+                        }
+                        
+                    } catch (error) {
+                        console.error('Failed to cache article:', error);
+                        errorCount++;
+                        return { success: false, error: error.message };
                     }
-                }
+                }));
                 
-                // Post this source's new articles immediately
-                if (sourceNewArticles.length > 0) {
-                    allNewArticles = allNewArticles.concat(sourceNewArticles);
-                    
-                    // Add to display immediately
-                    allArticles = allArticles.concat(sourceNewArticles);
-                    allArticles.sort((a, b) => {
-                        if (!a.date) return 1;
-                        if (!b.date) return -1;
-                        return b.date - a.date;
-                    });
-                    
-                    // Update display in real-time
-                    updateThemeCounts();
-                    filterArticles();
-                    updateCacheStats();
-                    
-                    // Post to Xano in background (don't await)
-                    postToCache(sourceNewArticles).then(() => {
-                        updateCacheStats();
-                    });
-                }
+                postPromises.push(batchPromise);
                 
-                updateSourceStatus(source.name || source.title, articles.length > 0 ? 'active' : 'error');
+                // Small delay between batches to avoid overwhelming the server
+                if (i + PARALLEL_POSTS < themedArticles.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
             
-            updateProgress(95, 'Finalizing...');
+            // Wait for all posts to complete
+            await Promise.all(postPromises);
             
-            updateProgress(100, 'Sync complete!');
-            
-            // Final update
-            updateThemeCounts();
-            filterArticles();
-            updateCacheStats();
-            lastSyncTime = new Date();
-            updateLastSyncTime();
-            
-            setTimeout(() => {
-                progressBar.style.display = 'none';
-                updateSyncStatus('success', 'Sync complete');
-            }, 1000);
-            
-            isLoading = false;
-            syncBtn.disabled = false;
-            
-            if (debugMode) {
-                updateDebug();
-            }
+            console.log(`Posted ${successCount} articles successfully, ${errorCount} errors`);
         }
         
-        // Force refresh (bypass cache)
+        // Force refresh
         async function forceRefresh() {
-            cachedUrls.clear();
-            await syncWithCache();
+            if (confirm('This will clear the local cache and reload everything. Continue?')) {
+                cachedUrls.clear();
+                allArticles = [];
+                pendingArticles = [];
+                cacheStats = { fromCache: 0, fromRSS: 0, new: 0, filtered: 0 };
+                
+                await loadCachedContent();
+                await startRSSFetch();
+            }
         }
         
         // Update sync status
@@ -1194,6 +1756,7 @@
             document.getElementById('cachedCount').textContent = cacheStats.fromCache;
             document.getElementById('newCount').textContent = cacheStats.new;
             document.getElementById('rssCount').textContent = cacheStats.fromRSS;
+            document.getElementById('filteredCount').textContent = cacheStats.filtered;
         }
         
         // Update last sync time
@@ -1233,7 +1796,6 @@
         function filterByTheme(theme) {
             activeThemeFilter = theme;
             
-            // Update button states
             document.querySelectorAll('.theme-filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -1241,7 +1803,6 @@
             const activeBtn = document.querySelector(`.theme-filter-btn.theme-${theme}`);
             if (activeBtn) activeBtn.classList.add('active');
             
-            // Apply filter
             if (theme === 'all') {
                 filteredArticles = [];
                 currentPage = 1;
@@ -1265,10 +1826,10 @@
                 all: allArticles.length,
                 governance: 0,
                 transparency: 0,
-                inclusive: 0,
+                decisions: 0,
                 leadership: 0,
-                ritual: 0,
-                power: 0,
+                culture: 0,
+                resources: 0,
                 care: 0
             };
             
@@ -1285,13 +1846,11 @@
                 }
             });
             
-            // Update UI counts
             Object.entries(themeCounts).forEach(([theme, count]) => {
                 const btn = document.querySelector(`.theme-filter-btn.theme-${theme} .count`);
                 if (btn) btn.textContent = count;
             });
             
-            // Update analytics
             updateThemeAnalytics();
         }
         
@@ -1319,13 +1878,23 @@
         // Clear articles
         function clearArticles() {
             allArticles = [];
+            pendingArticles = [];
             filteredArticles = [];
             currentPage = 1;
             activeThemeFilter = 'all';
+            cacheStats = { fromCache: 0, fromRSS: 0, new: 0, filtered: 0 };
+            isFaucetOn = false;
             
             displayArticles([]);
             updateThemeCounts();
+            updateCacheStats();
+            updatePendingCount();
             updateStats('Articles cleared. Cache preserved.');
+            
+            // Reset faucet
+            document.getElementById('faucetToggle').classList.remove('active');
+            document.getElementById('faucetState').textContent = 'OFF';
+            document.getElementById('faucetStatus').textContent = 'New Content Stream';
             
             feedSources.forEach(source => {
                 updateSourceStatus(source.name || source.title, '');
@@ -1366,7 +1935,15 @@
             
             let html = '';
             pageArticles.forEach(article => {
-                html += '<div class="article">';
+                const articleClass = article.isNew ? 'article new-article' : 'article';
+                html += `<div class="${articleClass}">`;
+                
+                // Show image if available
+                if (article.image_url) {
+                    html += '<div style="float: right; margin: 0 0 10px 15px; max-width: 200px;">';
+                    html += `<img src="${escapeHtml(article.image_url)}" alt="${escapeHtml(article.title)}" style="width: 100%; height: auto; border-radius: 4px;">`;
+                    html += '</div>';
+                }
                 
                 // Header with title and theme badges
                 html += '<div class="article-header">';
@@ -1375,27 +1952,38 @@
                 html += escapeHtml(article.title);
                 html += '</a>';
                 
-                // Show if from cache
+                // Show status badge
                 if (article.fromCache) {
                     html += '<span class="article-cached">cached</span>';
+                } else if (article.isNew) {
+                    html += '<span class="article-new">NEW</span>';
                 }
                 
                 html += '</div>';
                 
-                // Theme badges
+                // Theme badges with confidence indicators
                 if (article.themes && article.themes.primary) {
                     html += '<div class="article-themes">';
                     
                     if (article.themes.primary) {
                         const theme = THEMES[article.themes.primary];
-                        html += `<span class="theme-badge primary" style="background: ${theme.color}">${theme.name}</span>`;
+                        if (theme) {
+                            const confidence = article.themes.confidence || 'low';
+                            const confidenceClass = confidence === 'low' ? 'low-confidence' : '';
+                            html += `<span class="theme-badge primary ${confidenceClass}" style="background: ${theme.color}" title="${theme.name} (${confidence} confidence)">`;
+                            html += theme.name;
+                            if (debugMode) {
+                                html += `<span class="confidence-indicator confidence-${confidence}"></span>`;
+                            }
+                            html += '</span>';
+                        }
                     }
                     
                     if (article.themes.secondary) {
                         article.themes.secondary.forEach(themeKey => {
                             const theme = THEMES[themeKey];
                             if (theme) {
-                                html += `<span class="theme-badge secondary" style="background: ${theme.color}">${theme.name}</span>`;
+                                html += `<span class="theme-badge secondary" style="background: ${theme.color}" title="${theme.name} (secondary)">${theme.name}</span>`;
                             }
                         });
                     }
@@ -1425,7 +2013,15 @@
                     html += '</div>';
                 }
                 
+                html += '<div style="clear: both;"></div>';
                 html += '</div>';
+                
+                // Remove new flag after display
+                if (article.isNew) {
+                    setTimeout(() => {
+                        article.isNew = false;
+                    }, 3000);
+                }
             });
             
             container.innerHTML = html;
@@ -1532,6 +2128,10 @@
                 message += ' (search active)';
             }
             
+            if (cacheStats.filtered > 0) {
+                message += ` <em style="font-size: 12px; color: #999;">(${cacheStats.filtered} non-civic articles filtered out)</em>`;
+            }
+            
             document.getElementById('stats').innerHTML = message + 
                 '<div class="theme-analytics" id="themeAnalytics"></div>';
             
@@ -1562,18 +2162,28 @@
             debug += '=================\n\n';
             debug += `Total Sources: ${feedSources.length}\n`;
             debug += `Total Articles: ${allArticles.length}\n`;
+            debug += `Pending Articles: ${pendingArticles.length}\n`;
             debug += `Filtered Articles: ${filteredArticles.length}\n`;
             debug += `Active Theme Filter: ${activeThemeFilter}\n`;
             debug += `Cached URLs: ${cachedUrls.size}\n`;
             debug += `Current Page: ${currentPage}/${totalPages}\n`;
-            debug += `Page Size: ${pageSize}\n\n`;
+            debug += `Page Size: ${pageSize}\n`;
+            debug += `Faucet State: ${isFaucetOn ? 'ON' : 'OFF'}\n`;
+            debug += `Loading State: ${isLoading ? 'ACTIVE' : 'IDLE'}\n`;
+            debug += `Parallel Fetch: 5 concurrent threads\n\n`;
             
             debug += 'Cache Statistics:\n';
             debug += `  From Cache: ${cacheStats.fromCache}\n`;
             debug += `  From RSS: ${cacheStats.fromRSS}\n`;
-            debug += `  New Cached: ${cacheStats.new}\n\n`;
+            debug += `  New Cached: ${cacheStats.new}\n`;
+            debug += `  Filtered Out: ${cacheStats.filtered}\n\n`;
             
-            debug += 'Theme Distribution:\n';
+            debug += 'Feed Source IDs:\n';
+            Object.entries(feedSourcesMap).forEach(([name, id]) => {
+                debug += `  ${name}: ${id}\n`;
+            });
+            
+            debug += '\nTheme Distribution:\n';
             Object.entries(themeCounts).forEach(([theme, count]) => {
                 if (theme !== 'all') {
                     const percentage = allArticles.length > 0 ? 
@@ -1606,37 +2216,14 @@
             return div.innerHTML;
         }
         
-        // Auto-sync timer
-        let syncInterval = null;
-        
-        function startAutoSync() {
-            if (syncInterval) clearInterval(syncInterval);
-            
-            if (document.getElementById('autoSync').checked) {
-                syncInterval = setInterval(() => {
-                    if (!isLoading) {
-                        syncWithCache();
-                    }
-                }, CACHE_CONFIG.syncInterval);
-            }
-        }
-        
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            updateStats('Ready to sync. Click "Sync & Load" to begin.');
+            updateStats('Ready to load. Click "Load Cached" to begin.');
             updateCacheStats();
             updateLastSyncTime();
+            updatePendingCount();
             
-            // Set up auto-sync
-            document.getElementById('autoSync').addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    startAutoSync();
-                } else {
-                    if (syncInterval) clearInterval(syncInterval);
-                }
-            });
-            
-            // Load local storage preferences
+            // Load preferences
             const savedTimeWindow = localStorage.getItem(CACHE_CONFIG.localCacheKey + '_timeWindow');
             if (savedTimeWindow) {
                 document.getElementById('timeWindow').value = savedTimeWindow;
@@ -1647,10 +2234,8 @@
                 localStorage.setItem(CACHE_CONFIG.localCacheKey + '_timeWindow', e.target.value);
             });
             
-            // Start auto-sync if enabled
-            if (document.getElementById('autoSync').checked) {
-                startAutoSync();
-            }
+            // Disable RSS fetch button initially
+            document.getElementById('fetchRSSBtn').disabled = true;
         });
     </script>
 </body>
