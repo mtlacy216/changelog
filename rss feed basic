@@ -1608,64 +1608,161 @@
         }
         
         // Parse RSS feed
+        function extractImageFromRSSItem(item) {
+            const images = [];
+            const allElements = item.getElementsByTagName('*');
+            for (let elem of allElements) {
+                const tagName = elem.tagName.toLowerCase();
+                if (tagName.includes('image') ||
+                    tagName.includes('thumbnail') ||
+                    tagName.includes('media') ||
+                    tagName.includes('enclosure') ||
+                    tagName.includes('content')) {
+                    for (let attr of elem.attributes) {
+                        const value = attr.value;
+                        if (isImageUrl(value)) {
+                            images.push({
+                                url: value,
+                                score: scoreImageUrl(value, tagName, attr.name),
+                                source: `${tagName}.${attr.name}`
+                            });
+                        }
+                    }
+                    const text = elem.textContent || '';
+                    if (isImageUrl(text)) {
+                        images.push({
+                            url: text.trim(),
+                            score: scoreImageUrl(text, tagName, 'textContent'),
+                            source: `${tagName}.textContent`
+                        });
+                    }
+                }
+            }
+
+            const contentSections = [
+                item.querySelector('description')?.textContent,
+                item.querySelector('content')?.textContent,
+                item.querySelector('encoded')?.textContent,
+                item.querySelector('summary')?.textContent
+            ];
+
+            for (let content of contentSections) {
+                if (content) {
+                    const urlMatches = content.match(/https?:\/\/[^\s<>"']+\.(jpg|jpeg|png|gif|webp|bmp|svg)[^\s<>"']*/gi);
+                    if (urlMatches) {
+                        urlMatches.forEach(url => {
+                            images.push({
+                                url: url,
+                                score: 5,
+                                source: 'content.extracted'
+                            });
+                        });
+                    }
+                    const imgMatches = content.match(/<img[^>]+src=["']([^"']+)["']/gi);
+                    if (imgMatches) {
+                        imgMatches.forEach(match => {
+                            const srcMatch = match.match(/src=["']([^"']+)["']/i);
+                            if (srcMatch && srcMatch[1]) {
+                                images.push({
+                                    url: srcMatch[1],
+                                    score: 6,
+                                    source: 'content.img'
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+
+            if (images.length > 0) {
+                console.log('Found images:', images.map(img => ({
+                    url: img.url.substring(0, 50) + '...',
+                    score: img.score,
+                    source: img.source
+                })));
+            }
+
+            if (images.length === 0) return null;
+            images.sort((a, b) => b.score - a.score);
+            return images[0].url;
+        }
+
+        function isImageUrl(str) {
+            if (!str || typeof str !== 'string') return false;
+            if (!str.match(/^https?:\/\//i) && !str.match(/^\/\//)) return false;
+
+            const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico)(\?|#|$)/i;
+            if (imageExtensions.test(str)) return true;
+
+            const imagePatterns = [
+                /\/media\//i,
+                /\/images?\//i,
+                /\/thumbnail/i,
+                /\/photo/i,
+                /\/picture/i,
+                /cloudinary/i,
+                /imagecdn/i,
+                /wordpress.*uploads/i,
+                /bp\.blogspot/i,
+                /imgur/i
+            ];
+
+            return imagePatterns.some(pattern => pattern.test(str));
+        }
+
+        function scoreImageUrl(url, tagName, attrName) {
+            let score = 10;
+            if (tagName.includes('thumbnail')) score += 10;
+            if (tagName.includes('media')) score += 8;
+            if (tagName.includes('enclosure')) score += 7;
+            if (tagName.includes('image')) score += 9;
+
+            if (attrName === 'url') score += 5;
+            if (attrName === 'src') score += 4;
+            if (attrName === 'href') score += 3;
+
+            if (url.includes('thumbnail') || url.includes('thumb')) score -= 2;
+            if (url.includes('small')) score -= 2;
+            if (url.includes('large') || url.includes('full')) score += 2;
+
+            if (url.includes('ytimg.com')) score += 3;
+            if (url.includes('fbcdn.net')) score += 2;
+
+            if (url.includes('1x1') || url.includes('pixel')) score -= 10;
+            if (url.includes('icon') || url.includes('logo')) score -= 3;
+            if (url.includes('avatar')) score -= 3;
+
+            return score;
+        }
+
         function parseRSSFeed(xmlText, sourceName, sourceId) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlText, 'text/xml');
             const articles = [];
-            
+
             const items = xml.querySelectorAll('item, entry');
-            
+
             items.forEach(item => {
                 const title = item.querySelector('title')?.textContent || '';
-                const link = item.querySelector('link')?.textContent || 
+                const link = item.querySelector('link')?.textContent ||
                            item.querySelector('link')?.getAttribute('href') || '';
                 const description = item.querySelector('description, summary')?.textContent || '';
                 const pubDate = item.querySelector('pubDate, published')?.textContent || '';
-                
-                // Extract image from various sources
-                let imageUrl = null;
-                
-                // Try media:thumbnail
-                const mediaThumbnail = item.querySelector('thumbnail, media\\:thumbnail');
-                if (mediaThumbnail) {
-                    imageUrl = mediaThumbnail.getAttribute('url');
-                }
-                
-                // Try enclosure
-                if (!imageUrl) {
-                    const enclosure = item.querySelector('enclosure');
-                    if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
-                        imageUrl = enclosure.getAttribute('url');
-                    }
-                }
-                
-                // Try media:content
-                if (!imageUrl) {
-                    const mediaContent = item.querySelector('content[medium="image"], media\\:content[medium="image"]');
-                    if (mediaContent) {
-                        imageUrl = mediaContent.getAttribute('url');
-                    }
-                }
-                
-                // Try to extract from description HTML
-                if (!imageUrl && description) {
-                    const imgMatch = description.match(/<img[^>]+src=["']([^"']+)["']/i);
-                    if (imgMatch) {
-                        imageUrl = imgMatch[1];
-                    }
-                }
-                
-                // Try content:encoded
-                if (!imageUrl) {
-                    const contentEncoded = item.querySelector('encoded, content\\:encoded')?.textContent;
-                    if (contentEncoded) {
-                        const imgMatch = contentEncoded.match(/<img[^>]+src=["']([^"']+)["']/i);
-                        if (imgMatch) {
-                            imageUrl = imgMatch[1];
+
+                let imageUrl = extractImageFromRSSItem(item);
+
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                    const baseUrl = xml.querySelector('link')?.textContent;
+                    if (baseUrl) {
+                        try {
+                            const base = new URL(baseUrl);
+                            imageUrl = new URL(imageUrl, base).href;
+                        } catch (e) {
+                            console.error('Failed to resolve relative URL:', imageUrl);
                         }
                     }
                 }
-                
+
                 if (title || description) {
                     articles.push({
                         id: Math.random().toString(36),
@@ -1680,7 +1777,7 @@
                     });
                 }
             });
-            
+
             return articles;
         }
         
