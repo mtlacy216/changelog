@@ -1641,9 +1641,10 @@
                 try {
                     const elements = item.querySelectorAll(selector);
                     elements.forEach(elem => {
+                        const typeAttr = (elem.getAttribute('type') || '').toLowerCase();
                         ['url', 'href', 'src'].forEach(attr => {
                             const url = elem.getAttribute(attr);
-                            if (url && isImageUrl(url)) {
+                            if (url && (isImageUrl(url) || typeAttr.startsWith('image'))) {
                                 images.push({
                                     url,
                                     score: 15,
@@ -1652,7 +1653,7 @@
                             }
                         });
                         const text = elem.textContent?.trim();
-                        if (text && isImageUrl(text)) {
+                        if (text && (isImageUrl(text) || typeAttr.startsWith('image'))) {
                             images.push({
                                 url: text,
                                 score: 14,
