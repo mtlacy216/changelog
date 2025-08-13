@@ -999,29 +999,6 @@
                     <div class="skeleton-text"></div>
                 </div>
             </div>
-
-        </div>
-        
-        <div class="controls">
-            <button onclick="loadCachedContent()" id="loadCacheBtn">📥 Load Cached</button>
-            <button onclick="startRSSFetch()" id="fetchRSSBtn">🔄 Fetch New RSS</button>
-            <button onclick="stopFetching()" id="stopBtn" style="display: none; background: #ff4444; color: white;">⏹ Stop</button>
-            <button onclick="forceRefresh()" id="refreshBtn">🔃 Force Refresh</button>
-            <button onclick="clearArticles()">Clear Articles</button>
-            <button onclick="toggleDebug()">Toggle Debug</button>
-            <button onclick="rebalanceExistingThemes()">⚖️ Rebalance Themes</button>
-
-            <div class="load-settings">
-                <label>
-                    Time window:
-                    <select id="timeWindow">
-                        <option value="24">24 hours</option>
-                        <option value="48" selected>48 hours</option>
-                        <option value="72">3 days</option>
-                        <option value="168">1 week</option>
-                    </select>
-                </label>
-=======
             <div class="article-card skeleton">
                 <div class="article-image"></div>
                 <div class="article-content">
@@ -1029,7 +1006,6 @@
                     <div class="skeleton-text"></div>
                     <div class="skeleton-text"></div>
                 </div>
->>>>>>> main
             </div>
         </div>
 
@@ -1144,39 +1120,6 @@
         let displayedArticles = [];
         let filteredArticles = [];
         let feedSources = [];
-
-        let feedSourcesMap = {};  // Map source name to source object with ID
-        let debugMode = false;
-        let debugLogs = [];
-        let isLoading = false;
-        let isFaucetOn = false;  // Content faucet state
-        let activeThemeFilter = 'all';
-        let themeCounts = {};
-        let cachedUrls = new Set();
-        let lastSyncTime = null;
-        let abortController = null;  // For cancelling fetch operations
-        
-        // Cache statistics
-        let cacheStats = {
-            fromCache: 0,
-            fromRSS: 0,
-            new: 0,
-            filtered: 0
-        };
-
-        function logDebug(message) {
-            if (!debugMode) return;
-            console.log(message);
-            debugLogs.push(message);
-            if (debugLogs.length > 50) debugLogs.shift();
-            updateDebug();
-        }
-        
-        // Pagination state
-        let currentPage = 1;
-        let pageSize = 25;
-        let totalPages = 1;
-=======
         let activeThemeFilter = 'all';
         let searchTerm = '';
         let articleUrlMap = new Map();
@@ -1195,7 +1138,6 @@
             await loadInitialContent();
             startBackgroundSync();
         });
->>>>>>> main
         
         // Initialize event listeners
         function initializeEventListeners() {
@@ -1223,261 +1165,9 @@
             }
         }
         
-
-        // Add pending articles gradually when faucet is on
-        function addPendingArticlesGradually() {
-            if (!isFaucetOn || pendingArticles.length === 0) {
-                document.getElementById('newContentIndicator').classList.remove('active');
-                updatePendingCount();
-                return;
-            }
-            
-            // Add one article at a time
-            const article = pendingArticles.shift();
-            article.isNew = true;  // Mark as new for visual effect
-            
-            // Add to all articles
-            allArticles.unshift(article);  // Add to beginning
-            allArticles.sort((a, b) => {
-                if (!a.date) return 1;
-                if (!b.date) return -1;
-                return b.date - a.date;
-            });
-            
-            // Update display
-            updateThemeCounts();
-            filterArticles();
-            updatePendingCount();
-            
-            // Continue adding if more pending
-            if (pendingArticles.length > 0) {
-                setTimeout(() => addPendingArticlesGradually(), 800);  // Stagger additions
-            } else {
-                document.getElementById('newContentIndicator').classList.remove('active');
-            }
-        }
-        
-        // Update pending count display
-        function updatePendingCount() {
-            document.getElementById('pendingCount').textContent = `${pendingArticles.length} pending`;
-            document.getElementById('newContentCount').textContent = pendingArticles.length;
-            
-            if (pendingArticles.length > 0 && !isFaucetOn) {
-                document.getElementById('newContentIndicator').classList.add('active');
-            } else {
-                document.getElementById('newContentIndicator').classList.remove('active');
-            }
-        }
-        
-        // Show new content (when clicking indicator)
-        function showNewContent() {
-            if (!isFaucetOn) {
-                toggleContentFaucet();
-            }
-        }
-        
-        // Calculate theme relevance for an article with better balancing
-        function calculateThemeRelevance(article) {
-            const text = `${article.title} ${article.description}`.toLowerCase();
-            const titleText = article.title.toLowerCase();
-            const scores = {};
-
-            // Enhanced keyword definitions with better balance
-            const BALANCED_THEMES = {
-                governance: {
-                    primary: ['council', 'mayor', 'commission', 'board', 'vote', 'election', 'ordinance', 'resolution', 'government', 'authority', 'policy'],
-                    secondary: ['approve', 'meeting', 'session', 'committee', 'legislative', 'executive'],
-                    contextual: ['city hall', 'metro council', 'county commission'],
-                    weight_modifier: 0.8  // Reduce governance weight since it's overmatching
-                },
-                transparency: {
-                    primary: ['transparency', 'disclosure', 'audit', 'report', 'investigation', 'accountability', 'oversight', 'review', 'records', 'information'],
-                    secondary: ['public', 'open', 'reveal', 'expose', 'examine', 'monitor', 'watchdog'],
-                    contextual: ['public records', 'open meeting', 'sunshine law', 'freedom of information'],
-                    weight_modifier: 1.2
-                },
-                decisions: {
-                    primary: ['decision', 'proposal', 'plan', 'strategy', 'initiative', 'approach', 'solution', 'recommendation', 'option', 'alternative'],
-                    secondary: ['consider', 'evaluate', 'assess', 'weigh', 'choose', 'select', 'determine'],
-                    contextual: ['public input', 'community feedback', 'stakeholder', 'deliberation'],
-                    weight_modifier: 1.5  // Boost to increase matches
-                },
-                leadership: {
-                    primary: ['leader', 'director', 'chief', 'head', 'coordinator', 'manager', 'administrator', 'officer', 'chair', 'president'],
-                    secondary: ['appoint', 'hire', 'promote', 'lead', 'guide', 'direct', 'manage'],
-                    contextual: ['new leadership', 'leadership change', 'executive search'],
-                    weight_modifier: 1.3
-                },
-                culture: {
-                    primary: ['culture', 'arts', 'heritage', 'tradition', 'festival', 'celebration', 'community', 'neighborhood', 'historic', 'cultural'],
-                    secondary: ['event', 'gathering', 'ceremony', 'program', 'preserve', 'honor', 'commemorate'],
-                    contextual: ['community event', 'cultural heritage', 'neighborhood association', 'historic preservation'],
-                    weight_modifier: 1.8  // Significant boost needed
-                },
-                resources: {
-                    primary: ['budget', 'funding', 'grant', 'revenue', 'expense', 'cost', 'investment', 'development', 'economic', 'financial'],
-                    secondary: ['allocate', 'spend', 'finance', 'fund', 'invest', 'distribute', 'tax'],
-                    contextual: ['capital improvement', 'tax revenue', 'economic development', 'affordable housing'],
-                    weight_modifier: 1.6  // Boost to capture more economic articles
-                },
-                care: {
-                    primary: ['health', 'safety', 'education', 'housing', 'transit', 'infrastructure', 'environment', 'parks', 'services', 'welfare'],
-                    secondary: ['protect', 'maintain', 'improve', 'support', 'assist', 'serve', 'provide'],
-                    contextual: ['public health', 'public safety', 'social services', 'environmental protection'],
-                    weight_modifier: 1.0
-                }
-            };
-
-            // Calculate scores with balanced weights
-            for (const [themeKey, keywords] of Object.entries(BALANCED_THEMES)) {
-                let score = 0;
-                const modifier = keywords.weight_modifier || 1.0;
-
-                // Primary keywords (higher weight in title)
-                keywords.primary.forEach(keyword => {
-                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-                    const titleMatches = (titleText.match(regex) || []).length;
-                    const textMatches = (text.match(regex) || []).length;
-                    score += (titleMatches * 4 + textMatches * 1.5) * modifier;
-                });
-
-                // Secondary keywords
-                keywords.secondary.forEach(keyword => {
-                    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-                    const titleMatches = (titleText.match(regex) || []).length;
-                    const textMatches = (text.match(regex) || []).length;
-                    score += (titleMatches * 2 + textMatches * 0.75) * modifier;
-                });
-
-                // Contextual phrases (bonus points)
-                keywords.contextual.forEach(phrase => {
-                    if (text.includes(phrase)) score += 3 * modifier;
-                });
-
-                // Source-based hints with more nuance
-                if (article.source_name) {
-                    const sourceLower = article.source_name.toLowerCase();
-
-                    // Governance sources
-                    if (themeKey === 'governance' && 
-                        (sourceLower.includes('council') || sourceLower.includes('mayor'))) {
-                        score += 2;
-                    }
-
-                    // Resource/economic sources
-                    if (themeKey === 'resources' && 
-                        (sourceLower.includes('business') || sourceLower.includes('economic') || 
-                         sourceLower.includes('development') || sourceLower.includes('finance'))) {
-                        score += 3;
-                    }
-
-                    // Culture sources
-                    if (themeKey === 'culture' && 
-                        (sourceLower.includes('arts') || sourceLower.includes('culture') || 
-                         sourceLower.includes('neighborhood') || sourceLower.includes('community'))) {
-                        score += 3;
-                    }
-
-                    // Care/services sources
-                    if (themeKey === 'care' && 
-                        (sourceLower.includes('health') || sourceLower.includes('education') || 
-                         sourceLower.includes('transit') || sourceLower.includes('environment'))) {
-                        score += 2;
-                    }
-                }
-
-                // Apply penalty for generic news if not governance
-                if (themeKey !== 'governance' && themeKey !== 'transparency') {
-                    const genericTerms = ['meeting', 'vote', 'approve', 'council'];
-                    genericTerms.forEach(term => {
-                        if (text.includes(term) && score < 5) {
-                            score *= 0.7;  // Reduce score if it's just a generic government article
-                        }
-                    });
-                }
-
-                scores[themeKey] = Math.max(0, score);
-            }
-
-            // Normalize scores to prevent one theme from dominating
-            const maxScore = Math.max(...Object.values(scores));
-            if (maxScore > 0) {
-                Object.keys(scores).forEach(key => {
-                    scores[key] = (scores[key] / maxScore) * 10;  // Normalize to 0-10 scale
-                });
-            }
-
-            // Determine themes with adaptive threshold
-            const sortedThemes = Object.entries(scores)
-                .filter(([_, score]) => score > 2.5)  // Slightly higher threshold
-                .sort((a, b) => b[1] - a[1]);
-
-            // If governance is dominant but not significantly higher, check for secondary themes
-            if (sortedThemes.length > 0 && sortedThemes[0][0] === 'governance') {
-                if (sortedThemes.length > 1 && sortedThemes[0][1] - sortedThemes[1][1] < 2) {
-                    // If governance is only slightly ahead, prefer the more specific theme
-                    const temp = sortedThemes[0];
-                    sortedThemes[0] = sortedThemes[1];
-                    sortedThemes[1] = temp;
-                }
-            }
-
-            // Build theme object
-            const themes = {
-                primary: sortedThemes[0] ? sortedThemes[0][0] : null,
-                secondary: sortedThemes.slice(1, 3).map(([key]) => key),
-                scores: scores,
-                confidence: sortedThemes[0] ? 
-                    (sortedThemes[0][1] > 7 ? 'high' : 
-                     sortedThemes[0][1] > 4 ? 'medium' : 'low') : 'none'
-            };
-
-            // Debug logging for testing
-            if (debugMode && themes.primary) {
-                console.log(`Article: "${article.title.substring(0, 50)}..." => ${themes.primary} (${scores[themes.primary].toFixed(2)})`);
-            }
-
-            return themes;
-        }
-
-        // Analyze and rebalance existing articles with new algorithm
-        function rebalanceExistingThemes() {
-            console.log('Rebalancing themes for all articles...');
-            const beforeCounts = { ...themeCounts };
-
-            allArticles.forEach(article => {
-                article.themes = calculateThemeRelevance(article);
-            });
-
-            updateThemeCounts();
-            filterArticles();
-
-            console.log('Theme distribution before:', beforeCounts);
-            console.log('Theme distribution after:', themeCounts);
-
-            const statsEl = document.getElementById('stats');
-            const improvement = Object.entries(themeCounts).map(([theme, count]) => {
-                if (theme === 'all') return '';
-                const before = beforeCounts[theme] || 0;
-                const change = count - before;
-                return `${THEMES[theme]?.name}: ${before} → ${count} (${change >= 0 ? '+' : ''}${change})`;
-            }).filter(s => s).join(', ');
-
-            statsEl.innerHTML = `Themes rebalanced! ${improvement}` + 
-                '<div class="theme-analytics" id="themeAnalytics"></div>';
-            updateThemeAnalytics();
-        }
-        
-        // Load cached content first
-        async function loadCachedContent() {
-            const timeWindow = parseInt(document.getElementById('timeWindow').value) || 48;
-            const cutoffDate = new Date(Date.now() - (timeWindow * 60 * 60 * 1000));
-            
-=======
         // Load cached articles
         async function loadCachedArticles() {
             const cutoffDate = new Date(Date.now() - (48 * 60 * 60 * 1000));
->>>>>>> main
             const params = new URLSearchParams({
                 published_after: cutoffDate.toISOString()
             });
@@ -1579,43 +1269,10 @@
             }
         }
         
-        // Load RSS sources
-        async function loadSources() {
-            try {
-                logDebug('Loading RSS sources...');
-                const response = await fetch(SOURCES_API);
-                if (!response.ok) throw new Error('Failed to load sources');
-
-                const data = await response.json();
-                feedSources = data;
-                logDebug(`Loaded ${data.length} sources`);
-                data.forEach(src => logDebug(`Source: ${src.name || src.title || 'Unknown'} (ID: ${src.id})`));
-                updateSourcesDisplay();
-                return data;
-            } catch (error) {
-                console.error('Error loading sources:', error);
-                logDebug(`Error loading sources: ${error.message}`);
-                showError('Failed to load feed sources');
-                return [];
-            }
-        }
-        
-        // Parse RSS feed
-        function parseRSSFeed(xmlText, sourceName, sourceId) {
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
-            const articles = [];
-            
-            if (xml.querySelector('parsererror')) {
-                console.error('XML parse error for', sourceName);
-                return articles;
-            }
-=======
         // Calculate themes
         function calculateThemes(article) {
             const text = `${article.title || ''} ${article.description || ''}`.toLowerCase();
             const scores = {};
->>>>>>> main
             
             const keywords = {
                 governance: ['council', 'mayor', 'commission', 'board', 'vote', 'election', 'ordinance'],
@@ -1627,98 +1284,6 @@
                 care: ['health', 'safety', 'education', 'housing', 'transit', 'infrastructure', 'environment']
             };
             
-
-            items.forEach(item => {
-                const title = item.querySelector('title')?.textContent || '';
-                const link = item.querySelector('link')?.textContent || 
-                           item.querySelector('link')?.getAttribute('href') || '';
-                const description = item.querySelector('description')?.textContent || 
-                                  item.querySelector('summary')?.textContent || 
-                                  item.querySelector('content\\:encoded')?.textContent || '';
-                const pubDate = item.querySelector('pubDate')?.textContent || 
-                              item.querySelector('published')?.textContent || 
-                              item.querySelector('updated')?.textContent || '';
-                const author = item.querySelector('author')?.textContent || 
-                             item.querySelector('dc\\:creator')?.textContent || 
-                             item.querySelector('creator')?.textContent || '';
-                
-                // Extract image URL
-                let imageUrl = '';
-                const mediaContent = item.querySelector('media\\:content, content');
-                if (mediaContent && mediaContent.getAttribute('url')) {
-                    imageUrl = mediaContent.getAttribute('url');
-                }
-                
-                if (!imageUrl) {
-                    const enclosure = item.querySelector('enclosure');
-                    if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
-                        imageUrl = enclosure.getAttribute('url');
-                    }
-                }
-                
-                if (!imageUrl) {
-                    const thumbnail = item.querySelector('media\\:thumbnail, thumbnail');
-                    if (thumbnail) {
-                        imageUrl = thumbnail.getAttribute('url');
-                    }
-                }
-                
-                if (title || description) {
-                    if (debugMode) {
-                        logDebug(`${imageUrl ? 'Found' : 'Missing'} image for "${(title || '').substring(0, 40)}"`);
-                    }
-
-                    const article = {
-                        title: cleanText(title || 'Untitled'),
-                        link: link || '#',
-                        url: link || '#',
-                        description: cleanHTML(description || ''),
-                        date: parseDate(pubDate),
-                        published_at: parseDate(pubDate),
-                        author: cleanText(author),
-                        source: sourceName,
-                        source_name: sourceName,
-                        image_url: imageUrl,
-                        rss_feed_id: sourceId,  // Add source ID
-                        themes: null
-                    };
-
-                    articles.push(article);
-                }
-            });
-            
-            return articles;
-        }
-        
-        // Fetch RSS feed
-        async function fetchFeed(source) {
-            const url = source.url || source.link;
-            const name = source.name || source.title || 'Unknown';
-            const sourceId = source.id;
-
-            if (!url) {
-                logDebug(`Skipping source ${name} (ID: ${sourceId}) - missing URL`);
-                return [];
-            }
-
-            try {
-                logDebug(`Fetching feed: ${name} (ID: ${sourceId}) from ${url}`);
-                const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-                const response = await fetch(proxyUrl);
-
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                const text = await response.text();
-                const articles = parseRSSFeed(text, name, sourceId);
-                logDebug(`Fetched ${articles.length} articles from ${name}`);
-
-                return articles;
-            } catch (error) {
-                console.error(`Error fetching ${name}:`, error);
-                logDebug(`Error fetching ${name}: ${error.message}`);
-                return [];
-            }
-=======
             Object.entries(keywords).forEach(([theme, words]) => {
                 scores[theme] = 0;
                 words.forEach(word => {
@@ -1734,7 +1299,6 @@
                 primary: sorted[0] ? sorted[0][0] : null,
                 secondary: sorted.slice(1, 3).map(([key]) => key)
             };
->>>>>>> main
         }
         
         // Display articles
@@ -1838,80 +1402,6 @@
             });
             document.querySelector(`.theme-pill.theme-${theme}`).classList.add('active');
             
-
-            for (let i = 0; i < themedArticles.length; i += PARALLEL_POSTS) {
-                const batch = themedArticles.slice(i, i + PARALLEL_POSTS);
-                
-                const batchPromise = Promise.all(batch.map(async (article) => {
-                    try {
-                        const xanoArticle = {
-                            url: article.link || article.url || '',
-                            title: article.title || 'Untitled',
-                            description: article.description || '',
-                            published_at: article.date ? article.date.toISOString() : new Date().toISOString(),
-                            source_name: article.source_name || article.source || 'Unknown',
-                            author: article.author || '',
-                            image_url: article.image_url || '',
-                            rss_feed: article.rss_feed_id || null,  // Ensure RSS feed ID included
-                            category: [],
-                            keywords: []
-                        };
-                        
-                        // Add themes as categories
-                        if (article.themes && article.themes.primary) {
-                            xanoArticle.category.push(article.themes.primary);
-                            
-                            if (article.themes.secondary && article.themes.secondary.length > 0) {
-                                xanoArticle.category = xanoArticle.category.concat(article.themes.secondary);
-                            }
-                        }
-                        
-                        // Extract keywords
-                        const combinedText = `${article.title} ${article.description}`.toLowerCase();
-                        const stopWords = new Set(['the', 'is', 'at', 'which', 'on', 'and', 'a', 'an', 'as', 'are', 'was', 'been', 'be', 'have', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'shall', 'to', 'of', 'in', 'for', 'with', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once']);
-                        
-                        const words = combinedText
-                            .replace(/[^\w\s]/g, ' ')
-                            .split(/\s+/)
-                            .filter(word => word.length > 4 && !stopWords.has(word))
-                            .slice(0, 15);
-                        
-                        xanoArticle.keywords = [...new Set(words)];
-                        
-                        const response = await fetch(CONTENT_API, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(xanoArticle)
-                        });
-                        
-                        if (response.ok) {
-                            cachedUrls.add(xanoArticle.url);
-                            cacheStats.new++;
-                            successCount++;
-                            return { success: true };
-                        } else {
-                            const errorText = await response.text();
-                            console.error(`Failed to post article: ${response.status}`, errorText);
-                            errorCount++;
-                            return { success: false, error: errorText };
-                        }
-                        
-                    } catch (error) {
-                        console.error('Failed to cache article:', error);
-                        errorCount++;
-                        return { success: false, error: error.message };
-                    }
-                }));
-                
-                postPromises.push(batchPromise);
-                
-                // Small delay between batches to avoid overwhelming the server
-                if (i + PARALLEL_POSTS < themedArticles.length) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-=======
             // Apply filter
             if (theme === 'all') {
                 filteredArticles = [];
@@ -1920,7 +1410,6 @@
                     article.themes?.primary === theme || 
                     article.themes?.secondary?.includes(theme)
                 );
->>>>>>> main
             }
             
             // Apply search if active
@@ -2407,71 +1896,9 @@
             showUpdateToast('Comment liked!');
         }
         
-        // Update debug info
-        function updateDebug() {
-            const panel = document.getElementById('debugPanel');
-            let debug = 'Debug Information\n\n';
-            debug += `Total Sources: ${feedSources.length}\n`;
-            debug += `Total Articles: ${allArticles.length}\n`;
-            debug += `Pending Articles: ${pendingArticles.length}\n`;
-            debug += `Filtered Articles: ${filteredArticles.length}\n`;
-            debug += `Active Theme Filter: ${activeThemeFilter}\n`;
-            debug += `Cached URLs: ${cachedUrls.size}\n`;
-            debug += `Current Page: ${currentPage}/${totalPages}\n`;
-            debug += `Page Size: ${pageSize}\n`;
-            debug += `Faucet State: ${isFaucetOn ? 'ON' : 'OFF'}\n`;
-            debug += `Loading State: ${isLoading ? 'ACTIVE' : 'IDLE'}\n`;
-            debug += `Parallel Fetch: 5 concurrent threads\n\n`;
-            
-            debug += 'Cache Statistics:\n';
-            debug += `  From Cache: ${cacheStats.fromCache}\n`;
-            debug += `  From RSS: ${cacheStats.fromRSS}\n`;
-            debug += `  New Cached: ${cacheStats.new}\n`;
-            debug += `  Filtered Out: ${cacheStats.filtered}\n\n`;
-            
-            debug += 'Feed Source IDs:\n';
-            Object.entries(feedSourcesMap).forEach(([name, id]) => {
-                debug += `  ${name}: ${id}\n`;
-            });
-            
-            debug += '\nTheme Distribution:\n';
-            Object.entries(themeCounts).forEach(([theme, count]) => {
-                if (theme !== 'all') {
-                    const percentage = allArticles.length > 0 ? 
-                        Math.round((count / allArticles.length) * 100) : 0;
-                    debug += `  ${theme}: ${count} articles (${percentage}%)\n`;
-                }
-            });
-            
-            debug += '\nArticles by Source:\n';
-            const sourceCounts = {};
-            allArticles.forEach(article => {
-                const source = article.source_name || article.source;
-                sourceCounts[source] = (sourceCounts[source] || 0) + 1;
-            });
-            
-            Object.entries(sourceCounts)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([source, count]) => {
-                    debug += `  ${source}: ${count} articles\n`;
-                });
-
-            debug += '\nRSS Feed ID Mapping:\n';
-            allArticles.slice(0, 5).forEach(article => {
-                debug += `  "${article.title.substring(0, 30)}..." → Feed ID: ${article.rss_feed_id || 'MISSING'}\n`;
-            });
-
-            debug += '\nFeed Processing Log:\n';
-            debugLogs.slice(-20).forEach(msg => {
-                debug += `  ${msg}\n`;
-            });
-
-            panel.textContent = debug;
-=======
         function replyToComment(commentId) {
             // In production, this would open a reply form
             showUpdateToast('Reply feature coming soon!');
->>>>>>> main
         }
         
         function shareComment(commentId) {
