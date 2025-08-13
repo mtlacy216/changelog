@@ -2312,8 +2312,7 @@
         // Update debug info
         function updateDebug() {
             const panel = document.getElementById('debugPanel');
-            let debug = 'Debug Information\n';
-            debug += '=================\n\n';
+            let debug = 'Debug Information\n\n';
             debug += `Total Sources: ${feedSources.length}\n`;
             debug += `Total Articles: ${allArticles.length}\n`;
             debug += `Pending Articles: ${pendingArticles.length}\n`;
