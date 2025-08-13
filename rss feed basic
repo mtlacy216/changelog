@@ -1331,35 +1331,32 @@
         }
         
         // Create article card
+        function getProxiedImageUrl(originalUrl) {
+            if (!originalUrl) return null;
+
+            // Return original URL for now; proxy options can be added if needed
+            return originalUrl;
+        }
+
         function createArticleCard(article) {
             const card = document.createElement('div');
             card.className = 'article-card';
             card.onclick = () => openArticleModal(article);
-            
+
             const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
-            const hasImage = article.image_url || article.image;
-            
-            // Create image HTML with fallback
-            const imageHtml = hasImage ? `
-                <div class="article-image" style="background-image: url('${article.image_url || article.image}'); background-size: cover; background-position: center;">
-                    ${article.themes?.primary ? `
-                        <div class="article-category" style="background: rgba(255,255,255,0.95); color: ${themeColor}">
-                            ${THEMES[article.themes.primary].name}
-                        </div>
-                    ` : ''}
-                </div>
-            ` : `
-                <div class="article-image" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
-                    ${article.themes?.primary ? `
-                        <div class="article-category" style="color: ${themeColor}">
-                            ${THEMES[article.themes.primary].name}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            
+            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
+
+            // Create a unique ID for this card's image
+            const imageId = `img-${article.id || Math.random().toString(36)}`;
+
             card.innerHTML = `
-                ${imageHtml}
+                <div class="article-image" id="${imageId}" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
+                    ${article.themes?.primary ? `
+                        <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}">
+                            ${THEMES[article.themes.primary].name}
+                        </div>
+                    ` : ''}
+                </div>
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
                     <h3 class="article-title">${escapeHtml(article.title || 'Untitled')}</h3>
@@ -1376,18 +1373,25 @@
                     </div>
                 </div>
             `;
-            
-            // Handle image load errors with fallback
-            const img = card.querySelector('.article-image[style*="background-image"]');
-            if (img) {
-                const testImg = new Image();
-                testImg.onerror = () => {
-                    img.style.backgroundImage = 'none';
-                    img.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
+
+            // Try to load the image after card is created
+            if (imageUrl) {
+                const imageDiv = card.querySelector(`#${imageId}`);
+                const img = new Image();
+
+                img.onload = function() {
+                    imageDiv.style.backgroundImage = `url('${imageUrl}')`;
+                    imageDiv.style.backgroundSize = 'cover';
+                    imageDiv.style.backgroundPosition = 'center';
                 };
-                testImg.src = article.image_url || article.image;
+
+                img.onerror = function() {
+                    console.log('Image failed to load:', imageUrl);
+                };
+
+                img.src = imageUrl;
             }
-            
+
             return card;
         }
         
@@ -1593,152 +1597,222 @@
         async function fetchFeed(source) {
             const url = source.url || source.link;
             if (!url) return [];
-            
+
             try {
                 const proxyUrl = CORS_PROXY + encodeURIComponent(url);
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
+
                 const text = await response.text();
-                return parseRSSFeed(text, source.name || source.title, source.id);
+                // Pass the original feed URL for relative URL resolution
+                return parseRSSFeed(text, source.name || source.title, source.id, url);
             } catch (error) {
                 console.error(`Error fetching ${source.name}:`, error);
                 return [];
             }
         }
-        
-        // Parse RSS feed
-        function extractImageFromRSSItem(item) {
+
+        // Enhanced image extraction
+        function extractImageFromRSSItem(item, feedUrl) {
             const images = [];
-            const allElements = item.getElementsByTagName('*');
-            for (let elem of allElements) {
-                const tagName = elem.tagName.toLowerCase();
-                if (tagName.includes('image') ||
-                    tagName.includes('thumbnail') ||
-                    tagName.includes('media') ||
-                    tagName.includes('enclosure') ||
-                    tagName.includes('content')) {
-                    for (let attr of elem.attributes) {
-                        const value = attr.value;
-                        if (isImageUrl(value)) {
-                            images.push({
-                                url: value,
-                                score: scoreImageUrl(value, tagName, attr.name),
-                                source: `${tagName}.${attr.name}`
-                            });
-                        }
-                    }
-                    const text = elem.textContent || '';
-                    if (isImageUrl(text)) {
-                        images.push({
-                            url: text.trim(),
-                            score: scoreImageUrl(text, tagName, 'textContent'),
-                            source: `${tagName}.textContent`
-                        });
-                    }
-                }
+
+            // 1. Check for media:content and media:thumbnail first (most reliable)
+            const mediaContent = item.querySelector('content[medium="image"], thumbnail');
+            if (mediaContent) {
+                const url = mediaContent.getAttribute('url');
+                if (url) images.push({ url, score: 20, source: 'media:content' });
             }
 
-            const contentSections = [
-                item.querySelector('description')?.textContent,
-                item.querySelector('content')?.textContent,
-                item.querySelector('encoded')?.textContent,
-                item.querySelector('summary')?.textContent
+            // 2. Check enclosure tags (common for podcasts and media)
+            const enclosures = item.querySelectorAll('enclosure[type^="image"]');
+            enclosures.forEach(enc => {
+                const url = enc.getAttribute('url');
+                if (url) images.push({ url, score: 18, source: 'enclosure' });
+            });
+
+            // 3. Check all namespace variations
+            const namespaceElements = [
+                'media\\:content', 'media\\:thumbnail',
+                'itunes\\:image', 'image', 'thumbnail',
+                'content[type="image"]', 'link[rel="enclosure"][type^="image"]'
             ];
 
-            for (let content of contentSections) {
-                if (content) {
-                    const urlMatches = content.match(/https?:\/\/[^\s<>"']+\.(jpg|jpeg|png|gif|webp|bmp|svg)[^\s<>"']*/gi);
-                    if (urlMatches) {
-                        urlMatches.forEach(url => {
-                            images.push({
-                                url: url,
-                                score: 5,
-                                source: 'content.extracted'
-                            });
-                        });
-                    }
-                    const imgMatches = content.match(/<img[^>]+src=["']([^"']+)["']/gi);
-                    if (imgMatches) {
-                        imgMatches.forEach(match => {
-                            const srcMatch = match.match(/src=["']([^"']+)["']/i);
-                            if (srcMatch && srcMatch[1]) {
+            namespaceElements.forEach(selector => {
+                try {
+                    const elements = item.querySelectorAll(selector);
+                    elements.forEach(elem => {
+                        ['url', 'href', 'src'].forEach(attr => {
+                            const url = elem.getAttribute(attr);
+                            if (url && isImageUrl(url)) {
                                 images.push({
-                                    url: srcMatch[1],
-                                    score: 6,
-                                    source: 'content.img'
+                                    url,
+                                    score: 15,
+                                    source: `${selector}.${attr}`
                                 });
                             }
                         });
+                        const text = elem.textContent?.trim();
+                        if (text && isImageUrl(text)) {
+                            images.push({
+                                url: text,
+                                score: 14,
+                                source: `${selector}.text`
+                            });
+                        }
+                    });
+                } catch (e) {
+                    // Ignore selector errors
+                }
+            });
+
+            // 4. Extract from description/content HTML
+            const contentFields = [
+                'description', 'content', 'encoded',
+                'content\\:encoded', 'summary'
+            ];
+
+            contentFields.forEach(field => {
+                const contentElem = item.querySelector(field);
+                if (contentElem) {
+                    const content = contentElem.textContent || '';
+
+                    const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+                    let match;
+                    while ((match = imgRegex.exec(content)) !== null) {
+                        if (match[1]) {
+                            images.push({
+                                url: match[1],
+                                score: 12,
+                                source: `${field}.img`
+                            });
+                        }
                     }
+
+                    const urlRegex = /https?:\/\/[^\s<>"']+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?[^\s<>"']*)?/gi;
+                    const urls = content.match(urlRegex);
+                    if (urls) {
+                        urls.forEach(url => {
+                            images.push({
+                                url,
+                                score: 10,
+                                source: `${field}.url`
+                            });
+                        });
+                    }
+                }
+            });
+
+            // 5. Deduplicate and resolve relative URLs
+            const uniqueUrls = new Map();
+            images.forEach(img => {
+                let finalUrl = img.url;
+
+                // Resolve relative URLs
+                if (finalUrl && !finalUrl.startsWith('http')) {
+                    finalUrl = resolveRelativeUrl(finalUrl, item, feedUrl);
+                }
+
+                if (finalUrl && isValidImageUrl(finalUrl)) {
+                    if (!uniqueUrls.has(finalUrl) || uniqueUrls.get(finalUrl).score < img.score) {
+                        uniqueUrls.set(finalUrl, { ...img, url: finalUrl });
+                    }
+                }
+            });
+
+            const sortedImages = Array.from(uniqueUrls.values())
+                .sort((a, b) => b.score - a.score);
+
+            if (sortedImages.length > 0) {
+                console.log(`Found ${sortedImages.length} images, best: ${sortedImages[0].source}`);
+                return sortedImages[0].url;
+            }
+
+            return null;
+        }
+
+        // Helper to resolve relative URLs
+        function resolveRelativeUrl(relativeUrl, item, feedUrl) {
+            let baseUrl = feedUrl;
+
+            const itemLink = item.querySelector('link')?.textContent ||
+                           item.querySelector('link')?.getAttribute('href');
+            if (itemLink && itemLink.startsWith('http')) {
+                try {
+                    const url = new URL(itemLink);
+                    baseUrl = `${url.protocol}//${url.host}`;
+                } catch (e) {
+                    // Use feed URL as fallback
                 }
             }
 
-            if (images.length > 0) {
-                console.log('Found images:', images.map(img => ({
-                    url: img.url.substring(0, 50) + '...',
-                    score: img.score,
-                    source: img.source
-                })));
+            if (!baseUrl) {
+                const feedLink = item.ownerDocument?.querySelector('channel > link')?.textContent;
+                if (feedLink) baseUrl = feedLink;
             }
 
-            if (images.length === 0) return null;
-            images.sort((a, b) => b.score - a.score);
-            return images[0].url;
+            if (baseUrl) {
+                try {
+                    if (relativeUrl.startsWith('//')) {
+                        return 'https:' + relativeUrl;
+                    }
+
+                    if (relativeUrl.startsWith('/')) {
+                        const base = new URL(baseUrl);
+                        return `${base.protocol}//${base.host}${relativeUrl}`;
+                    }
+
+                    return new URL(relativeUrl, baseUrl).href;
+                } catch (e) {
+                    console.error('Failed to resolve URL:', relativeUrl, 'with base:', baseUrl);
+                }
+            }
+
+            return relativeUrl;
         }
 
+        // Enhanced URL validation
+        function isValidImageUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+
+            if (!url.match(/^https?:\/\//i)) return false;
+
+            const excludePatterns = [
+                /1x1/i, /pixel/i, /tracking/i, /analytics/i,
+                /favicon/i, /icon-\d+/i, /badge/i,
+                /feeds\.feedburner/i, /feedburner\.com\/~ff/i
+            ];
+
+            if (excludePatterns.some(pattern => pattern.test(url))) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // Simplified image URL check
         function isImageUrl(str) {
             if (!str || typeof str !== 'string') return false;
-            if (!str.match(/^https?:\/\//i) && !str.match(/^\/\//)) return false;
 
-            const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico)(\?|#|$)/i;
-            if (imageExtensions.test(str)) return true;
+            if (/(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.svg)(\?|#|$)/i.test(str)) {
+                return true;
+            }
 
             const imagePatterns = [
-                /\/media\//i,
-                /\/images?\//i,
-                /\/thumbnail/i,
-                /\/photo/i,
-                /\/picture/i,
-                /cloudinary/i,
-                /imagecdn/i,
-                /wordpress.*uploads/i,
-                /bp\.blogspot/i,
-                /imgur/i
+                /cloudinary/i, /imgur/i, /wp-content\/uploads/i,
+                /media\//i, /images?\//i, /photo/i,
+                /\.wordpress\.com.*\?/i, /blogspot/i
             ];
 
             return imagePatterns.some(pattern => pattern.test(str));
         }
 
-        function scoreImageUrl(url, tagName, attrName) {
-            let score = 10;
-            if (tagName.includes('thumbnail')) score += 10;
-            if (tagName.includes('media')) score += 8;
-            if (tagName.includes('enclosure')) score += 7;
-            if (tagName.includes('image')) score += 9;
-
-            if (attrName === 'url') score += 5;
-            if (attrName === 'src') score += 4;
-            if (attrName === 'href') score += 3;
-
-            if (url.includes('thumbnail') || url.includes('thumb')) score -= 2;
-            if (url.includes('small')) score -= 2;
-            if (url.includes('large') || url.includes('full')) score += 2;
-
-            if (url.includes('ytimg.com')) score += 3;
-            if (url.includes('fbcdn.net')) score += 2;
-
-            if (url.includes('1x1') || url.includes('pixel')) score -= 10;
-            if (url.includes('icon') || url.includes('logo')) score -= 3;
-            if (url.includes('avatar')) score -= 3;
-
-            return score;
-        }
-
-        function parseRSSFeed(xmlText, sourceName, sourceId) {
+        function parseRSSFeed(xmlText, sourceName, sourceId, feedUrl) {
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlText, 'text/xml');
             const articles = [];
+
+            // Get the feed's base URL for relative URL resolution
+            const channelLink = xml.querySelector('channel > link')?.textContent || feedUrl;
 
             const items = xml.querySelectorAll('item, entry');
 
@@ -1747,21 +1821,10 @@
                 const link = item.querySelector('link')?.textContent ||
                            item.querySelector('link')?.getAttribute('href') || '';
                 const description = item.querySelector('description, summary')?.textContent || '';
-                const pubDate = item.querySelector('pubDate, published')?.textContent || '';
+                const pubDate = item.querySelector('pubDate, published, updated')?.textContent || '';
 
-                let imageUrl = extractImageFromRSSItem(item);
-
-                if (imageUrl && !imageUrl.startsWith('http')) {
-                    const baseUrl = xml.querySelector('link')?.textContent;
-                    if (baseUrl) {
-                        try {
-                            const base = new URL(baseUrl);
-                            imageUrl = new URL(imageUrl, base).href;
-                        } catch (e) {
-                            console.error('Failed to resolve relative URL:', imageUrl);
-                        }
-                    }
-                }
+                // Extract image with enhanced function
+                const imageUrl = extractImageFromRSSItem(item, channelLink || feedUrl);
 
                 if (title || description) {
                     articles.push({
