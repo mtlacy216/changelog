@@ -1627,10 +1627,14 @@
             }
 
             // 2. Check enclosure tags (common for podcasts and media)
-            const enclosures = item.querySelectorAll('enclosure[type^="image"]');
+            const enclosures = item.querySelectorAll('enclosure');
             enclosures.forEach(enc => {
                 const url = enc.getAttribute('url');
-                if (url) images.push({ url, score: 18, source: 'enclosure' });
+                const type = enc.getAttribute('type')?.toLowerCase() || '';
+                const typeIsImage = type.startsWith('image/');
+                if (url && (typeIsImage || (!type && isImageUrl(url)))) {
+                    images.push({ url, score: 18, source: 'enclosure' });
+                }
             });
 
             // 3. Check all namespace variations
