@@ -1617,7 +1617,10 @@
             const images = [];
 
             // 1. Check for media:content and media:thumbnail first (most reliable)
-            const mediaContent = item.querySelector('content[medium="image"], thumbnail');
+            let mediaContent = item.querySelector('media\\:content, media\\:thumbnail');
+            if (!mediaContent) {
+                mediaContent = item.querySelector('content[medium="image"], thumbnail');
+            }
             if (mediaContent) {
                 const url = mediaContent.getAttribute('url');
                 if (url) images.push({ url, score: 20, source: 'media:content' });
