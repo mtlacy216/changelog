@@ -104,7 +104,7 @@
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50% { opacity: 0.5; }
         }
         
         .container {
@@ -340,6 +340,20 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: opacity 0.3s ease;
+        }
+
+        .article-category span {
+            animation: pulse 2s infinite;
+        }
+
+        .theme-count {
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .theme-count.updating {
+            transform: scale(1.2);
+            background: rgba(255, 255, 0, 0.5) !important;
         }
         
         .article-content {
@@ -1152,67 +1166,200 @@
         // Load initial content
         async function loadInitialContent() {
             updateSyncIndicator('loading', 'Loading articles...');
-            
+
             try {
-                // Load from cache first (immediate display)
-                await loadCachedArticles();
-                
-                // Then fetch fresh RSS in background
-                setTimeout(() => fetchRSSInBackground(), 2000);
-                
+                await Promise.all([
+                    loadCachedArticles(),
+                    fetchRSSImmediate()
+                ]);
+
+                // Begin theme processing without blocking display
+                processThemesInBackground();
             } catch (error) {
                 console.error('Initial load error:', error);
                 showError('Failed to load articles. Please refresh.');
             }
         }
         
-        // Load cached articles
+        // Load cached articles without blocking on empty cache
         async function loadCachedArticles() {
             const cutoffDate = new Date(Date.now() - (48 * 60 * 60 * 1000));
             const params = new URLSearchParams({
                 published_after: cutoffDate.toISOString()
             });
-            
+
             try {
                 const response = await fetch(`${CONTENT_API}?${params}`);
                 if (!response.ok) throw new Error('Cache load failed');
-                
+
                 const cached = await response.json();
-                
-                // Process cached articles
+
                 const processed = cached.map(article => ({
                     ...article,
                     id: article.id || Math.random().toString(36),
                     link: article.url,
                     date: article.published_at ? new Date(article.published_at) : new Date(),
-                    themes: article.category && article.category.length > 0 ? 
-                        { primary: article.category[0], secondary: article.category.slice(1) } :
-                        calculateThemes(article),
-                    image_url: article.image || article.image_url, // Preserve image from cache
+                    themes: article.category && article.category.length > 0 ?
+                        { primary: article.category[0], secondary: article.category.slice(1) } : null,
+                    image_url: article.image || article.image_url,
                     fromCache: true
                 }));
-                
-                // Filter articles with themes
-                const themedArticles = processed.filter(a => a.themes && a.themes.primary);
-                
-                // Sort by date
-                themedArticles.sort((a, b) => b.date - a.date);
-                
-                // Update state
-                allArticles = themedArticles;
+
+                allArticles = processed;
+                allArticles.sort((a, b) => b.date - a.date);
                 articleUrlMap.clear();
                 allArticles.forEach(article => {
                     articleUrlMap.set(article.url || article.link, article);
                 });
-                
-                // Display initial batch
-                displayArticles(allArticles.slice(0, articlesPerPage));
-                updateStats();
-                updateSyncIndicator('success', `${themedArticles.length} articles loaded`);
-                
+
+                displayArticlesProgressive(allArticles);
+                updateStatsProgressive();
+
             } catch (error) {
                 console.error('Cache error:', error);
                 updateSyncIndicator('error', 'Cache load failed');
+            }
+        }
+
+        // Fetch RSS immediately and display articles as they arrive
+        async function fetchRSSImmediate() {
+            try {
+                const sources = await loadSources();
+                if (!sources.length) return;
+
+                for (const source of sources) {
+                    try {
+                        const articles = await fetchFeed(source);
+                        const newArticles = [];
+
+                        articles.forEach(article => {
+                            const url = article.url || article.link;
+                            if (!articleUrlMap.has(url)) {
+                                article.id = article.id || Math.random().toString(36);
+                                article.date = article.date ? new Date(article.date) : new Date();
+                                article.source_name = article.source_name || source.name;
+                                allArticles.push(article);
+                                articleUrlMap.set(url, article);
+                                newArticles.push(article);
+                            }
+                        });
+
+                        if (newArticles.length > 0) {
+                            allArticles.sort((a, b) => b.date - a.date);
+                            displayArticlesProgressive(newArticles);
+                            updateStatsProgressive();
+                        }
+                    } catch (err) {
+                        console.error(`Error fetching ${source.name}:`, err);
+                    }
+                }
+            } catch (error) {
+                console.error('RSS fetch error:', error);
+            }
+        }
+
+        // Display articles progressively as they arrive
+        function displayArticlesProgressive(articles) {
+            const grid = document.getElementById('articlesGrid');
+            articles.forEach(article => {
+                if (!article.id) article.id = Math.random().toString(36);
+                const card = createArticleCard(article);
+                grid.appendChild(card);
+                displayedArticles.push(article);
+            });
+        }
+
+        // Process uncategorized articles in background
+        async function processThemesInBackground() {
+            const queue = allArticles.filter(a => !a.themes || !a.themes.primary);
+            while (queue.length) {
+                const batch = queue.splice(0, 5);
+                batch.forEach(article => {
+                    article.themes = calculateThemes(article);
+                    if (article.themes && article.themes.primary) {
+                        updateArticleCardTheme(article);
+                    }
+                });
+                updateStatsProgressive();
+                await new Promise(res => setTimeout(res, 100));
+            }
+            updateStatsProgressive();
+        }
+
+        // Update article card once theme is known
+        function updateArticleCardTheme(article) {
+            const card = document.querySelector(`.article-card[data-article-id="${article.id}"]`);
+            if (!card) return;
+            const imageDiv = card.querySelector('.article-image');
+            const badge = card.querySelector('.article-category');
+            const themeColor = THEMES[article.themes.primary]?.color || '#666';
+            badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
+            badge.style.color = themeColor;
+            imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
+            badge.style.opacity = '1';
+
+            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
+            if (imageUrl) {
+                const img = new Image();
+                img.onload = function() {
+                    imageDiv.style.backgroundImage = `url('${imageUrl}')`;
+                    imageDiv.style.backgroundSize = 'cover';
+                    imageDiv.style.backgroundPosition = 'center';
+                };
+                img.onerror = function() {
+                    console.log('Image failed to load:', imageUrl);
+                };
+                img.src = imageUrl;
+            }
+        }
+
+        // Update stats progressively showing categorization progress
+        function updateStatsProgressive() {
+            const stats = {
+                total: allArticles.length,
+                governance: 0,
+                transparency: 0,
+                decisions: 0,
+                leadership: 0,
+                culture: 0,
+                resources: 0,
+                care: 0
+            };
+
+            let categorized = 0;
+            allArticles.forEach(article => {
+                if (article.themes?.primary) {
+                    categorized++;
+                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
+                }
+            });
+
+            document.getElementById('totalArticles').textContent = stats.total;
+            document.getElementById('legislationCount').textContent = stats.governance + stats.decisions;
+            document.getElementById('discussionsCount').textContent = stats.culture + stats.care;
+            document.getElementById('newsCount').textContent = stats.transparency + stats.resources;
+
+            Object.entries(stats).forEach(([theme, count]) => {
+                if (theme !== 'total') {
+                    updateThemeFilterCounts(theme, count);
+                }
+            });
+            updateThemeFilterCounts('all', stats.total);
+
+            const percent = stats.total ? Math.round((categorized / stats.total) * 100) : 0;
+            if (categorized < stats.total) {
+                updateSyncIndicator('loading', `Categorizing... ${percent}%`);
+            } else {
+                updateSyncIndicator('success', 'All categorized');
+            }
+        }
+
+        function updateThemeFilterCounts(theme, count) {
+            const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
+            if (btn && btn.textContent !== String(count)) {
+                btn.textContent = count;
+                btn.classList.add('updating');
+                setTimeout(() => btn.classList.remove('updating'), 300);
             }
         }
         
@@ -1262,7 +1409,7 @@
                         displayArticles(allArticles.slice(0, articlesPerPage));
                     }
                     
-                    updateStats();
+                    updateStatsProgressive();
                 }
                 
             } catch (error) {
@@ -1354,21 +1501,26 @@
         function createArticleCard(article) {
             const card = document.createElement('div');
             card.className = 'article-card';
+            card.dataset.articleId = article.id;
             card.onclick = () => openArticleModal(article);
 
             const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
-            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
+            const imageUrl = article.themes?.primary ? getProxiedImageUrl(article.image_url || article.image) : null;
+            const backgroundStyle = article.themes?.primary ?
+                `background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);` :
+                `background: linear-gradient(135deg, #cccccc 0%, #999999 100%);`;
 
-            // Create a unique ID for this card's image
-            const imageId = `img-${article.id || Math.random().toString(36)}`;
+            const categoryHtml = article.themes?.primary ?
+                `<span>${THEMES[article.themes.primary].name}</span>` :
+                `<span>⚡ Analyzing...</span>`;
+
+            const imageId = `img-${article.id}`;
 
             card.innerHTML = `
-                <div class="article-image" id="${imageId}" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
-                    ${article.themes?.primary ? `
-                        <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}">
-                            ${THEMES[article.themes.primary].name}
-                        </div>
-                    ` : ''}
+                <div class="article-image" id="${imageId}" style="${backgroundStyle}">
+                    <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}; opacity:${article.themes?.primary ? 1 : 0.7}">
+                        ${categoryHtml}
+                    </div>
                 </div>
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
@@ -1387,21 +1539,17 @@
                 </div>
             `;
 
-            // Try to load the image after card is created
             if (imageUrl) {
                 const imageDiv = card.querySelector(`#${imageId}`);
                 const img = new Image();
-
                 img.onload = function() {
                     imageDiv.style.backgroundImage = `url('${imageUrl}')`;
                     imageDiv.style.backgroundSize = 'cover';
                     imageDiv.style.backgroundPosition = 'center';
                 };
-
                 img.onerror = function() {
                     console.log('Image failed to load:', imageUrl);
                 };
-
                 img.src = imageUrl;
             }
 
@@ -1501,41 +1649,6 @@
             }, 5 * 60 * 1000);
         }
         
-        // Update stats
-        function updateStats() {
-            const stats = {
-                total: allArticles.length,
-                governance: 0,
-                transparency: 0,
-                decisions: 0,
-                leadership: 0,
-                culture: 0,
-                resources: 0,
-                care: 0
-            };
-            
-            allArticles.forEach(article => {
-                if (article.themes?.primary) {
-                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
-                }
-            });
-            
-            // Update stat cards
-            document.getElementById('totalArticles').textContent = stats.total;
-            document.getElementById('legislationCount').textContent = stats.governance + stats.decisions;
-            document.getElementById('discussionsCount').textContent = stats.culture + stats.care;
-            document.getElementById('newsCount').textContent = stats.transparency + stats.resources;
-            
-            // Update theme counts
-            Object.entries(stats).forEach(([theme, count]) => {
-                if (theme !== 'total') {
-                    const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
-                    if (btn) btn.textContent = count;
-                }
-            });
-            
-            document.querySelector('.theme-pill.theme-all .theme-count').textContent = stats.total;
-        }
         
         // Update sync indicator
         function updateSyncIndicator(status, text) {
