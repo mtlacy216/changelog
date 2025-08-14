@@ -3008,12 +3008,44 @@
     function getFeedMappingConfig(feed_id) {
         return {
             success: true,
-            feed: { id: feed_id, name: '', url: '' },
-            rss_fields: [],
-            xano_fields: [],
-            current_mappings: {},
-            last_analyzed: null,
-            last_modified: null
+            feed: { id: feed_id, name: 'Demo Feed', url: 'https://example.com/feed' },
+            rss_fields: [
+                {
+                    name: 'title',
+                    reliability: 100,
+                    sample: 'Sample Article Title'
+                },
+                {
+                    name: 'link',
+                    reliability: 100,
+                    sample: 'https://example.com/article'
+                },
+                {
+                    name: 'description',
+                    reliability: 90,
+                    sample: 'This is a short description',
+                    attributes: ['type']
+                },
+                {
+                    name: 'author',
+                    reliability: 60,
+                    sample: 'Jane Doe'
+                }
+            ],
+            xano_fields: [
+                { name: 'title' },
+                { name: 'link' },
+                { name: 'summary' },
+                { name: 'author' }
+            ],
+            current_mappings: {
+                title: { source_field: 'title', confidence: 100, mapping_type: 'auto' },
+                link: { source_field: 'link', confidence: 100, mapping_type: 'auto' },
+                summary: { source_field: 'description', confidence: 90, mapping_type: 'auto' },
+                author: { source_field: 'author', confidence: 60, mapping_type: 'auto' }
+            },
+            last_analyzed: '2024-01-01T00:00:00Z',
+            last_modified: '2024-01-01T00:00:00Z'
         };
     }
 
@@ -3041,8 +3073,7 @@
     async function loadMappingConfig(feedId) {
         currentFeedId = feedId;
         try {
-            const response = await fetch(`/api/rss_feed/${feedId}/mapping_config`);
-            const data = await response.json();
+            const data = getFeedMappingConfig(feedId);
             if (data.success) {
                 mappingConfig = data;
                 renderMappingTable();
@@ -3207,12 +3238,7 @@
             }
         });
         try {
-            const response = await fetch(`/api/rss_feed/${currentFeedId}/update_mappings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mappings })
-            });
-            const data = await response.json();
+            const data = updateFeedMappings(currentFeedId, mappings);
             if (data.success && data.test_result?.success) {
                 displayTestResults(data.test_result.sample_article);
             }
@@ -3242,12 +3268,7 @@
         if (!currentFeedId) return;
         if (!confirm('Re-analyze this feed? Manual mappings will be preserved.')) return;
         try {
-            const response = await fetch(`/api/rss_feed/${currentFeedId}/reanalyze`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ preserve_manual_mappings: true })
-            });
-            const data = await response.json();
+            const data = reanalyzeFeedConfig(currentFeedId, true);
             if (data.success) {
                 loadMappingConfig(currentFeedId);
             }
