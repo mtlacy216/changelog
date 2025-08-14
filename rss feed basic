@@ -1465,7 +1465,10 @@
             }
             
             if (articles.length === 0 && !append) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">No articles found</div>';
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                        No articles found
+                    </div>`;
                 return;
             }
             
