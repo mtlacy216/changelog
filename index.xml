@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Changelog Repository</title>
+    <link>/</link>
+    <description>Basic RSS feed linking to repository content</description>
+    <item>
+      <title>9 + 1 governance stages</title>
+      <link>9%20%2B%201%20governance%20stages</link>
+      <description>Document covering governance stages</description>
+    </item>
+    <item>
+      <title>The 27 Positions: A Complete Guide to How Social Movements Grow</title>
+      <link>The%2027%20Positions%3A%20A%20Complete%20Guide%20to%20How%20Social%20Movements%20Grow</link>
+      <description>Guide to social movement positions</description>
+    </item>
+    <item>
+      <title>Categories</title>
+      <link>categories</link>
+      <description>List of categories</description>
+    </item>
+    <item>
+      <title>Events</title>
+      <link>events</link>
+      <description>Event information</description>
+    </item>
+    <item>
+      <title>Home</title>
+      <link>home</link>
+      <description>Home page content</description>
+    </item>
+    <item>
+      <title>Keyword matcher</title>
+      <link>keyword%20matcher</link>
+      <description>Keyword matching data</description>
+    </item>
+    <item>
+      <title>Legislation</title>
+      <link>legislation</link>
+      <description>Legislation details</description>
+    </item>
+    <item>
+      <title>Legislation details</title>
+      <link>legislation-details</link>
+      <description>Detailed legislation info</description>
+    </item>
+    <item>
+      <title>Legislation list</title>
+      <link>legislation-list</link>
+      <description>List of legislation</description>
+    </item>
+    <item>
+      <title>People</title>
+      <link>people</link>
+      <description>People information</description>
+    </item>
+    <item>
+      <title>People details</title>
+      <link>people-details</link>
+      <description>Detailed people information</description>
+    </item>
+    <item>
+      <title>RSS feed basic</title>
+      <link>rss%20feed%20basic</link>
+      <description>Basic RSS examples</description>
+    </item>
+    <item>
+      <title>RSS feeds</title>
+      <link>rss%20feeds</link>
+      <description>Collection of RSS feeds</description>
+    </item>
+  </channel>
+</rss>
