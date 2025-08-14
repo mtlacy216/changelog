@@ -1979,15 +1979,14 @@
             
             // Check if popup exists and is not closed
             if (articlePopup && !articlePopup.closed) {
-                // Reuse existing popup
-                articlePopup.document.open();
-                articlePopup.document.write(loadingHTML);
-                articlePopup.document.close();
+                // Reuse existing popup by navigating to the new URL
+                articlePopup.location.href = url;
                 articlePopup.focus();
+                showUpdateToast('Loading article in popup...');
             } else {
-                // Create new popup
+                // Create new popup with loading screen
                 articlePopup = window.open('', 'articleViewer', features);
-                
+
                 if (articlePopup) {
                     articlePopup.document.open();
                     articlePopup.document.write(loadingHTML);
