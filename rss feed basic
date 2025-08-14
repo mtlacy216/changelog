@@ -352,6 +352,7 @@
             color: #666;
         }
 
+
         .theme-count {
             transition: background 0.3s ease, transform 0.2s ease;
         }
@@ -1305,6 +1306,16 @@
             badge.style.background = imageUrl ? 'rgba(255,255,255,0.95)' : '';
             imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
             badge.style.opacity = '1';
+
+
+            badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
+            badge.style.color = themeColor;
+            imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
+            badge.style.opacity = '1';
+
+            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
+
+
             if (imageUrl) {
                 const img = new Image();
                 img.onload = function() {
@@ -1313,7 +1324,14 @@
                     imageDiv.style.backgroundPosition = 'center';
                 };
                 img.onerror = function() {
+
                     console.log('Image failed:', imageUrl);
+
+
+                    console.log('Image failed:', imageUrl);
+
+                    console.log('Image failed to load:', imageUrl);
+
                 };
                 img.src = imageUrl;
             }
@@ -1512,7 +1530,28 @@
                     ` : `
                         <div class=\"article-category analyzing\"><span>⚡ Analyzing...</span></div>
                     `}
+
                 </div>
+
+
+            const imageUrl = article.themes?.primary ? getProxiedImageUrl(article.image_url || article.image) : null;
+            const backgroundStyle = article.themes?.primary ?
+                `background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);` :
+                `background: linear-gradient(135deg, #cccccc 0%, #999999 100%);`;
+
+            const categoryHtml = article.themes?.primary ?
+                `<span>${THEMES[article.themes.primary].name}</span>` :
+                `<span>⚡ Analyzing...</span>`;
+
+            const imageId = `img-${article.id}`;
+
+            card.innerHTML = `
+                <div class="article-image" id="${imageId}" style="${backgroundStyle}">
+                    <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}; opacity:${article.themes?.primary ? 1 : 0.7}">
+                        ${categoryHtml}
+                    </div>
+
+
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
                     <h3 class="article-title">${escapeHtml(article.title || 'Untitled')}</h3>
