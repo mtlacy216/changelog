@@ -50,10 +50,18 @@ export function getFeedMappingConfig(feed_id: string) {
  */
 export function updateFeedMappings(feed_id: string, mappings: Record<string, RSSFieldMapping>) {
   // Placeholder implementation for repository documentation
+  const sampleArticle: Record<string, string | null> = {};
+  Object.keys(mappings).forEach(key => {
+    sampleArticle[key] = null;
+  });
   return {
     success: true,
     message: 'Mappings updated successfully',
-    updated_mappings: mappings
+    updated_mappings: mappings,
+    test_result: {
+      success: true,
+      sample_article: sampleArticle
+    }
   };
 }
 
