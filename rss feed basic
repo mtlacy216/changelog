@@ -346,6 +346,7 @@
         .article-category span {
             animation: pulse 2s infinite;
         }
+
         .article-category.analyzing {
             background: rgba(255,255,255,0.8);
             color: #666;
@@ -1306,12 +1307,14 @@
             imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
             badge.style.opacity = '1';
 
+
             badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
             badge.style.color = themeColor;
             imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
             badge.style.opacity = '1';
 
             const imageUrl = getProxiedImageUrl(article.image_url || article.image);
+
 
             if (imageUrl) {
                 const img = new Image();
@@ -1321,6 +1324,9 @@
                     imageDiv.style.backgroundPosition = 'center';
                 };
                 img.onerror = function() {
+
+                    console.log('Image failed:', imageUrl);
+
 
                     console.log('Image failed:', imageUrl);
 
@@ -1477,7 +1483,10 @@
             }
             
             if (articles.length === 0 && !append) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">No articles found</div>';
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                        No articles found
+                    </div>`;
                 return;
             }
             
@@ -1522,6 +1531,9 @@
                         <div class=\"article-category analyzing\"><span>⚡ Analyzing...</span></div>
                     `}
 
+                </div>
+
+
             const imageUrl = article.themes?.primary ? getProxiedImageUrl(article.image_url || article.image) : null;
             const backgroundStyle = article.themes?.primary ?
                 `background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);` :
@@ -1538,6 +1550,7 @@
                     <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}; opacity:${article.themes?.primary ? 1 : 0.7}">
                         ${categoryHtml}
                     </div>
+
 
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
