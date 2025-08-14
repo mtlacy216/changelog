@@ -1294,6 +1294,7 @@
                         <label><input type="checkbox" id="feedActive" checked> Active</label>
                     </div>
                     <div class="feed-form-actions">
+                        <button class="feed-manager-btn" onclick="analyzeFeed()">Analyze</button>
                         <button class="feed-manager-btn" onclick="saveFeed()">Save</button>
                         <button class="feed-manager-btn" onclick="cancelFeedEdit()">Cancel</button>
                     </div>
@@ -1305,11 +1306,147 @@
         </div>
     </div>
 
+    <!-- RSS Mapping Editor Interface -->
+    <div class="mapping-editor" id="mappingEditor" style="display:none;">
+        <div class="mapping-header">
+            <h3>Field Mappings</h3>
+            <button onclick="reanalyzeFeed()" class="btn-secondary">🔄 Re-analyze Feed</button>
+        </div>
+        <div class="mapping-status" id="mappingStatus">
+            <span class="status-text">Last analyzed: <span id="lastAnalyzed">Never</span></span>
+            <span class="status-indicator" id="statusIndicator"></span>
+        </div>
+        <div class="mapping-table">
+            <div class="mapping-row header">
+                <div class="xano-field">Content Field</div>
+                <div class="arrow">→</div>
+                <div class="rss-field">RSS Source</div>
+                <div class="confidence">Confidence</div>
+                <div class="sample">Sample Data</div>
+            </div>
+            <div id="mappingRows"></div>
+        </div>
+        <div class="mapping-actions">
+            <button onclick="testMappings()" class="btn-test">🧪 Test Mappings</button>
+            <button onclick="saveMappings()" class="btn-primary">💾 Save Mappings</button>
+        </div>
+        <div id="testResults" class="test-results" style="display:none;"></div>
+    </div>
+
+    <style>
+    .mapping-editor {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 20px;
+    }
+    .mapping-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .mapping-table {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .mapping-row {
+        display: grid;
+        grid-template-columns: 180px 40px 250px 100px 1fr;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .mapping-row.header {
+        background: #f8f9fa;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+    .mapping-row:last-child { border-bottom: none; }
+    .mapping-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #28a745;
+    }
+    .status-indicator.warning { background: #ffc107; }
+    .status-indicator.error { background: #dc3545; }
+    .rss-field select {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+    }
+    .attribute-select { margin-top: 4px; font-size: 12px; }
+    .confidence { display: flex; align-items: center; gap: 6px; }
+    .confidence-badge { padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .confidence-badge.high { background: #d4edda; color: #155724; }
+    .confidence-badge.medium { background: #fff3cd; color: #856404; }
+    .confidence-badge.low { background: #f8d7da; color: #721c24; }
+    .confidence-badge.manual { background: #cce5ff; color: #004085; }
+    .sample {
+        font-size: 12px;
+        color: #6c757d;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .sample:hover {
+        white-space: normal;
+        background: #f8f9fa;
+        padding: 4px;
+        border-radius: 4px;
+        position: relative;
+        z-index: 10;
+    }
+    .mapping-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .btn-primary, .btn-secondary, .btn-test {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-primary { background: #007bff; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-test { background: #28a745; color: white; }
+    .test-results {
+        margin-top: 20px;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    </style>
+
     <script>
         // Configuration
         const XANO_API = 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO';
         const SOURCES_API = `${XANO_API}/rss_feed`;
         const CONTENT_API = `${XANO_API}/content`;
+        const ANALYZER_API = `${XANO_API}/rss_feed_analyzer`;
         const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         const IMAGE_PROXY = 'https://images.weserv.nl/?url=';
         
@@ -2666,13 +2803,20 @@
             document.getElementById('feedDescription').value = feed?.description || '';
             document.getElementById('feedCategory').value = feed?.category || '';
             document.getElementById('feedActive').checked = feed?.is_active !== false;
+            if (feed && feed.id) {
+                loadMappingConfig(feed.id);
+            } else {
+                document.getElementById('mappingEditor').style.display = 'none';
+            }
         }
 
         function cancelFeedEdit() {
             document.getElementById('feedForm').style.display = 'none';
+            document.getElementById('mappingEditor').style.display = 'none';
         }
 
         function editFeed(sourceId) {
+
             // Normalize identifiers to strings before comparison so
             // numeric IDs and URL strings are matched consistently
             const feed = feedSources.find(
@@ -2680,6 +2824,27 @@
             );
             if (feed) {
                 openFeedEditor(feed);
+            }
+        }
+
+        async function analyzeFeed() {
+            const url = document.getElementById('feedUrl').value.trim();
+            if (!url) {
+                alert('Please enter a feed URL to analyze');
+                return;
+            }
+            try {
+                const res = await fetch(ANALYZER_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feed_url: url })
+                });
+                const data = await res.json();
+                console.log('Feed analysis result:', data);
+                alert('Feed analysis complete. Check console for details.');
+            } catch (err) {
+                console.error('Feed analysis failed', err);
+                alert('Feed analysis failed. See console for details.');
             }
         }
 
@@ -2836,6 +3001,246 @@
                 articlePopup.close();
             }
         });
+    </script>
+    <script>
+    // RSS Mapping Editor logic
+    let currentFeedId = null;
+    let mappingConfig = null;
+
+    async function loadMappingConfig(feedId) {
+        currentFeedId = feedId;
+        try {
+            const response = await fetch(`/api/rss_feed/${feedId}/mapping_config`);
+            const data = await response.json();
+            if (data.success) {
+                mappingConfig = data;
+                renderMappingTable();
+                updateStatus();
+                document.getElementById('mappingEditor').style.display = 'block';
+            }
+        } catch (err) {
+            console.error('Failed to load mapping config', err);
+        }
+    }
+
+    function renderMappingTable() {
+        const container = document.getElementById('mappingRows');
+        container.innerHTML = '';
+        mappingConfig.xano_fields.forEach(xanoField => {
+            const currentMapping = mappingConfig.current_mappings[xanoField.name] || {};
+            const row = createMappingRow(xanoField, currentMapping);
+            container.appendChild(row);
+        });
+    }
+
+    function createMappingRow(xanoField, currentMapping) {
+        const row = document.createElement('div');
+        row.className = 'mapping-row';
+        row.dataset.field = xanoField.name;
+
+        const xanoCol = document.createElement('div');
+        xanoCol.className = 'xano-field';
+        xanoCol.textContent = xanoField.name;
+
+        const arrowCol = document.createElement('div');
+        arrowCol.className = 'arrow';
+        arrowCol.textContent = '→';
+
+        const rssCol = document.createElement('div');
+        rssCol.className = 'rss-field';
+        rssCol.appendChild(createFieldDropdown(xanoField.name, currentMapping));
+
+        const confCol = document.createElement('div');
+        confCol.className = 'confidence';
+        confCol.appendChild(createConfidenceBadge(currentMapping));
+
+        const sampleCol = document.createElement('div');
+        sampleCol.className = 'sample';
+        sampleCol.textContent = getSampleValue(currentMapping.source_field);
+
+        row.appendChild(xanoCol);
+        row.appendChild(arrowCol);
+        row.appendChild(rssCol);
+        row.appendChild(confCol);
+        row.appendChild(sampleCol);
+        return row;
+    }
+
+    function createFieldDropdown(xanoFieldName, currentMapping) {
+        const select = document.createElement('select');
+        select.id = `mapping_${xanoFieldName}`;
+        select.onchange = () => handleFieldChange(xanoFieldName, select.value);
+
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Not mapped --';
+        select.appendChild(emptyOption);
+
+        const staticOption = document.createElement('option');
+        staticOption.value = '_static_';
+        staticOption.textContent = '-- Static value --';
+        select.appendChild(staticOption);
+
+        mappingConfig.rss_fields.forEach(field => {
+            const option = document.createElement('option');
+            option.value = field.name;
+            option.textContent = `${field.name} (${field.reliability}%)`;
+            if (currentMapping.source_field === field.name) option.selected = true;
+            select.appendChild(option);
+        });
+        return select;
+    }
+
+    function createConfidenceBadge(mapping) {
+        const badge = document.createElement('span');
+        badge.className = 'confidence-badge';
+        if (mapping.mapping_type === 'manual') {
+            badge.classList.add('manual');
+            badge.textContent = 'Manual';
+        } else if (mapping.confidence >= 90) {
+            badge.classList.add('high');
+            badge.textContent = `${mapping.confidence}%`;
+        } else if (mapping.confidence >= 70) {
+            badge.classList.add('medium');
+            badge.textContent = `${mapping.confidence}%`;
+        } else if (mapping.confidence > 0) {
+            badge.classList.add('low');
+            badge.textContent = `${mapping.confidence}%`;
+        } else {
+            badge.textContent = 'N/A';
+        }
+        return badge;
+    }
+
+    function getSampleValue(fieldName) {
+        if (!fieldName) return 'No mapping';
+        const field = mappingConfig.rss_fields.find(f => f.name === fieldName);
+        return field?.sample || 'Empty';
+    }
+
+    function handleFieldChange(xanoFieldName, rssFieldName) {
+        const field = mappingConfig.rss_fields.find(f => f.name === rssFieldName);
+        const row = document.querySelector(`[data-field="${xanoFieldName}"]`);
+        const sampleCol = row.querySelector('.sample');
+        sampleCol.textContent = getSampleValue(rssFieldName);
+        const rssCol = row.querySelector('.rss-field');
+        const attrSelect = rssCol.querySelector('.attribute-select');
+        if (field && field.attributes && field.attributes.length > 0) {
+            if (!attrSelect) {
+                rssCol.appendChild(createAttributeDropdown(xanoFieldName, rssFieldName, null));
+            }
+        } else if (attrSelect) {
+            attrSelect.remove();
+        }
+    }
+
+    function createAttributeDropdown(xanoFieldName, rssFieldName, currentAttribute) {
+        const field = mappingConfig.rss_fields.find(f => f.name === rssFieldName);
+        if (!field || !field.attributes || field.attributes.length === 0) {
+            return document.createElement('span');
+        }
+        const select = document.createElement('select');
+        select.className = 'attribute-select';
+        select.id = `attr_${xanoFieldName}`;
+        const textOption = document.createElement('option');
+        textOption.value = '';
+        textOption.textContent = 'Text content';
+        select.appendChild(textOption);
+        field.attributes.forEach(attr => {
+            const option = document.createElement('option');
+            option.value = attr;
+            option.textContent = `@${attr}`;
+            if (currentAttribute === attr) option.selected = true;
+            select.appendChild(option);
+        });
+        return select;
+    }
+
+    async function saveMappings() {
+        const mappings = {};
+        mappingConfig.xano_fields.forEach(xanoField => {
+            const select = document.getElementById(`mapping_${xanoField.name}`);
+            const attrSelect = document.getElementById(`attr_${xanoField.name}`);
+            if (select && select.value) {
+                if (select.value === '_static_') {
+                    const staticValue = prompt(`Enter static value for ${xanoField.name}:`);
+                    if (staticValue) {
+                        mappings[xanoField.name] = { static_value: staticValue };
+                    }
+                } else {
+                    mappings[xanoField.name] = {
+                        source_field: select.value,
+                        source_attribute: attrSelect?.value || null
+                    };
+                }
+            }
+        });
+        try {
+            const response = await fetch(`/api/rss_feed/${currentFeedId}/update_mappings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mappings })
+            });
+            const data = await response.json();
+            if (data.success && data.test_result?.success) {
+                displayTestResults(data.test_result.sample_article);
+            }
+        } catch (err) {
+            console.error('Failed to save mappings', err);
+        }
+    }
+
+    async function testMappings() {
+        await saveMappings();
+    }
+
+    function displayTestResults(sampleArticle) {
+        const container = document.getElementById('testResults');
+        container.style.display = 'block';
+        let html = '<h4>📋 Sample Parse Result</h4><div class="test-article">';
+        Object.entries(sampleArticle).forEach(([field, value]) => {
+            const valueClass = value ? '' : 'null';
+            const displayValue = value || '(empty)';
+            html += `<div class="test-field"><span class="test-field-name">${field}:</span><span class="test-field-value ${valueClass}">${displayValue}</span></div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    async function reanalyzeFeed() {
+        if (!currentFeedId) return;
+        if (!confirm('Re-analyze this feed? Manual mappings will be preserved.')) return;
+        try {
+            const response = await fetch(`/api/rss_feed/${currentFeedId}/reanalyze`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preserve_manual_mappings: true })
+            });
+            const data = await response.json();
+            if (data.success) {
+                loadMappingConfig(currentFeedId);
+            }
+        } catch (err) {
+            console.error('Failed to reanalyze', err);
+        }
+    }
+
+    function updateStatus() {
+        const last = document.getElementById('lastAnalyzed');
+        const status = document.getElementById('statusIndicator');
+        if (mappingConfig.last_analyzed) {
+            const date = new Date(mappingConfig.last_analyzed);
+            last.textContent = date.toLocaleString();
+            const age = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+            if (age > 90) {
+                status.className = 'status-indicator error';
+            } else if (age > 30) {
+                status.className = 'status-indicator warning';
+            } else {
+                status.className = 'status-indicator';
+            }
+        }
+    }
     </script>
 </body>
 </html>
