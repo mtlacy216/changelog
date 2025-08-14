@@ -39,6 +39,7 @@
             padding: 24px 0;
             margin-bottom: 30px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
         }
         
         .header-content {
@@ -72,6 +73,54 @@
             letter-spacing: 0.5px;
         }
         
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .debug-toggle {
+            padding: 4px 8px;
+            background: var(--dark);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+        
+        .debug-toggle:hover {
+            opacity: 1;
+        }
+        
+        .debug-toggle.active {
+            background: var(--error);
+            opacity: 1;
+        }
+        
+        .feed-manager-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .feed-manager-btn:hover {
+            background: #5a4a83;
+            transform: translateY(-1px);
+        }
+        
         .sync-indicator {
             display: flex;
             align-items: center;
@@ -94,6 +143,11 @@
             color: white;
         }
         
+        .sync-indicator.cache {
+            background: var(--secondary);
+            color: white;
+        }
+        
         .sync-dot {
             width: 8px;
             height: 8px;
@@ -105,6 +159,56 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+        
+        /* New Articles Bar */
+        .new-articles-bar {
+            position: fixed;
+            top: -60px;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            transition: top 0.3s ease;
+            z-index: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .new-articles-bar.show {
+            top: 0;
+        }
+        
+        .new-articles-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .new-articles-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .new-articles-btn {
+            padding: 6px 16px;
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .new-articles-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .container {
@@ -250,10 +354,16 @@
             padding: 2px 6px;
             border-radius: 10px;
             font-size: 11px;
+            transition: all 0.3s ease;
         }
         
         .theme-pill.active .theme-count {
             background: rgba(255,255,255,0.3);
+        }
+        
+        .theme-count.updating {
+            transform: scale(1.2);
+            background: rgba(255, 255, 0, 0.5) !important;
         }
         
         /* Theme colors */
@@ -297,6 +407,7 @@
             cursor: pointer;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .article-card:hover {
@@ -323,10 +434,42 @@
             background-repeat: no-repeat;
         }
         
-        .article-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .article-image.no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .headline-overlay {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.3;
+            color: white;
+            text-align: center;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-width: 90%;
+            letter-spacing: -0.5px;
+        }
+        
+        .source-watermark {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
         }
         
         .article-category {
@@ -342,24 +485,47 @@
             letter-spacing: 0.5px;
             transition: opacity 0.3s ease;
         }
-
-        .article-category span {
-            animation: pulse 2s infinite;
-        }
-
+        
         .article-category.analyzing {
             background: rgba(255,255,255,0.8);
             color: #666;
         }
-
-
-        .theme-count {
-            transition: background 0.3s ease, transform 0.2s ease;
+        
+        /* Debug mode badges */
+        .article-badges {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
         }
-
-        .theme-count.updating {
-            transform: scale(1.2);
-            background: rgba(255, 255, 0, 0.5) !important;
+        
+        body.debug-mode .article-badges {
+            display: flex;
+        }
+        
+        .article-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+        
+        .article-badge.new {
+            background: var(--success);
+        }
+        
+        .article-badge.updated {
+            background: var(--warning);
+        }
+        
+        .article-badge.cached {
+            background: var(--secondary);
         }
         
         .article-content {
@@ -437,6 +603,243 @@
             color: white;
         }
         
+        /* Feed Manager Modal */
+        .feed-manager-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+        
+        .feed-manager-modal.active {
+            display: flex;
+        }
+        
+        .feed-manager-container {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .feed-manager-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feed-manager-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .feed-manager-body {
+            overflow-y: auto;
+            flex: 1;
+            padding: 24px;
+        }
+        
+        .feed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .feed-item {
+            padding: 20px;
+            background: var(--light);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .feed-item.disabled {
+            opacity: 0.5;
+        }
+        
+        .feed-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .feed-item-info {
+            flex: 1;
+        }
+        
+        .feed-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+        
+        .feed-url {
+            font-size: 12px;
+            color: var(--gray);
+            word-break: break-all;
+        }
+        
+        .feed-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .feed-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .feed-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .feed-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gray);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .feed-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .feed-toggle input:checked + .feed-toggle-slider {
+            background: var(--success);
+        }
+        
+        .feed-toggle input:checked + .feed-toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .feed-priority {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feed-priority-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .feed-priority-select {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .feed-stats {
+            display: flex;
+            gap: 24px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 12px;
+        }
+        
+        .feed-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .feed-stat-label {
+            font-size: 11px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .feed-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .feed-stat-split {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        
+        .feed-stat-archived {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+        
+        .feed-stat-live {
+            color: var(--success);
+            font-size: 14px;
+        }
+        
+        .feed-health {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        
+        .feed-health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray);
+        }
+        
+        .feed-health-dot.good {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        .feed-health-dot.warning {
+            background: var(--warning);
+        }
+        
+        .feed-health-dot.error {
+            background: var(--error);
+        }
+        
+        .feed-health-text {
+            font-size: 11px;
+            color: var(--gray);
+        }
+        
         .loading-spinner {
             display: none;
             justify-content: center;
@@ -461,26 +864,47 @@
             100% { transform: rotate(360deg); }
         }
         
-        .load-more {
-            text-align: center;
-            margin: 40px 0;
-        }
-        
-        .load-more-btn {
-            padding: 12px 32px;
+        /* Skeleton loaders */
+        .skeleton-card {
             background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
         }
         
-        .load-more-btn:hover {
-            background: var(--primary);
-            color: white;
+        .skeleton-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        .skeleton-content {
+            padding: 20px;
+        }
+        
+        .skeleton-line {
+            height: 16px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-line.title {
+            height: 24px;
+            width: 80%;
+        }
+        
+        .skeleton-line.short {
+            width: 60%;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         
         .floating-refresh {
@@ -532,101 +956,6 @@
             transform: translateX(-50%) translateY(0);
         }
         
-        .skeleton-title {
-            height: 20px;
-            background: var(--border);
-            border-radius: 4px;
-            margin-bottom: 12px;
-        }
-        
-        .skeleton-text {
-            height: 14px;
-            background: var(--border);
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-        
-        .skeleton-text:last-child {
-            width: 80%;
-        }
-        
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .modal-overlay.active {
-            display: flex;
-        }
-        
-        .modal-container {
-            background: white;
-            border-radius: 16px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: modalSlideIn 0.3s ease;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--light);
-        }
-        
-        .modal-tags {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .modal-tag {
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--gray);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .modal-tag.news {
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-        
         .modal-close {
             width: 32px;
             height: 32px;
@@ -646,255 +975,6 @@
             background: var(--border);
         }
         
-        .modal-body {
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .modal-article {
-            padding: 24px;
-        }
-        
-        .modal-article-header {
-            margin-bottom: 20px;
-        }
-        
-        .modal-article-title {
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1.3;
-            color: var(--dark);
-            margin-bottom: 16px;
-        }
-        
-        .modal-article-meta {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 14px;
-            color: var(--gray);
-        }
-        
-        .modal-article-author {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .modal-article-stats {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .modal-stat {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .modal-article-image {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .modal-article-content {
-            font-size: 16px;
-            line-height: 1.7;
-            color: var(--dark);
-            margin-bottom: 24px;
-        }
-        
-        .modal-article-content p {
-            margin-bottom: 16px;
-        }
-        
-        .modal-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 24px 0;
-        }
-        
-        .modal-discussion {
-            padding: 0 24px 24px;
-        }
-        
-        .modal-discussion-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--dark);
-        }
-        
-        .comment-form {
-            margin-bottom: 24px;
-        }
-        
-        .comment-input {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: vertical;
-            transition: border-color 0.2s ease;
-        }
-        
-        .comment-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .comment-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        
-        .btn {
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5a4a83;
-        }
-        
-        .btn-secondary {
-            background: var(--light);
-            color: var(--gray);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-        
-        .comments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .comment {
-            padding: 16px;
-            background: var(--light);
-            border-radius: 8px;
-            transition: background 0.2s ease;
-        }
-        
-        .comment:hover {
-            background: #f0f0f0;
-        }
-        
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .comment-author {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .comment-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .comment-username {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 14px;
-        }
-        
-        .comment-time {
-            font-size: 12px;
-            color: var(--gray);
-        }
-        
-        .comment-content {
-            color: var(--dark);
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 12px;
-        }
-        
-        .comment-actions {
-            display: flex;
-            gap: 16px;
-        }
-        
-        .comment-action {
-            background: none;
-            border: none;
-            color: var(--gray);
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 0;
-            transition: color 0.2s ease;
-        }
-        
-        .comment-action:hover {
-            color: var(--primary);
-        }
-        
-        .comment-action.active {
-            color: var(--primary);
-        }
-        
-        .comment-replies {
-            margin-left: 40px;
-            margin-top: 16px;
-            padding-left: 16px;
-            border-left: 2px solid var(--border);
-        }
-        
-        .view-full-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 14px;
-            margin-top: 16px;
-        }
-        
-        .view-full-link:hover {
-            text-decoration: underline;
-        }
-        
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 32px;
@@ -912,13 +992,9 @@
                 grid-template-columns: 1fr;
             }
             
-            .modal-container {
+            .feed-manager-container {
                 max-height: 100vh;
                 border-radius: 0;
-            }
-            
-            .modal-article-title {
-                font-size: 22px;
             }
         }
     </style>
@@ -930,12 +1006,28 @@
                 <h1>Civic News</h1>
                 <span class="location-badge">NASHVILLE</span>
             </div>
-            <div class="sync-indicator" id="syncIndicator">
-                <span class="sync-dot"></span>
-                <span id="syncText">Syncing...</span>
+            <div class="header-actions">
+                <button class="debug-toggle" id="debugToggle" onclick="toggleDebugMode()">
+                    DEBUG
+                </button>
+                <button class="feed-manager-btn" onclick="openFeedManager()">
+                    ⚙️ Manage Feeds
+                </button>
+                <div class="sync-indicator" id="syncIndicator">
+                    <span class="sync-dot"></span>
+                    <span id="syncText">Loading...</span>
+                </div>
             </div>
         </div>
     </header>
+
+    <!-- New Articles Bar -->
+    <div class="new-articles-bar" id="newArticlesBar">
+        <div class="new-articles-content">
+            <span class="new-articles-text" id="newArticlesText">5 new articles available</span>
+            <button class="new-articles-btn" onclick="loadNewArticles()">Load New</button>
+        </div>
+    </div>
 
     <div class="container">
         <div class="hero-section">
@@ -947,22 +1039,22 @@
             <div class="stat-card">
                 <div class="stat-label">All Updates</div>
                 <div class="stat-value" id="totalArticles">0</div>
-                <div class="stat-change">Loading...</div>
+                <div class="stat-change" id="totalChange">Loading...</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Legislation</div>
-                <div class="stat-value" id="legislationCount">0</div>
-                <div class="stat-change">Active proposals</div>
+                <div class="stat-label">Active Feeds</div>
+                <div class="stat-value" id="activeFeedsCount">0</div>
+                <div class="stat-change">Sources</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Discussions</div>
-                <div class="stat-value" id="discussionsCount">0</div>
-                <div class="stat-change">Community topics</div>
+                <div class="stat-label">From Cache</div>
+                <div class="stat-value" id="cacheCount">0</div>
+                <div class="stat-change">Quick load</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">News</div>
-                <div class="stat-value" id="newsCount">0</div>
-                <div class="stat-change">Recent updates</div>
+                <div class="stat-label">Fresh</div>
+                <div class="stat-value" id="freshCount">0</div>
+                <div class="stat-change">Just fetched</div>
             </div>
         </div>
 
@@ -1003,28 +1095,28 @@
 
         <div class="articles-grid" id="articlesGrid">
             <!-- Skeleton loaders -->
-            <div class="article-card skeleton">
-                <div class="article-image"></div>
-                <div class="article-content">
-                    <div class="skeleton-title"></div>
-                    <div class="skeleton-text"></div>
-                    <div class="skeleton-text"></div>
+            <div class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
                 </div>
             </div>
-            <div class="article-card skeleton">
-                <div class="article-image"></div>
-                <div class="article-content">
-                    <div class="skeleton-title"></div>
-                    <div class="skeleton-text"></div>
-                    <div class="skeleton-text"></div>
+            <div class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
                 </div>
             </div>
-            <div class="article-card skeleton">
-                <div class="article-image"></div>
-                <div class="article-content">
-                    <div class="skeleton-title"></div>
-                    <div class="skeleton-text"></div>
-                    <div class="skeleton-text"></div>
+            <div class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
                 </div>
             </div>
         </div>
@@ -1032,13 +1124,9 @@
         <div class="loading-spinner" id="loadingSpinner">
             <div class="spinner"></div>
         </div>
-
-        <div class="load-more" id="loadMore" style="display: none;">
-            <button class="load-more-btn" onclick="loadMoreArticles()">Load More Articles</button>
-        </div>
     </div>
 
-    <button class="floating-refresh" id="floatingRefresh" onclick="refreshContent()">
+    <button class="floating-refresh" id="floatingRefresh" onclick="forceRefresh()">
         🔄
     </button>
 
@@ -1047,71 +1135,17 @@
         <span id="updateMessage">New articles available!</span>
     </div>
 
-    <!-- Article Modal -->
-    <div class="modal-overlay" id="articleModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <div class="modal-tags">
-                    <span class="modal-tag news">
-                        📰 NEWS
-                    </span>
-                    <span class="modal-tag" id="modalThemeTag">
-                        Category
-                    </span>
-                </div>
-                <button class="modal-close" onclick="closeModal()">✕</button>
+    <!-- Feed Manager Modal -->
+    <div class="feed-manager-modal" id="feedManagerModal">
+        <div class="feed-manager-container">
+            <div class="feed-manager-header">
+                <h2 class="feed-manager-title">📡 RSS Feed Manager</h2>
+                <button class="modal-close" onclick="closeFeedManager()">✕</button>
             </div>
             
-            <div class="modal-body">
-                <div class="modal-article">
-                    <div class="modal-article-header">
-                        <h2 class="modal-article-title" id="modalTitle">Article Title</h2>
-                        <div class="modal-article-meta">
-                            <div class="modal-article-author">
-                                <span>Posted by</span>
-                                <span id="modalAuthor">@user</span>
-                            </div>
-                            <div class="modal-article-stats">
-                                <div class="modal-stat">
-                                    💬 <span id="modalComments">0</span>
-                                </div>
-                                <div class="modal-stat">
-                                    🔥 <span id="modalLikes">0</span>
-                                </div>
-                                <div class="modal-stat">
-                                    👁️ <span id="modalViews">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-article-image" id="modalImage"></div>
-                    
-                    <div class="modal-article-content" id="modalContent">
-                        <p>Article content will be loaded here...</p>
-                    </div>
-                    
-                    <a href="#" class="view-full-link" id="modalFullLink" target="_blank">
-                        🔗 Full View
-                    </a>
-                    
-                    <div class="modal-divider"></div>
-                </div>
-                
-                <div class="modal-discussion">
-                    <h3 class="modal-discussion-header">Discussion</h3>
-                    
-                    <div class="comment-form">
-                        <textarea class="comment-input" placeholder="What are your thoughts? Join the discussion..." id="commentInput"></textarea>
-                        <div class="comment-actions">
-                            <button class="btn btn-secondary" onclick="clearComment()">Cancel</button>
-                            <button class="btn btn-primary" onclick="postComment()">Post Comment</button>
-                        </div>
-                    </div>
-                    
-                    <div class="comments-list" id="commentsList">
-                        <!-- Comments will be loaded here -->
-                    </div>
+            <div class="feed-manager-body">
+                <div class="feed-list" id="feedList">
+                    <!-- Feed items will be loaded here -->
                 </div>
             </div>
         </div>
@@ -1125,6 +1159,10 @@
         const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         const IMAGE_PROXY = 'https://images.weserv.nl/?url=';
         
+        // Cache settings
+        const CACHE_MAX_AGE = 48 * 60 * 60 * 1000; // 48 hours
+        const CACHE_REFRESH_AGE = 60 * 60 * 1000; // 1 hour
+        
         // Theme configuration
         const THEMES = {
             governance: { name: 'Governance', color: '#4A90E2' },
@@ -1137,28 +1175,88 @@
         };
         
         // State management
-        let allArticles = [];
+        let allArticles = new Map(); // Use Map for efficient merging
         let displayedArticles = [];
         let filteredArticles = [];
+        let newArticlesQueue = [];
         let feedSources = [];
+        let feedSettings = {};
+        let feedStats = {};
         let activeThemeFilter = 'all';
         let searchTerm = '';
-        let articleUrlMap = new Map();
         let isLoadingMore = false;
-        let hasMoreArticles = true;
         let currentPage = 0;
+        let debugMode = false;
         const articlesPerPage = 12;
         
-        // Comments storage (in production, this would be in a database)
-        let articleComments = {};
-        let currentArticle = null;
+        // Loading states
+        const LOADING_STATES = {
+            CACHE_LOADING: "Loading saved articles...",
+            CACHE_LOADED: "✓ Loaded from cache",
+            FETCHING_NEW: "Checking for updates...",
+            NEW_AVAILABLE: "↓ New articles available",
+            FULLY_SYNCED: "✓ All up to date",
+            OFFLINE: "✗ Offline - showing cached"
+        };
+        
+        // Priority intervals (in minutes)
+        const PRIORITY_INTERVALS = {
+            high: 5,
+            medium: 15,
+            low: 30
+        };
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            loadSettings();
             initializeEventListeners();
             await loadInitialContent();
             startBackgroundSync();
         });
+        
+        // Load all settings from localStorage
+        function loadSettings() {
+            // Feed settings
+            const saved = localStorage.getItem('feedSettings');
+            if (saved) {
+                feedSettings = JSON.parse(saved);
+            }
+            const savedStats = localStorage.getItem('feedStats');
+            if (savedStats) {
+                feedStats = JSON.parse(savedStats);
+            }
+            // Debug mode
+            const savedDebug = localStorage.getItem('debugMode');
+            if (savedDebug === 'true') {
+                debugMode = true;
+                document.body.classList.add('debug-mode');
+                document.getElementById('debugToggle').classList.add('active');
+            }
+        }
+        
+        // Toggle debug mode
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            const btn = document.getElementById('debugToggle');
+            
+            if (debugMode) {
+                document.body.classList.add('debug-mode');
+                btn.classList.add('active');
+                localStorage.setItem('debugMode', 'true');
+                showUpdateToast('Debug mode enabled');
+            } else {
+                document.body.classList.remove('debug-mode');
+                btn.classList.remove('active');
+                localStorage.setItem('debugMode', 'false');
+                showUpdateToast('Debug mode disabled');
+            }
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('feedSettings', JSON.stringify(feedSettings));
+            localStorage.setItem('feedStats', JSON.stringify(feedStats));
+        }
         
         // Initialize event listeners
         function initializeEventListeners() {
@@ -1169,276 +1267,365 @@
             window.addEventListener('scroll', handleScroll);
         }
         
-        // Load initial content
+        // IMPROVED: Load initial content with cache-first approach
         async function loadInitialContent() {
-            updateSyncIndicator('loading', 'Loading articles...');
-
+            updateSyncIndicator('loading', LOADING_STATES.CACHE_LOADING);
+            
             try {
-                await Promise.all([
+                // Parallel loading for speed
+                const [cachedArticles, sources] = await Promise.all([
                     loadCachedArticles(),
-                    fetchRSSImmediate()
+                    loadSources()
                 ]);
-
-                // Begin theme processing without blocking display
-                processThemesInBackground();
+                
+                // Display cached content immediately
+                if (cachedArticles.length > 0) {
+                    displayArticles(Array.from(allArticles.values()).slice(0, articlesPerPage));
+                    updateSyncIndicator('cache', LOADING_STATES.CACHE_LOADED);
+                    updateStats();
+                } else {
+                    // Show skeleton loaders if no cache
+                    showSkeletonLoaders();
+                }
+                
+                // Fetch fresh content in background (non-blocking)
+                setTimeout(async () => {
+                    updateSyncIndicator('loading', LOADING_STATES.FETCHING_NEW);
+                    const newCount = await fetchFreshArticles();
+                    
+                    if (newCount > 0) {
+                        // Don't auto-refresh - show notification instead
+                        showNewArticlesBar(newCount);
+                        updateSyncIndicator('success', LOADING_STATES.NEW_AVAILABLE);
+                    } else {
+                        updateSyncIndicator('success', LOADING_STATES.FULLY_SYNCED);
+                    }
+                }, 100);
+                
             } catch (error) {
                 console.error('Initial load error:', error);
+                updateSyncIndicator('error', 'Load failed');
                 showError('Failed to load articles. Please refresh.');
             }
         }
         
-        // Load cached articles without blocking on empty cache
+        // Load cached articles from Xano
         async function loadCachedArticles() {
-            const cutoffDate = new Date(Date.now() - (48 * 60 * 60 * 1000));
+            const cutoffDate = new Date(Date.now() - CACHE_MAX_AGE);
             const params = new URLSearchParams({
                 published_after: cutoffDate.toISOString()
             });
-
+            
             try {
                 const response = await fetch(`${CONTENT_API}?${params}`);
                 if (!response.ok) throw new Error('Cache load failed');
-
+                
                 const cached = await response.json();
-
-                const processed = cached.map(article => ({
-                    ...article,
-                    id: article.id || Math.random().toString(36),
-                    link: article.url,
-                    date: article.published_at ? new Date(article.published_at) : new Date(),
-                    themes: article.category && article.category.length > 0 ?
-                        { primary: article.category[0], secondary: article.category.slice(1) } : null,
-                    image_url: article.image || article.image_url,
-                    fromCache: true
-                }));
-
-                allArticles = processed;
-                allArticles.sort((a, b) => b.date - a.date);
-                articleUrlMap.clear();
-                allArticles.forEach(article => {
-                    articleUrlMap.set(article.url || article.link, article);
+                
+                cached.forEach(article => {
+                    const processed = {
+                        ...article,
+                        id: article.id || Math.random().toString(36),
+                        link: article.url,
+                        url: article.url,
+                        date: article.published_at ? new Date(article.published_at) : new Date(),
+                        themes: article.category && article.category.length > 0 ?
+                            { primary: article.category[0], secondary: article.category.slice(1) } : 
+                            calculateThemes(article),
+                        image_url: article.image || article.image_url,
+                        source_name: article.source_name,
+                        // Metadata for display
+                        isCache: true,
+                        isNew: false,
+                        isUpdated: false,
+                        priority: 1,
+                        cachedAt: new Date()
+                    };
+                    
+                    allArticles.set(article.url, processed);
                 });
-
-                displayArticlesProgressive(allArticles);
-                updateStatsProgressive();
-
+                
+                return Array.from(allArticles.values());
+                
             } catch (error) {
                 console.error('Cache error:', error);
-                updateSyncIndicator('error', 'Cache load failed');
-            }
-        }
-
-        // Fetch RSS immediately and display articles as they arrive
-        async function fetchRSSImmediate() {
-            try {
-                const sources = await loadSources();
-                if (!sources.length) return;
-
-                for (const source of sources) {
-                    try {
-                        const articles = await fetchFeed(source);
-                        const newArticles = [];
-
-                        articles.forEach(article => {
-                            const url = article.url || article.link;
-                            if (!articleUrlMap.has(url)) {
-                                article.id = article.id || Math.random().toString(36);
-                                article.date = article.date ? new Date(article.date) : new Date();
-                                article.source_name = article.source_name || source.name;
-                                allArticles.push(article);
-                                articleUrlMap.set(url, article);
-                                newArticles.push(article);
-                            }
-                        });
-
-                        if (newArticles.length > 0) {
-                            allArticles.sort((a, b) => b.date - a.date);
-                            displayArticlesProgressive(newArticles);
-                            updateStatsProgressive();
-                        }
-                    } catch (err) {
-                        console.error(`Error fetching ${source.name}:`, err);
-                    }
-                }
-            } catch (error) {
-                console.error('RSS fetch error:', error);
-            }
-        }
-
-        // Display articles progressively as they arrive
-        function displayArticlesProgressive(articles) {
-            const grid = document.getElementById('articlesGrid');
-            articles.forEach(article => {
-                if (!article.id) article.id = Math.random().toString(36);
-                const card = createArticleCard(article);
-                grid.appendChild(card);
-                displayedArticles.push(article);
-            });
-        }
-
-        // Process uncategorized articles in background
-        async function processThemesInBackground() {
-            const queue = allArticles.filter(a => !a.themes || !a.themes.primary);
-            while (queue.length) {
-                const batch = queue.splice(0, 5);
-                batch.forEach(article => {
-                    article.themes = calculateThemes(article);
-                    if (article.themes && article.themes.primary) {
-                        updateArticleCardTheme(article);
-                    }
-                });
-                updateStatsProgressive();
-                await new Promise(res => setTimeout(res, 100));
-            }
-            updateStatsProgressive();
-        }
-
-        // Update article card once theme is known
-        function updateArticleCardTheme(article) {
-            const card = document.querySelector(`.article-card[data-article-id="${article.id}"]`);
-            if (!card) return;
-            const imageDiv = card.querySelector('.article-image');
-            const badge = card.querySelector('.article-category');
-            const themeColor = THEMES[article.themes.primary]?.color || '#666';
-            const imageUrl = article.image_url;
-            badge.classList.remove('analyzing');
-            badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
-            badge.style.color = themeColor;
-            badge.style.background = imageUrl ? 'rgba(255,255,255,0.95)' : '';
-            imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
-            badge.style.opacity = '1';
-
-
-            badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
-            badge.style.color = themeColor;
-            imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
-            badge.style.opacity = '1';
-
-            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
-
-
-            if (imageUrl) {
-                const img = new Image();
-                img.onload = function() {
-                    imageDiv.style.backgroundImage = `url('${imageUrl}')`;
-                    imageDiv.style.backgroundSize = 'cover';
-                    imageDiv.style.backgroundPosition = 'center';
-                };
-                img.onerror = function() {
-
-                    console.log('Image failed:', imageUrl);
-
-
-                    console.log('Image failed:', imageUrl);
-
-                    console.log('Image failed to load:', imageUrl);
-
-                };
-                img.src = imageUrl;
-            }
-        }
-
-        // Update stats progressively showing categorization progress
-        function updateStatsProgressive() {
-            const stats = {
-                total: allArticles.length,
-                governance: 0,
-                transparency: 0,
-                decisions: 0,
-                leadership: 0,
-                culture: 0,
-                resources: 0,
-                care: 0
-            };
-
-            let categorized = 0;
-            allArticles.forEach(article => {
-                if (article.themes?.primary) {
-                    categorized++;
-                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
-                }
-            });
-
-            document.getElementById('totalArticles').textContent = stats.total;
-            document.getElementById('legislationCount').textContent = stats.governance + stats.decisions;
-            document.getElementById('discussionsCount').textContent = stats.culture + stats.care;
-            document.getElementById('newsCount').textContent = stats.transparency + stats.resources;
-
-            Object.entries(stats).forEach(([theme, count]) => {
-                if (theme !== 'total') {
-                    updateThemeFilterCounts(theme, count);
-                }
-            });
-            updateThemeFilterCounts('all', stats.total);
-
-            const percent = stats.total ? Math.round((categorized / stats.total) * 100) : 0;
-            if (categorized < stats.total) {
-                updateSyncIndicator('loading', `Categorizing... ${percent}%`);
-            } else {
-                updateSyncIndicator('success', 'All categorized');
-            }
-        }
-
-        function updateThemeFilterCounts(theme, count) {
-            const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
-            if (btn && btn.textContent !== String(count)) {
-                btn.textContent = count;
-                btn.classList.add('updating');
-                setTimeout(() => btn.classList.remove('updating'), 300);
+                return [];
             }
         }
         
-        // Fetch RSS in background
-        async function fetchRSSInBackground() {
-            try {
-                const sources = await loadSources();
-                if (!sources.length) return;
-                
-                const newArticles = [];
-                
-                for (const source of sources) {
-                    try {
-                        const articles = await fetchFeed(source);
-                        articles.forEach(article => {
-                            const url = article.url || article.link;
-                            if (!articleUrlMap.has(url)) {
-                                article.themes = calculateThemes(article);
-                                if (article.themes && article.themes.primary) {
-                                    // Preserve all article properties including image_url
-                                    newArticles.push({
-                                        ...article,
-                                        themes: article.themes
-                                    });
-                                    articleUrlMap.set(url, article);
-                                }
-                            }
-                        });
-                    } catch (error) {
-                        console.error(`Error fetching ${source.name}:`, error);
-                    }
-                }
-                
-                if (newArticles.length > 0) {
-                    // Merge new articles
-                    allArticles = [...newArticles, ...allArticles];
-                    allArticles.sort((a, b) => b.date - a.date);
-                    
-                    // Cache new articles
-                    cacheArticles(newArticles);
-                    
-                    // Show notification
-                    showUpdateToast(`${newArticles.length} new articles found!`);
-                    
-                    // Update display if on first page
-                    if (currentPage === 0 && activeThemeFilter === 'all' && !searchTerm) {
-                        displayArticles(allArticles.slice(0, articlesPerPage));
-                    }
-                    
-                    updateStatsProgressive();
-                }
-                
-            } catch (error) {
-                console.error('Background fetch error:', error);
+        // Fetch fresh articles from RSS
+        async function fetchFreshArticles() {
+            const enabledFeeds = feedSources.filter(source => {
+                const sourceId = source.id || source.url;
+                return feedSettings[sourceId]?.enabled !== false;
+            });
+            
+            if (!enabledFeeds.length) {
+                console.log('No feeds enabled');
+                return 0;
             }
+            
+            let totalNewArticles = 0;
+            const freshArticles = [];
+            
+            for (const source of enabledFeeds) {
+                try {
+                    const articles = await fetchFeed(source);
+                    const sourceId = source.id || source.url;
+                    
+                    articles.forEach(article => {
+                        const url = article.url || article.link;
+                        const existing = allArticles.get(url);
+                        
+                        const processed = {
+                            ...article,
+                            id: article.id || Math.random().toString(36),
+                            date: article.date ? new Date(article.date) : new Date(),
+                            source_name: article.source_name || source.name,
+                            themes: calculateThemes(article),
+                            // Metadata
+                            isCache: false,
+                            isNew: !existing,
+                            isUpdated: !!existing,
+                            priority: existing ? 2 : 3,
+                            fetchedAt: new Date()
+                        };
+                        
+                        if (!existing) {
+                            totalNewArticles++;
+                            freshArticles.push(processed);
+                        } else if (existing.isCache) {
+                            // Update cached article with fresh data
+                            processed.isUpdated = true;
+                            freshArticles.push(processed);
+                        }
+                    });
+                    
+                    // Update feed stats
+                    feedStats[sourceId] = {
+                        ...feedStats[sourceId],
+                        lastUpdate: new Date().toISOString(),
+                        errors: 0
+                    };
+                    
+                } catch (error) {
+                    console.error(`Error fetching ${source.name}:`, error);
+                    const sourceId = source.id || source.url;
+                    feedStats[sourceId] = {
+                        ...feedStats[sourceId],
+                        errors: (feedStats[sourceId]?.errors || 0) + 1
+                    };
+                }
+            }
+            
+            // Add to queue instead of auto-displaying
+            newArticlesQueue = freshArticles;
+            saveSettings();
+            
+            return totalNewArticles;
+        }
+        
+        // Show new articles notification bar
+        function showNewArticlesBar(count) {
+            const bar = document.getElementById('newArticlesBar');
+            const text = document.getElementById('newArticlesText');
+            
+            text.textContent = `${count} new article${count > 1 ? 's' : ''} available`;
+            bar.classList.add('show');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (bar.classList.contains('show') && newArticlesQueue.length === 0) {
+                    bar.classList.remove('show');
+                }
+            }, 10000);
+        }
+        
+        // Load new articles when user clicks
+        function loadNewArticles() {
+            if (newArticlesQueue.length === 0) return;
+            
+            // Merge new articles
+            newArticlesQueue.forEach(article => {
+                allArticles.set(article.url, article);
+            });
+            
+            // Clear queue
+            newArticlesQueue = [];
+            
+            // Hide notification bar
+            document.getElementById('newArticlesBar').classList.remove('show');
+            
+            // Sort and redisplay
+            const sorted = sortArticles(Array.from(allArticles.values()));
+            displayArticles(sorted.slice(0, articlesPerPage));
+            
+            // Update stats
+            updateStats();
+            
+            // Cache new articles
+            cacheArticlesToXano(newArticlesQueue);
+            
+            showUpdateToast('Articles updated!');
+        }
+        
+        // Sort articles by priority and date
+        function sortArticles(articles) {
+            return articles.sort((a, b) => {
+                // Sort by priority first (higher = newer)
+                if (a.priority !== b.priority) {
+                    return b.priority - a.priority;
+                }
+                // Then by date
+                return b.date - a.date;
+            });
+        }
+        
+        // Show skeleton loaders
+        function showSkeletonLoaders() {
+            const grid = document.getElementById('articlesGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 6; i++) {
+                const skeleton = document.createElement('div');
+                skeleton.className = 'skeleton-card';
+                skeleton.innerHTML = `
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-line title"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                `;
+                grid.appendChild(skeleton);
+            }
+        }
+        
+        // Load RSS sources
+        async function loadSources() {
+            try {
+                const response = await fetch(SOURCES_API);
+                if (!response.ok) throw new Error('Failed to load sources');
+                feedSources = await response.json();
+                
+                // Initialize feed settings if not exists
+                feedSources.forEach(source => {
+                    const sourceId = source.id || source.url;
+                    if (!feedSettings[sourceId]) {
+                        feedSettings[sourceId] = {
+                            enabled: true,
+                            priority: 'medium',
+                            lastFetch: null
+                        };
+                    }
+                    if (!feedStats[sourceId]) {
+                        feedStats[sourceId] = {
+                            articleCount: 0,
+                            lastUpdate: null,
+                            errors: 0
+                        };
+                    }
+                });
+                
+                saveSettings();
+                return feedSources;
+            } catch (error) {
+                console.error('Error loading sources:', error);
+                return [];
+            }
+        }
+        
+        // Fetch single feed
+        async function fetchFeed(source) {
+            const url = source.url || source.link;
+            if (!url) return [];
+            
+            try {
+                const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const text = await response.text();
+                return parseRSSFeed(text, source.name || source.title, source.id, url);
+            } catch (error) {
+                console.error(`Error fetching ${source.name}:`, error);
+                throw error;
+            }
+        }
+        
+        // Parse RSS feed
+        function parseRSSFeed(xmlText, sourceName, sourceId, feedUrl) {
+            const parser = new DOMParser();
+            let xml = parser.parseFromString(xmlText, 'text/xml');
+            
+            const parseError = xml.querySelector('parsererror');
+            if (parseError) {
+                xmlText = xmlText.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+                xml = parser.parseFromString(xmlText, 'text/xml');
+                if (xml.querySelector('parsererror')) {
+                    console.error('Invalid XML for feed:', sourceName);
+                    return [];
+                }
+            }
+            
+            const articles = [];
+            const items = xml.querySelectorAll('item, entry');
+            
+            items.forEach(item => {
+                const title = item.querySelector('title')?.textContent || '';
+                const link = item.querySelector('link')?.textContent ||
+                           item.querySelector('link')?.getAttribute('href') || '';
+                const description = item.querySelector('description, summary, content')?.textContent || '';
+                const pubDate = item.querySelector('pubDate, published, updated')?.textContent || '';
+                const imageUrl = extractImageFromRSSItem(item, feedUrl);
+                
+                if (title || description) {
+                    articles.push({
+                        id: Math.random().toString(36),
+                        title: cleanText(title),
+                        link: link,
+                        url: link,
+                        description: cleanText(description),
+                        date: pubDate ? new Date(pubDate) : new Date(),
+                        source_name: sourceName,
+                        rss_feed_id: sourceId,
+                        image_url: imageUrl
+                    });
+                }
+            });
+            
+            return articles;
+        }
+        
+        // Extract image from RSS item
+        function extractImageFromRSSItem(item, feedUrl) {
+            // Check for media elements
+            const mediaContent = item.querySelector('media\\:content, content');
+            if (mediaContent && mediaContent.getAttribute('medium') === 'image') {
+                return mediaContent.getAttribute('url');
+            }
+            
+            // Check for enclosure
+            const enclosure = item.querySelector('enclosure');
+            if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
+                return enclosure.getAttribute('url');
+            }
+            
+            // Check for image element
+            const image = item.querySelector('image');
+            if (image) {
+                const url = image.querySelector('url')?.textContent;
+                if (url) return url;
+            }
+            
+            // Try to extract from description
+            const description = item.querySelector('description, content\\:encoded, summary')?.textContent || '';
+            const imgMatch = description.match(/<img[^>]+src=["']([^"']+)["']/);
+            if (imgMatch) {
+                return imgMatch[1];
+            }
+            
+            return null;
         }
         
         // Calculate themes
@@ -1447,13 +1634,13 @@
             const scores = {};
             
             const keywords = {
-                governance: ['council', 'mayor', 'commission', 'board', 'vote', 'election', 'ordinance'],
-                transparency: ['transparency', 'disclosure', 'audit', 'report', 'investigation', 'accountability'],
-                decisions: ['decision', 'proposal', 'plan', 'strategy', 'initiative', 'approach'],
-                leadership: ['leader', 'director', 'chief', 'coordinator', 'manager', 'administrator'],
-                culture: ['culture', 'arts', 'heritage', 'tradition', 'festival', 'community', 'neighborhood'],
-                resources: ['budget', 'funding', 'grant', 'revenue', 'expense', 'cost', 'investment'],
-                care: ['health', 'safety', 'education', 'housing', 'transit', 'infrastructure', 'environment']
+                governance: ['council', 'mayor', 'commission', 'board', 'vote', 'election', 'ordinance', 'policy', 'legislation'],
+                transparency: ['transparency', 'disclosure', 'audit', 'report', 'investigation', 'accountability', 'public record'],
+                decisions: ['decision', 'proposal', 'plan', 'strategy', 'initiative', 'approach', 'resolution', 'vote'],
+                leadership: ['leader', 'director', 'chief', 'coordinator', 'manager', 'administrator', 'official', 'executive'],
+                culture: ['culture', 'arts', 'heritage', 'tradition', 'festival', 'community', 'neighborhood', 'music', 'event'],
+                resources: ['budget', 'funding', 'grant', 'revenue', 'expense', 'cost', 'investment', 'finance', 'money'],
+                care: ['health', 'safety', 'education', 'housing', 'transit', 'infrastructure', 'environment', 'park', 'service']
             };
             
             Object.entries(keywords).forEach(([theme, words]) => {
@@ -1467,10 +1654,180 @@
                 .filter(([_, score]) => score > 0)
                 .sort((a, b) => b[1] - a[1]);
             
+            if (sorted.length === 0) {
+                return { primary: 'culture', secondary: [] };
+            }
+            
             return {
-                primary: sorted[0] ? sorted[0][0] : null,
+                primary: sorted[0][0],
                 secondary: sorted.slice(1, 3).map(([key]) => key)
             };
+        }
+        
+        // Create article card with debug badges and headline overlay
+        function createArticleCard(article) {
+            const card = document.createElement('div');
+            card.className = 'article-card';
+            card.dataset.articleId = article.id;
+            card.onclick = () => window.open(article.link || article.url, '_blank');
+            
+            const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
+            const themeName = article.themes?.primary ? THEMES[article.themes.primary]?.name : 'News';
+            
+            // Create the image div
+            const imageDiv = document.createElement('div');
+            const hasImage = article.image_url && article.image_url.trim() !== '';
+            
+            if (!hasImage) {
+                // No image - use headline overlay
+                imageDiv.className = 'article-image no-image';
+                imageDiv.style.background = `linear-gradient(135deg, ${themeColor}88, ${themeColor}dd)`;
+                
+                // Add headline overlay
+                const headlineDiv = document.createElement('div');
+                headlineDiv.className = 'headline-overlay';
+                headlineDiv.textContent = article.title || 'Untitled Article';
+                imageDiv.appendChild(headlineDiv);
+                
+                // Add source watermark
+                const sourceDiv = document.createElement('div');
+                sourceDiv.className = 'source-watermark';
+                sourceDiv.textContent = article.source_name || 'Unknown';
+                imageDiv.appendChild(sourceDiv);
+            } else {
+                // Has image - normal display
+                imageDiv.className = 'article-image';
+                imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
+                
+                // Try to load the image
+                const proxiedUrl = getProxiedImageUrl(article.image_url);
+                if (proxiedUrl) {
+                    const img = new Image();
+                    img.onload = function() {
+                        imageDiv.style.backgroundImage = `url('${proxiedUrl}')`;
+                        imageDiv.style.backgroundSize = 'cover';
+                        imageDiv.style.backgroundPosition = 'center';
+                        const categoryBadge = imageDiv.querySelector('.article-category');
+                        if (categoryBadge) {
+                            categoryBadge.style.background = 'rgba(255,255,255,0.95)';
+                        }
+                    };
+                    img.onerror = function() {
+                        console.log('Image failed to load, using fallback:', proxiedUrl);
+                        // Convert to headline overlay on image failure
+                        imageDiv.className = 'article-image no-image';
+                        imageDiv.innerHTML = '';
+                        
+                        const headlineDiv = document.createElement('div');
+                        headlineDiv.className = 'headline-overlay';
+                        headlineDiv.textContent = article.title || 'Untitled Article';
+                        imageDiv.appendChild(headlineDiv);
+                        
+                        const sourceDiv = document.createElement('div');
+                        sourceDiv.className = 'source-watermark';
+                        sourceDiv.textContent = article.source_name || 'Unknown';
+                        imageDiv.appendChild(sourceDiv);
+                        
+                        // Re-add category badge
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.className = 'article-category';
+                        categoryDiv.style.color = themeColor;
+                        categoryDiv.style.background = 'rgba(255,255,255,0.95)';
+                        categoryDiv.innerHTML = `<span>${themeName}</span>`;
+                        imageDiv.appendChild(categoryDiv);
+                        
+                        // Re-add debug badges if needed
+                        if (debugMode) {
+                            imageDiv.appendChild(createDebugBadges(article));
+                        }
+                    };
+                    img.src = proxiedUrl;
+                }
+            }
+            
+            // Add category badge
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'article-category';
+            categoryDiv.style.color = themeColor;
+            if (hasImage) {
+                categoryDiv.innerHTML = `<span>${themeName}</span>`;
+            } else {
+                categoryDiv.style.background = 'rgba(255,255,255,0.95)';
+                categoryDiv.innerHTML = `<span>${themeName}</span>`;
+            }
+            imageDiv.appendChild(categoryDiv);
+            
+            // Add debug badges (only visible in debug mode)
+            if (debugMode) {
+                imageDiv.appendChild(createDebugBadges(article));
+            }
+            
+            // Create content section
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'article-content';
+            contentDiv.innerHTML = `
+                <div class="article-source">${escapeHtml(article.source_name || 'Unknown')}</div>
+                <h3 class="article-title">${escapeHtml(article.title || 'Untitled')}</h3>
+                <p class="article-excerpt">${escapeHtml((article.description || '').substring(0, 150))}...</p>
+                <div class="article-footer">
+                    <div class="article-meta">
+                        <span>📅 ${formatDate(article.date)}</span>
+                    </div>
+                    <div class="article-actions">
+                        <button class="action-btn" onclick="event.stopPropagation(); shareArticle('${escapeHtml(article.link)}')">🔗</button>
+                        <button class="action-btn" onclick="event.stopPropagation(); saveArticle('${article.id}')">⭐</button>
+                    </div>
+                </div>
+            `;
+            
+            card.appendChild(imageDiv);
+            card.appendChild(contentDiv);
+            
+            return card;
+        }
+        
+        // Create debug badges separately for reuse
+        function createDebugBadges(article) {
+            const badgesDiv = document.createElement('div');
+            badgesDiv.className = 'article-badges';
+            
+            if (article.isNew) {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'article-badge new';
+                newBadge.textContent = 'NEW';
+                badgesDiv.appendChild(newBadge);
+            }
+            
+            if (article.isUpdated) {
+                const updatedBadge = document.createElement('span');
+                updatedBadge.className = 'article-badge updated';
+                updatedBadge.textContent = 'UPDATED';
+                badgesDiv.appendChild(updatedBadge);
+            }
+            
+            if (article.isCache) {
+                const cachedBadge = document.createElement('span');
+                cachedBadge.className = 'article-badge cached';
+                cachedBadge.textContent = 'CACHED';
+                badgesDiv.appendChild(cachedBadge);
+            }
+            
+            return badgesDiv;
+        }
+        
+        // Get proxied image URL
+        function getProxiedImageUrl(originalUrl) {
+            if (!originalUrl) return null;
+            try {
+                let cleanUrl = originalUrl.trim();
+                if (cleanUrl.startsWith('//')) {
+                    cleanUrl = 'https:' + cleanUrl;
+                }
+                return `${IMAGE_PROXY}${encodeURIComponent(cleanUrl)}&w=800&h=400&fit=cover&default=https://via.placeholder.com/800x400/667eea/ffffff?text=Nashville+News`;
+            } catch (error) {
+                console.error('Error proxying image URL:', error);
+                return null;
+            }
         }
         
         // Display articles
@@ -1485,105 +1842,106 @@
             if (articles.length === 0 && !append) {
                 grid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
-                        No articles found
+                        <h3>No articles found</h3>
+                        <p style="margin-top: 10px;">Try adjusting your filters or enabling more feeds in the Feed Manager.</p>
                     </div>`;
                 return;
             }
             
             articles.forEach(article => {
-                const card = createArticleCard(article);
-                grid.appendChild(card);
-                displayedArticles.push(article);
+                try {
+                    const card = createArticleCard(article);
+                    grid.appendChild(card);
+                    displayedArticles.push(article);
+                } catch (error) {
+                    console.error('Error creating article card:', error, article);
+                }
             });
-            
-            // Update load more button
-            const loadMore = document.getElementById('loadMore');
-            if (displayedArticles.length < (filteredArticles.length || allArticles.length)) {
-                loadMore.style.display = 'block';
-            } else {
-                loadMore.style.display = 'none';
-            }
         }
         
-        // Image proxy and card creation
-        function getProxiedImageUrl(originalUrl) {
-            if (!originalUrl) return null;
-            return `${IMAGE_PROXY}${encodeURIComponent(originalUrl)}&w=800&h=400&fit=cover&default=https://via.placeholder.com/800x400/667eea/ffffff?text=Nashville+News`;
-        }
-
-        function createArticleCard(article) {
-            const card = document.createElement('div');
-            card.className = 'article-card';
-            card.dataset.articleId = article.id;
-            card.onclick = () => openArticleModal(article);
-
-            const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
-            const imageUrl = article.image_url;
-            const imageId = `img-${article.id || Math.random().toString(36)}`;
-
-            card.innerHTML = `
-                <div class="article-image" id="${imageId}" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
-                    ${article.themes?.primary ? `
-                        <div class=\"article-category\" style=\"${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}\">
-                            <span>${THEMES[article.themes.primary].name}</span>
-                        </div>
-                    ` : `
-                        <div class=\"article-category analyzing\"><span>⚡ Analyzing...</span></div>
-                    `}
-
-                </div>
-
-
-            const imageUrl = article.themes?.primary ? getProxiedImageUrl(article.image_url || article.image) : null;
-            const backgroundStyle = article.themes?.primary ?
-                `background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);` :
-                `background: linear-gradient(135deg, #cccccc 0%, #999999 100%);`;
-
-            const categoryHtml = article.themes?.primary ?
-                `<span>${THEMES[article.themes.primary].name}</span>` :
-                `<span>⚡ Analyzing...</span>`;
-
-            const imageId = `img-${article.id}`;
-
-            card.innerHTML = `
-                <div class="article-image" id="${imageId}" style="${backgroundStyle}">
-                    <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}; opacity:${article.themes?.primary ? 1 : 0.7}">
-                        ${categoryHtml}
-                    </div>
-
-
-                <div class="article-content">
-                    <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
-                    <h3 class="article-title">${escapeHtml(article.title || 'Untitled')}</h3>
-                    <p class="article-excerpt">${escapeHtml((article.description || '').substring(0, 150))}...</p>
-                    <div class="article-footer">
-                        <div class="article-meta">
-                            <span>📅 ${article.date ? formatDate(article.date) : 'Today'}</span>
-                            ${article.fromCache ? '<span>💾 Cached</span>' : '<span>🔄 Fresh</span>'}
-                        </div>
-                        <div class="article-actions">
-                            <button class="action-btn" onclick="event.stopPropagation(); shareArticle('${escapeHtml(article.link)}')">🔗</button>
-                            <button class="action-btn" onclick="event.stopPropagation(); saveArticle('${article.id}')">⭐</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            if (imageUrl) {
-                const imageDiv = card.querySelector(`#${imageId}`);
-                const img = new Image();
-                img.onload = function() {
-                    imageDiv.style.backgroundImage = `url('${imageUrl}')`;
-                    imageDiv.style.backgroundSize = 'cover';
-                    imageDiv.style.backgroundPosition = 'center';
-                };
-                img.onerror = function() {
-                    console.log('Image failed:', imageUrl);
-                };
-                img.src = imageUrl;
+        // Update stats with cache/fresh counts
+        function updateStats() {
+            const articles = Array.from(allArticles.values());
+            const stats = {
+                total: articles.length,
+                cached: articles.filter(a => a.isCache).length,
+                fresh: articles.filter(a => !a.isCache).length,
+                new: articles.filter(a => a.isNew).length,
+                governance: 0,
+                transparency: 0,
+                decisions: 0,
+                leadership: 0,
+                culture: 0,
+                resources: 0,
+                care: 0
+            };
+            
+            articles.forEach(article => {
+                if (article.themes?.primary) {
+                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
+                }
+            });
+            
+            document.getElementById('totalArticles').textContent = stats.total;
+            document.getElementById('cacheCount').textContent = stats.cached;
+            document.getElementById('freshCount').textContent = stats.fresh;
+            
+            if (stats.new > 0) {
+                document.getElementById('totalChange').textContent = `+${stats.new} new`;
+                document.getElementById('totalChange').style.color = 'var(--success)';
+            } else {
+                document.getElementById('totalChange').textContent = 'Up to date';
             }
-
-            return card;
+            
+            // Count active feeds
+            const activeFeeds = feedSources.filter(source => {
+                const sourceId = source.id || source.url;
+                return feedSettings[sourceId]?.enabled !== false;
+            }).length;
+            document.getElementById('activeFeedsCount').textContent = activeFeeds;
+            
+            // Update theme filter counts
+            Object.entries(stats).forEach(([theme, count]) => {
+                if (THEMES[theme]) {
+                    const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
+                    if (btn) {
+                        const oldCount = parseInt(btn.textContent);
+                        if (oldCount !== count) {
+                            btn.textContent = count;
+                            btn.classList.add('updating');
+                            setTimeout(() => btn.classList.remove('updating'), 300);
+                        }
+                    }
+                }
+            });
+            
+            const allBtn = document.querySelector('.theme-pill.theme-all .theme-count');
+            if (allBtn) allBtn.textContent = stats.total;
+        }
+        
+        // Cache articles to Xano
+        async function cacheArticlesToXano(articles) {
+            for (const article of articles) {
+                try {
+                    await fetch(CONTENT_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            url: article.link || article.url,
+                            title: article.title,
+                            description: article.description,
+                            published_at: article.date.toISOString(),
+                            source_name: article.source_name,
+                            rss_feed: article.rss_feed_id,
+                            category: article.themes?.primary ? 
+                                [article.themes.primary, ...(article.themes.secondary || [])] : [],
+                            image: article.image_url || null
+                        })
+                    });
+                } catch (error) {
+                    console.error('Cache save error:', error);
+                }
+            }
         }
         
         // Filter by theme
@@ -1598,16 +1956,16 @@
             document.querySelector(`.theme-pill.theme-${theme}`).classList.add('active');
             
             // Apply filter
+            const articles = Array.from(allArticles.values());
             if (theme === 'all') {
-                filteredArticles = [];
+                filteredArticles = articles;
             } else {
-                filteredArticles = allArticles.filter(article => 
+                filteredArticles = articles.filter(article => 
                     article.themes?.primary === theme || 
                     article.themes?.secondary?.includes(theme)
                 );
             }
             
-            // Apply search if active
             applyFilters();
         }
         
@@ -1620,7 +1978,8 @@
         
         // Apply all filters
         function applyFilters() {
-            let articles = activeThemeFilter === 'all' ? allArticles : filteredArticles;
+            let articles = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
+                filteredArticles : Array.from(allArticles.values());
             
             if (searchTerm) {
                 articles = articles.filter(article => 
@@ -1630,21 +1989,8 @@
                 );
             }
             
-            displayArticles(articles.slice(0, articlesPerPage));
-        }
-        
-        // Load more articles
-        function loadMoreArticles() {
-            const articles = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
-                filteredArticles : allArticles;
-            
-            const start = displayedArticles.length;
-            const end = start + articlesPerPage;
-            const nextBatch = articles.slice(start, end);
-            
-            if (nextBatch.length > 0) {
-                displayArticles(nextBatch, true);
-            }
+            const sorted = sortArticles(articles);
+            displayArticles(sorted.slice(0, articlesPerPage));
         }
         
         // Handle infinite scroll
@@ -1659,26 +2005,185 @@
             }
         }
         
-        // Refresh content
-        async function refreshContent() {
+        // Load more articles
+        function loadMoreArticles() {
+            const articles = filteredArticles.length > 0 || activeThemeFilter !== 'all' ? 
+                filteredArticles : Array.from(allArticles.values());
+            
+            const sorted = sortArticles(articles);
+            const start = displayedArticles.length;
+            const end = start + articlesPerPage;
+            const nextBatch = sorted.slice(start, end);
+            
+            if (nextBatch.length > 0) {
+                displayArticles(nextBatch, true);
+            }
+        }
+        
+        // Force refresh (clear cache and reload)
+        async function forceRefresh() {
             const btn = document.getElementById('floatingRefresh');
             btn.classList.add('spinning');
             
+            // Clear all articles
+            allArticles.clear();
+            newArticlesQueue = [];
+            
+            // Hide new articles bar
+            document.getElementById('newArticlesBar').classList.remove('show');
+            
+            // Reload everything
             await loadInitialContent();
             
             setTimeout(() => {
                 btn.classList.remove('spinning');
+                showUpdateToast('Content refreshed!');
             }, 1000);
         }
         
-        // Start background sync
+        // Start background sync with priority-based intervals
         function startBackgroundSync() {
-            // Sync every 5 minutes
             setInterval(async () => {
-                await fetchRSSInBackground();
-            }, 5 * 60 * 1000);
+                const now = new Date();
+                
+                for (const source of feedSources) {
+                    const sourceId = source.id || source.url;
+                    const settings = feedSettings[sourceId];
+                    
+                    if (!settings?.enabled) continue;
+                    
+                    const priority = settings.priority || 'medium';
+                    const interval = PRIORITY_INTERVALS[priority] * 60 * 1000;
+                    const lastFetch = settings.lastFetch ? new Date(settings.lastFetch) : new Date(0);
+                    
+                    if (now - lastFetch >= interval) {
+                        try {
+                            const articles = await fetchFeed(source);
+                            let newCount = 0;
+                            
+                            articles.forEach(article => {
+                                const url = article.url || article.link;
+                                if (!allArticles.has(url)) {
+                                    article.themes = calculateThemes(article);
+                                    article.isNew = true;
+                                    article.isCache = false;
+                                    article.priority = 3;
+                                    newArticlesQueue.push(article);
+                                    newCount++;
+                                }
+                            });
+                            
+                            if (newCount > 0) {
+                                showNewArticlesBar(newArticlesQueue.length);
+                                feedStats[sourceId].articleCount += newCount;
+                                feedStats[sourceId].lastUpdate = now.toISOString();
+                            }
+                            
+                            feedSettings[sourceId].lastFetch = now.toISOString();
+                            saveSettings();
+                            
+                        } catch (error) {
+                            console.error(`Background fetch error for ${source.name}:`, error);
+                            feedStats[sourceId].errors = (feedStats[sourceId].errors || 0) + 1;
+                        }
+                    }
+                }
+            }, 60 * 1000); // Check every minute
         }
         
+        // Feed Manager Functions
+        function openFeedManager() {
+            const modal = document.getElementById('feedManagerModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            loadFeedList();
+        }
+        
+        function closeFeedManager() {
+            const modal = document.getElementById('feedManagerModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function loadFeedList() {
+            const feedList = document.getElementById('feedList');
+            feedList.innerHTML = '';
+            
+            feedSources.forEach(source => {
+                const sourceId = source.id || source.url;
+                const settings = feedSettings[sourceId] || { enabled: true, priority: 'medium' };
+                const stats = feedStats[sourceId] || { articleCount: 0, lastUpdate: null, errors: 0 };
+                
+                const feedItem = document.createElement('div');
+                feedItem.className = `feed-item ${!settings.enabled ? 'disabled' : ''}`;
+                
+                feedItem.innerHTML = `
+                    <div class="feed-item-header">
+                        <div class="feed-item-info">
+                            <div class="feed-name">${escapeHtml(source.name || 'Unnamed Feed')}</div>
+                            <div class="feed-url">${escapeHtml(source.url || source.link || '')}</div>
+                        </div>
+                        <div class="feed-controls">
+                            <label class="feed-toggle">
+                                <input type="checkbox" 
+                                       ${settings.enabled ? 'checked' : ''} 
+                                       onchange="toggleFeed('${sourceId}', this.checked)">
+                                <span class="feed-toggle-slider"></span>
+                            </label>
+                            <div class="feed-priority">
+                                <span class="feed-priority-label">Priority:</span>
+                                <select class="feed-priority-select" 
+                                        onchange="updateFeedPriority('${sourceId}', this.value)"
+                                        ${!settings.enabled ? 'disabled' : ''}>
+                                    <option value="high" ${settings.priority === 'high' ? 'selected' : ''}>High (5 min)</option>
+                                    <option value="medium" ${settings.priority === 'medium' ? 'selected' : ''}>Medium (15 min)</option>
+                                    <option value="low" ${settings.priority === 'low' ? 'selected' : ''}>Low (30 min)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feed-stats">
+                        <div class="feed-stat">
+                            <span class="feed-stat-label">Articles</span>
+                            <span class="feed-stat-value">${stats.articleCount}</span>
+                        </div>
+                        <div class="feed-stat">
+                            <span class="feed-stat-label">Last Update</span>
+                            <span class="feed-stat-value">${stats.lastUpdate ? formatDate(new Date(stats.lastUpdate)) : 'Never'}</span>
+                        </div>
+                        <div class="feed-stat">
+                            <span class="feed-stat-label">Errors</span>
+                            <span class="feed-stat-value">${stats.errors}</span>
+                        </div>
+                    </div>
+                `;
+                
+                feedList.appendChild(feedItem);
+            });
+        }
+        
+        function toggleFeed(sourceId, enabled) {
+            feedSettings[sourceId].enabled = enabled;
+            saveSettings();
+            
+            const feedItem = event.target.closest('.feed-item');
+            if (enabled) {
+                feedItem.classList.remove('disabled');
+                feedItem.querySelector('.feed-priority-select').disabled = false;
+            } else {
+                feedItem.classList.add('disabled');
+                feedItem.querySelector('.feed-priority-select').disabled = true;
+            }
+            
+            showUpdateToast(`Feed ${enabled ? 'enabled' : 'disabled'}`);
+            updateStats();
+        }
+        
+        function updateFeedPriority(sourceId, priority) {
+            feedSettings[sourceId].priority = priority;
+            saveSettings();
+            showUpdateToast(`Priority updated to ${priority}`);
+        }
         
         // Update sync indicator
         function updateSyncIndicator(status, text) {
@@ -1688,11 +2193,11 @@
             indicator.className = `sync-indicator ${status}`;
             syncText.textContent = text;
             
-            if (status === 'success') {
+            if (status === 'success' || status === 'cache') {
                 setTimeout(() => {
                     indicator.className = 'sync-indicator';
                     syncText.textContent = 'Synced';
-                }, 3000);
+                }, 5000);
             }
         }
         
@@ -1737,161 +2242,6 @@
             return date.toLocaleDateString();
         }
         
-        // Load RSS sources
-        async function loadSources() {
-            try {
-                const response = await fetch(SOURCES_API);
-                if (!response.ok) throw new Error('Failed to load sources');
-                return await response.json();
-            } catch (error) {
-                console.error('Error loading sources:', error);
-                return [];
-            }
-        }
-        
-        // Fetch single feed
-        async function fetchFeed(source) {
-            const url = source.url || source.link;
-            if (!url) return [];
-
-            try {
-                const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                const text = await response.text();
-                // Pass the original feed URL for better context
-                return parseRSSFeed(text, source.name || source.title, source.id, url);
-            } catch (error) {
-                console.error(`Error fetching ${source.name}:`, error);
-                return [];
-            }
-        }
-
-                // Image extraction and parsing helpers
-        function extractImageFromRSSItem(item, feedUrl) {
-            const images = new Set();
-            const allElements = item.getElementsByTagName('*');
-            for (let elem of allElements) {
-                const tagName = elem.tagName.toLowerCase();
-                if (tagName.includes('media:') || tagName.includes('itunes:') ||
-                    tagName === 'enclosure' || tagName === 'image' || tagName === 'thumbnail') {
-                    ['url', 'href', 'src'].forEach(attr => {
-                        const url = elem.getAttribute(attr);
-                        if (url && isImageUrl(url)) {
-                            images.add(cleanUrl(url));
-                        }
-                    });
-                    const text = elem.textContent?.trim();
-                    if (text && isImageUrl(text)) {
-                        images.add(cleanUrl(text));
-                    }
-                    if (tagName === 'enclosure') {
-                        const type = elem.getAttribute('type');
-                        const url = elem.getAttribute('url');
-                        if (type && type.startsWith('image') && url) {
-                            images.add(cleanUrl(url));
-                        }
-                    }
-                }
-            }
-            const contentFields = ['description', 'content', 'summary', 'encoded', 'content\:encoded'];
-            contentFields.forEach(field => {
-                try {
-                    const content = item.querySelector(field)?.textContent || '';
-                    if (content) {
-                        const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
-                        let match;
-                        while ((match = imgRegex.exec(content)) !== null) {
-                            if (match[1]) {
-                                images.add(cleanUrl(match[1]));
-                            }
-                        }
-                        const urlRegex = /(https?:\/\/[^\s<>"']+\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s<>"']*)?)/gi;
-                        const urls = content.match(urlRegex);
-                        if (urls) {
-                            urls.forEach(url => images.add(cleanUrl(url)));
-                        }
-                    }
-                } catch (e) {}
-            });
-            const imageArray = Array.from(images);
-            if (imageArray.length > 0) {
-                return getProxiedImageUrl(imageArray[0]);
-            }
-            return null;
-        }
-
-        function cleanUrl(url) {
-            if (!url) return null;
-            url = url.replace(/&amp;/g, '&')
-                     .replace(/&#x27;/g, "'")
-                     .replace(/&quot;/g, '"')
-                     .replace(/&lt;/g, '<')
-                     .replace(/&gt;/g, '>')
-                     .trim();
-            if (url.startsWith('//')) {
-                url = 'https:' + url;
-            }
-            return url;
-        }
-
-        function isImageUrl(str) {
-            if (!str || typeof str !== 'string') return false;
-            const lower = str.toLowerCase();
-            return /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.svg|\.bmp)(\?|#|$)/.test(lower) ||
-                   /\/(image|media|photo|pic|thumbnail|upload|wp-content)/.test(lower);
-        }
-
-        function parseRSSFeed(xmlText, sourceName, sourceId, feedUrl) {
-            const parser = new DOMParser();
-            let xml = parser.parseFromString(xmlText, 'text/xml');
-
-            const parseError = xml.querySelector('parsererror');
-            if (parseError) {
-                xmlText = xmlText.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
-                xml = parser.parseFromString(xmlText, 'text/xml');
-                if (xml.querySelector('parsererror')) {
-                    console.error('Invalid XML for feed:', sourceName);
-                    return [];
-                }
-            }
-
-            if (xmlText.includes('<!DOCTYPE html') || xmlText.includes('<html')) {
-                console.error('Feed returned HTML instead of RSS:', sourceName);
-                return [];
-            }
-
-            const articles = [];
-            const items = xml.querySelectorAll('item, entry');
-
-            items.forEach(item => {
-                const title = item.querySelector('title')?.textContent || '';
-                const link = item.querySelector('link')?.textContent ||
-                           item.querySelector('link')?.getAttribute('href') || '';
-                const description = item.querySelector('description, summary, content')?.textContent || '';
-                const pubDate = item.querySelector('pubDate, published, updated')?.textContent || '';
-                const imageUrl = extractImageFromRSSItem(item, feedUrl);
-
-                if (title || description) {
-                    articles.push({
-                        id: Math.random().toString(36),
-                        title: cleanText(title),
-                        link: link,
-                        url: link,
-                        description: cleanText(description),
-                        date: pubDate ? new Date(pubDate) : new Date(),
-                        source_name: sourceName,
-                        rss_feed_id: sourceId,
-                        image_url: imageUrl
-                    });
-                }
-            });
-
-            return articles;
-        }
-
-        // Clean text
         function cleanText(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -1899,31 +2249,6 @@
             return div.textContent.trim();
         }
         
-        // Cache articles
-        async function cacheArticles(articles) {
-            for (const article of articles) {
-                try {
-                    await fetch(CONTENT_API, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            url: article.link || article.url,
-                            title: article.title,
-                            description: article.description,
-                            published_at: article.date.toISOString(),
-                            source_name: article.source_name,
-                            rss_feed: article.rss_feed_id,
-                            category: article.themes?.primary ? [article.themes.primary, ...(article.themes.secondary || [])] : [],
-                            image: article.image_url || null // Save image URL to cache
-                        })
-                    });
-                } catch (error) {
-                    console.error('Cache error:', error);
-                }
-            }
-        }
-        
-        // Share article
         function shareArticle(url) {
             if (navigator.share) {
                 navigator.share({ url });
@@ -1933,256 +2258,36 @@
             }
         }
         
-        // Save article (placeholder)
         function saveArticle(id) {
-            showUpdateToast('Article saved!');
+            const saved = JSON.parse(localStorage.getItem('savedArticles') || '[]');
+            if (!saved.includes(id)) {
+                saved.push(id);
+                localStorage.setItem('savedArticles', JSON.stringify(saved));
+                showUpdateToast('Article saved!');
+            } else {
+                showUpdateToast('Article already saved');
+            }
         }
         
-        // Show error
         function showError(message) {
             const grid = document.getElementById('articlesGrid');
-            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">${message}</div>`;
-        }
-        
-        // Modal Functions
-        function openArticleModal(article) {
-            currentArticle = article;
-            const modal = document.getElementById('articleModal');
-            
-            // Update modal content
-            document.getElementById('modalTitle').textContent = article.title || 'Untitled';
-            document.getElementById('modalAuthor').textContent = '@' + (article.source_name || 'unknown').toLowerCase().replace(/\s+/g, '');
-            
-            // Set theme tag
-            if (article.themes?.primary) {
-                const themeTag = document.getElementById('modalThemeTag');
-                themeTag.textContent = THEMES[article.themes.primary].name;
-                themeTag.style.color = THEMES[article.themes.primary].color;
-                themeTag.style.borderColor = THEMES[article.themes.primary].color;
-            }
-            
-            // Set image
-            const modalImage = document.getElementById('modalImage');
-            if (article.image_url || article.image) {
-                modalImage.style.backgroundImage = `url('${article.image_url || article.image}')`;
-                modalImage.style.display = 'block';
-            } else {
-                const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
-                modalImage.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
-                modalImage.style.display = 'block';
-            }
-            
-            // Set content
-            const content = document.getElementById('modalContent');
-            content.innerHTML = `
-                <p>${escapeHtml(article.description || 'No content available.')}</p>
-                <p style="margin-top: 16px; color: var(--gray); font-size: 14px;">
-                    <em>This is an excerpt from the original article. Click "Full View" below to read the complete article on the source website.</em>
-                </p>
-            `;
-            
-            // Set full link
-            document.getElementById('modalFullLink').href = article.link || article.url || '#';
-            
-            // Set stats (simulated for now)
-            const articleId = article.id || article.link;
-            const comments = articleComments[articleId] || [];
-            document.getElementById('modalComments').textContent = comments.length;
-            document.getElementById('modalLikes').textContent = Math.floor(Math.random() * 500) + 1;
-            document.getElementById('modalViews').textContent = Math.floor(Math.random() * 1000) + comments.length * 10;
-            
-            // Load comments
-            loadComments(articleId);
-            
-            // Show modal
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal() {
-            const modal = document.getElementById('articleModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            currentArticle = null;
-            document.getElementById('commentInput').value = '';
-        }
-        
-        function loadComments(articleId) {
-            const commentsList = document.getElementById('commentsList');
-            const comments = articleComments[articleId] || [];
-            
-            if (comments.length === 0) {
-                commentsList.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--gray);">
-                        <p>No comments yet. Be the first to share your thoughts!</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            commentsList.innerHTML = comments.map(comment => createCommentHTML(comment)).join('');
-        }
-        
-        function createCommentHTML(comment) {
-            const timeAgo = getTimeAgo(comment.timestamp);
-            const initials = comment.username.substring(0, 2).toUpperCase();
-            
-            return `
-                <div class="comment">
-                    <div class="comment-header">
-                        <div class="comment-author">
-                            <div class="comment-avatar">${initials}</div>
-                            <span class="comment-username">@${comment.username}</span>
-                        </div>
-                        <span class="comment-time">${timeAgo}</span>
-                    </div>
-                    <div class="comment-content">${escapeHtml(comment.content)}</div>
-                    <div class="comment-actions">
-                        <button class="comment-action" onclick="likeComment('${comment.id}')">
-                            👍 ${comment.likes || 0}
-                        </button>
-                        <button class="comment-action" onclick="replyToComment('${comment.id}')">
-                            💬 Reply
-                        </button>
-                        <button class="comment-action" onclick="shareComment('${comment.id}')">
-                            🔗 Share
-                        </button>
-                    </div>
-                    ${comment.replies ? `
-                        <div class="comment-replies">
-                            ${comment.replies.map(reply => createCommentHTML(reply)).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-        
-        function postComment() {
-            const input = document.getElementById('commentInput');
-            const content = input.value.trim();
-            
-            if (!content) return;
-            
-            const articleId = currentArticle.id || currentArticle.link;
-            
-            // Initialize comments array if needed
-            if (!articleComments[articleId]) {
-                articleComments[articleId] = [];
-            }
-            
-            // Create new comment
-            const comment = {
-                id: Math.random().toString(36).substr(2, 9),
-                username: generateUsername(),
-                content: content,
-                timestamp: new Date(),
-                likes: 0,
-                replies: []
-            };
-            
-            // Add to comments
-            articleComments[articleId].unshift(comment);
-            
-            // Clear input
-            input.value = '';
-            
-            // Reload comments
-            loadComments(articleId);
-            
-            // Update comment count
-            document.getElementById('modalComments').textContent = articleComments[articleId].length;
-            
-            // Show success message
-            showUpdateToast('Comment posted successfully!');
-        }
-        
-        function clearComment() {
-            document.getElementById('commentInput').value = '';
-        }
-        
-        function likeComment(commentId) {
-            // In production, this would update the database
-            showUpdateToast('Comment liked!');
-        }
-        
-        function replyToComment(commentId) {
-            // In production, this would open a reply form
-            showUpdateToast('Reply feature coming soon!');
-        }
-        
-        function shareComment(commentId) {
-            // In production, this would share the comment
-            showUpdateToast('Link copied to clipboard!');
-        }
-        
-        function generateUsername() {
-            const adjectives = ['happy', 'clever', 'brave', 'gentle', 'wise', 'swift', 'bright', 'calm'];
-            const nouns = ['citizen', 'resident', 'neighbor', 'voter', 'advocate', 'participant', 'observer'];
-            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-            const noun = nouns[Math.floor(Math.random() * nouns.length)];
-            const num = Math.floor(Math.random() * 99) + 1;
-            return `${adj}_${noun}${num}`;
-        }
-        
-        function getTimeAgo(timestamp) {
-            const now = new Date();
-            const diff = now - timestamp;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-            
-            if (minutes < 1) return 'just now';
-            if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-            return `${days} day${days > 1 ? 's' : ''} ago`;
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                    <h3 style="margin-bottom: 10px;">⚠️ ${message}</h3>
+                    <button onclick="forceRefresh()" style="margin-top: 20px; padding: 10px 20px; background: white; color: var(--primary); border: none; border-radius: 8px; cursor: pointer;">
+                        Try Again
+                    </button>
+                </div>`;
         }
         
         // Close modal on escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.getElementById('articleModal').classList.contains('active')) {
-                closeModal();
+            if (e.key === 'Escape') {
+                if (document.getElementById('feedManagerModal').classList.contains('active')) {
+                    closeFeedManager();
+                }
             }
         });
-        
-        // Close modal on overlay click
-        document.getElementById('articleModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('articleModal')) {
-                closeModal();
-            }
-        });
-        
-        // Sample comments for demonstration
-        function seedSampleComments() {
-            const sampleComments = [
-                {
-                    id: '1',
-                    username: 'sarah_martinez',
-                    content: 'This is exactly the kind of community-led governance we need. The land trust model has proven successful in other cities.',
-                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-                    likes: 12,
-                    replies: []
-                },
-                {
-                    id: '2',
-                    username: 'district5_resident',
-                    content: 'I attended the committee meeting. We need everyone to show up next Tuesday for the final vote.',
-                    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-                    likes: 8,
-                    replies: []
-                }
-            ];
-            
-            // Add sample comments to a few articles
-            setTimeout(() => {
-                if (allArticles.length > 0) {
-                    const firstArticleId = allArticles[0].id || allArticles[0].link;
-                    articleComments[firstArticleId] = sampleComments;
-                }
-            }, 2000);
-        }
-        
-        // Initialize sample comments
-        seedSampleComments();
     </script>
 </body>
 </html>
