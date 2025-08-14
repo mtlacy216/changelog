@@ -104,7 +104,7 @@
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50% { opacity: 0.5; }
         }
         
         .container {
@@ -340,6 +340,25 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: opacity 0.3s ease;
+        }
+
+        .article-category span {
+            animation: pulse 2s infinite;
+        }
+
+        .article-category.analyzing {
+            background: rgba(255,255,255,0.8);
+            color: #666;
+        }
+
+        .theme-count {
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .theme-count.updating {
+            transform: scale(1.2);
+            background: rgba(255, 255, 0, 0.5) !important;
         }
         
         .article-content {
@@ -1152,67 +1171,204 @@
         // Load initial content
         async function loadInitialContent() {
             updateSyncIndicator('loading', 'Loading articles...');
-            
+
             try {
-                // Load from cache first (immediate display)
-                await loadCachedArticles();
-                
-                // Then fetch fresh RSS in background
-                setTimeout(() => fetchRSSInBackground(), 2000);
-                
+                await Promise.all([
+                    loadCachedArticles(),
+                    fetchRSSImmediate()
+                ]);
+
+                // Begin theme processing without blocking display
+                processThemesInBackground();
             } catch (error) {
                 console.error('Initial load error:', error);
                 showError('Failed to load articles. Please refresh.');
             }
         }
         
-        // Load cached articles
+        // Load cached articles without blocking on empty cache
         async function loadCachedArticles() {
             const cutoffDate = new Date(Date.now() - (48 * 60 * 60 * 1000));
             const params = new URLSearchParams({
                 published_after: cutoffDate.toISOString()
             });
-            
+
             try {
                 const response = await fetch(`${CONTENT_API}?${params}`);
                 if (!response.ok) throw new Error('Cache load failed');
-                
+
                 const cached = await response.json();
-                
-                // Process cached articles
+
                 const processed = cached.map(article => ({
                     ...article,
                     id: article.id || Math.random().toString(36),
                     link: article.url,
                     date: article.published_at ? new Date(article.published_at) : new Date(),
-                    themes: article.category && article.category.length > 0 ? 
-                        { primary: article.category[0], secondary: article.category.slice(1) } :
-                        calculateThemes(article),
-                    image_url: article.image || article.image_url, // Preserve image from cache
+                    themes: article.category && article.category.length > 0 ?
+                        { primary: article.category[0], secondary: article.category.slice(1) } : null,
+                    image_url: getProxiedImageUrl(article.image || article.image_url),
                     fromCache: true
                 }));
-                
-                // Filter articles with themes
-                const themedArticles = processed.filter(a => a.themes && a.themes.primary);
-                
-                // Sort by date
-                themedArticles.sort((a, b) => b.date - a.date);
-                
-                // Update state
-                allArticles = themedArticles;
+
+                allArticles = processed;
+                allArticles.sort((a, b) => b.date - a.date);
                 articleUrlMap.clear();
                 allArticles.forEach(article => {
                     articleUrlMap.set(article.url || article.link, article);
                 });
-                
-                // Display initial batch
-                displayArticles(allArticles.slice(0, articlesPerPage));
-                updateStats();
-                updateSyncIndicator('success', `${themedArticles.length} articles loaded`);
-                
+
+                displayArticlesProgressive(allArticles);
+                updateStatsProgressive();
+
             } catch (error) {
                 console.error('Cache error:', error);
                 updateSyncIndicator('error', 'Cache load failed');
+            }
+        }
+
+        // Fetch RSS immediately and display articles as they arrive
+        async function fetchRSSImmediate() {
+            try {
+                const sources = await loadSources();
+                if (!sources.length) return;
+
+                for (const source of sources) {
+                    try {
+                        const articles = await fetchFeed(source);
+                        const newArticles = [];
+
+                        articles.forEach(article => {
+                            const url = article.url || article.link;
+                            if (!articleUrlMap.has(url)) {
+                                article.id = article.id || Math.random().toString(36);
+                                article.date = article.date ? new Date(article.date) : new Date();
+                                article.source_name = article.source_name || source.name;
+                                allArticles.push(article);
+                                articleUrlMap.set(url, article);
+                                newArticles.push(article);
+                            }
+                        });
+
+                        if (newArticles.length > 0) {
+                            allArticles.sort((a, b) => b.date - a.date);
+                            displayArticlesProgressive(newArticles);
+                            updateStatsProgressive();
+                        }
+                    } catch (err) {
+                        console.error(`Error fetching ${source.name}:`, err);
+                    }
+                }
+            } catch (error) {
+                console.error('RSS fetch error:', error);
+            }
+        }
+
+        // Display articles progressively as they arrive
+        function displayArticlesProgressive(articles) {
+            const grid = document.getElementById('articlesGrid');
+            if (grid.querySelector('.skeleton')) {
+                grid.innerHTML = '';
+            }
+            articles.forEach(article => {
+                if (!article.id) article.id = Math.random().toString(36);
+                const card = createArticleCard(article);
+                grid.appendChild(card);
+                displayedArticles.push(article);
+            });
+        }
+
+        // Process uncategorized articles in background
+        async function processThemesInBackground() {
+            const queue = allArticles.filter(a => !a.themes || !a.themes.primary);
+            while (queue.length) {
+                const batch = queue.splice(0, 5);
+                batch.forEach(article => {
+                    article.themes = calculateThemes(article);
+                    if (article.themes && article.themes.primary) {
+                        updateArticleCardTheme(article);
+                    }
+                });
+                updateStatsProgressive();
+                await new Promise(res => setTimeout(res, 100));
+            }
+            updateStatsProgressive();
+        }
+
+        // Update article card once theme is known
+        function updateArticleCardTheme(article) {
+            const card = document.querySelector(`.article-card[data-article-id="${article.id}"]`);
+            if (!card) return;
+            const imageDiv = card.querySelector('.article-image');
+            const badge = card.querySelector('.article-category');
+            const themeColor = THEMES[article.themes.primary]?.color || '#666';
+            const imageUrl = article.image_url;
+            badge.classList.remove('analyzing');
+            badge.innerHTML = `<span>${THEMES[article.themes.primary].name}</span>`;
+            badge.style.color = themeColor;
+            badge.style.background = imageUrl ? 'rgba(255,255,255,0.95)' : '';
+            imageDiv.style.background = `linear-gradient(135deg, ${themeColor}66, ${themeColor}bb)`;
+            badge.style.opacity = '1';
+            if (imageUrl) {
+                const img = new Image();
+                img.onload = function() {
+                    imageDiv.style.backgroundImage = `url('${imageUrl}')`;
+                    imageDiv.style.backgroundSize = 'cover';
+                    imageDiv.style.backgroundPosition = 'center';
+                };
+                img.onerror = function() {
+                    console.log('Image failed:', imageUrl);
+                };
+                img.src = imageUrl;
+            }
+        }
+
+        // Update stats progressively showing categorization progress
+        function updateStatsProgressive() {
+            const stats = {
+                total: allArticles.length,
+                governance: 0,
+                transparency: 0,
+                decisions: 0,
+                leadership: 0,
+                culture: 0,
+                resources: 0,
+                care: 0
+            };
+
+            let categorized = 0;
+            allArticles.forEach(article => {
+                if (article.themes?.primary) {
+                    categorized++;
+                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
+                }
+            });
+
+            document.getElementById('totalArticles').textContent = stats.total;
+            document.getElementById('legislationCount').textContent = stats.governance + stats.decisions;
+            document.getElementById('discussionsCount').textContent = stats.culture + stats.care;
+            document.getElementById('newsCount').textContent = stats.transparency + stats.resources;
+
+            Object.entries(stats).forEach(([theme, count]) => {
+                if (theme !== 'total') {
+                    updateThemeFilterCounts(theme, count);
+                }
+            });
+            updateThemeFilterCounts('all', stats.total);
+
+            const percent = stats.total ? Math.round((categorized / stats.total) * 100) : 0;
+            if (categorized < stats.total) {
+                updateSyncIndicator('loading', `Categorizing... ${percent}%`);
+            } else {
+                updateSyncIndicator('success', 'All categorized');
+            }
+        }
+
+        function updateThemeFilterCounts(theme, count) {
+            const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
+            if (btn && btn.textContent !== String(count)) {
+                btn.textContent = count;
+                btn.classList.add('updating');
+                setTimeout(() => btn.classList.remove('updating'), 300);
             }
         }
         
@@ -1262,7 +1418,7 @@
                         displayArticles(allArticles.slice(0, articlesPerPage));
                     }
                     
-                    updateStats();
+                    updateStatsProgressive();
                 }
                 
             } catch (error) {
@@ -1312,7 +1468,10 @@
             }
             
             if (articles.length === 0 && !append) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">No articles found</div>';
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                        No articles found
+                    </div>`;
                 return;
             }
             
@@ -1331,44 +1490,31 @@
             }
         }
         
-        // Create article card
+        // Image proxy and card creation
         function getProxiedImageUrl(originalUrl) {
             if (!originalUrl) return null;
-            // Skip proxy for data URLs or blobs
-            if (/^data:|^blob:/.test(originalUrl)) return originalUrl;
-
-            try {
-                const url = new URL(originalUrl, window.location.href);
-                // Normalize HTTP links to HTTPS
-                if (url.protocol === 'http:') {
-                    url.protocol = 'https:';
-                }
-                // Use an HTTPS image proxy to avoid mixed content issues
-                return IMAGE_PROXY + encodeURIComponent(url.href);
-            } catch (e) {
-                // Fallback: proxy the original value directly
-                return IMAGE_PROXY + encodeURIComponent(originalUrl);
-            }
+            return `${IMAGE_PROXY}${encodeURIComponent(originalUrl)}&w=800&h=400&fit=cover&default=https://via.placeholder.com/800x400/667eea/ffffff?text=Nashville+News`;
         }
 
         function createArticleCard(article) {
             const card = document.createElement('div');
             card.className = 'article-card';
+            card.dataset.articleId = article.id;
             card.onclick = () => openArticleModal(article);
 
             const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
-            const imageUrl = getProxiedImageUrl(article.image_url || article.image);
-
-            // Create a unique ID for this card's image
+            const imageUrl = article.image_url;
             const imageId = `img-${article.id || Math.random().toString(36)}`;
 
             card.innerHTML = `
                 <div class="article-image" id="${imageId}" style="background: linear-gradient(135deg, ${themeColor}66, ${themeColor}bb);">
                     ${article.themes?.primary ? `
-                        <div class="article-category" style="${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}">
-                            ${THEMES[article.themes.primary].name}
+                        <div class=\"article-category\" style=\"${imageUrl ? 'background: rgba(255,255,255,0.95);' : ''} color: ${themeColor}\">
+                            <span>${THEMES[article.themes.primary].name}</span>
                         </div>
-                    ` : ''}
+                    ` : `
+                        <div class=\"article-category analyzing\"><span>⚡ Analyzing...</span></div>
+                    `}
                 </div>
                 <div class="article-content">
                     <div class="article-source">${escapeHtml(article.source_name || article.source || 'Unknown')}</div>
@@ -1387,21 +1533,17 @@
                 </div>
             `;
 
-            // Try to load the image after card is created
             if (imageUrl) {
                 const imageDiv = card.querySelector(`#${imageId}`);
                 const img = new Image();
-
                 img.onload = function() {
                     imageDiv.style.backgroundImage = `url('${imageUrl}')`;
                     imageDiv.style.backgroundSize = 'cover';
                     imageDiv.style.backgroundPosition = 'center';
                 };
-
                 img.onerror = function() {
-                    console.log('Image failed to load:', imageUrl);
+                    console.log('Image failed:', imageUrl);
                 };
-
                 img.src = imageUrl;
             }
 
@@ -1501,41 +1643,6 @@
             }, 5 * 60 * 1000);
         }
         
-        // Update stats
-        function updateStats() {
-            const stats = {
-                total: allArticles.length,
-                governance: 0,
-                transparency: 0,
-                decisions: 0,
-                leadership: 0,
-                culture: 0,
-                resources: 0,
-                care: 0
-            };
-            
-            allArticles.forEach(article => {
-                if (article.themes?.primary) {
-                    stats[article.themes.primary] = (stats[article.themes.primary] || 0) + 1;
-                }
-            });
-            
-            // Update stat cards
-            document.getElementById('totalArticles').textContent = stats.total;
-            document.getElementById('legislationCount').textContent = stats.governance + stats.decisions;
-            document.getElementById('discussionsCount').textContent = stats.culture + stats.care;
-            document.getElementById('newsCount').textContent = stats.transparency + stats.resources;
-            
-            // Update theme counts
-            Object.entries(stats).forEach(([theme, count]) => {
-                if (theme !== 'total') {
-                    const btn = document.querySelector(`.theme-pill.theme-${theme} .theme-count`);
-                    if (btn) btn.textContent = count;
-                }
-            });
-            
-            document.querySelector('.theme-pill.theme-all .theme-count').textContent = stats.total;
-        }
         
         // Update sync indicator
         function updateSyncIndicator(status, text) {
@@ -1617,7 +1724,7 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const text = await response.text();
-                // Pass the original feed URL for relative URL resolution
+                // Pass the original feed URL for better context
                 return parseRSSFeed(text, source.name || source.title, source.id, url);
             } catch (error) {
                 console.error(`Error fetching ${source.name}:`, error);
@@ -1625,227 +1732,110 @@
             }
         }
 
-        // Enhanced image extraction
+                // Image extraction and parsing helpers
         function extractImageFromRSSItem(item, feedUrl) {
-            const images = [];
-
-            // 1. Check for media:content and media:thumbnail first (most reliable)
-            let mediaContent = item.querySelector('media\\:content, media\\:thumbnail');
-            if (!mediaContent) {
-                mediaContent = item.querySelector('content[medium="image"], thumbnail');
-            }
-            if (mediaContent) {
-                const url = mediaContent.getAttribute('url');
-                if (url) images.push({ url, score: 20, source: 'media:content' });
-            }
-
-            // 2. Check enclosure tags (common for podcasts and media)
-            const enclosures = item.querySelectorAll('enclosure');
-            enclosures.forEach(enc => {
-                const url = enc.getAttribute('url');
-                const type = enc.getAttribute('type')?.toLowerCase() || '';
-                const typeIsImage = type.startsWith('image/');
-                if (url && (typeIsImage || (!type && isImageUrl(url)))) {
-                    images.push({ url, score: 18, source: 'enclosure' });
-                }
-            });
-
-            // 3. Check all namespace variations
-            const namespaceElements = [
-                'media\\:content', 'media\\:thumbnail',
-                'itunes\\:image', 'image', 'thumbnail',
-                'content[type="image"]', 'link[rel="enclosure"][type^="image"]'
-            ];
-
-            namespaceElements.forEach(selector => {
-                try {
-                    const elements = item.querySelectorAll(selector);
-                    elements.forEach(elem => {
-                        const typeAttr = (elem.getAttribute('type') || '').toLowerCase();
-                        ['url', 'href', 'src'].forEach(attr => {
-                            const url = elem.getAttribute(attr);
-                            if (url && (isImageUrl(url) || typeAttr.startsWith('image'))) {
-                                images.push({
-                                    url,
-                                    score: 15,
-                                    source: `${selector}.${attr}`
-                                });
-                            }
-                        });
-                        const text = elem.textContent?.trim();
-                        if (text && (isImageUrl(text) || typeAttr.startsWith('image'))) {
-                            images.push({
-                                url: text,
-                                score: 14,
-                                source: `${selector}.text`
-                            });
+            const images = new Set();
+            const allElements = item.getElementsByTagName('*');
+            for (let elem of allElements) {
+                const tagName = elem.tagName.toLowerCase();
+                if (tagName.includes('media:') || tagName.includes('itunes:') ||
+                    tagName === 'enclosure' || tagName === 'image' || tagName === 'thumbnail') {
+                    ['url', 'href', 'src'].forEach(attr => {
+                        const url = elem.getAttribute(attr);
+                        if (url && isImageUrl(url)) {
+                            images.add(cleanUrl(url));
                         }
                     });
-                } catch (e) {
-                    // Ignore selector errors
-                }
-            });
-
-            // 4. Extract from description/content HTML
-            const contentFields = [
-                'description', 'content', 'encoded',
-                'content\\:encoded', 'summary'
-            ];
-
-            contentFields.forEach(field => {
-                const contentElem = item.querySelector(field);
-                if (contentElem) {
-                    const content = contentElem.textContent || '';
-
-                    const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-                    let match;
-                    while ((match = imgRegex.exec(content)) !== null) {
-                        if (match[1]) {
-                            images.push({
-                                url: match[1],
-                                score: 12,
-                                source: `${field}.img`
-                            });
+                    const text = elem.textContent?.trim();
+                    if (text && isImageUrl(text)) {
+                        images.add(cleanUrl(text));
+                    }
+                    if (tagName === 'enclosure') {
+                        const type = elem.getAttribute('type');
+                        const url = elem.getAttribute('url');
+                        if (type && type.startsWith('image') && url) {
+                            images.add(cleanUrl(url));
                         }
                     }
-
-                    const urlRegex = /https?:\/\/[^\s<>"']+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?[^\s<>"']*)?/gi;
-                    const urls = content.match(urlRegex);
-                    if (urls) {
-                        urls.forEach(url => {
-                            images.push({
-                                url,
-                                score: 10,
-                                source: `${field}.url`
-                            });
-                        });
-                    }
                 }
-            });
-
-            // 5. Deduplicate and resolve relative URLs
-            const uniqueUrls = new Map();
-            images.forEach(img => {
-                let finalUrl = img.url;
-
-                // Resolve relative URLs
-                if (finalUrl && !finalUrl.startsWith('http')) {
-                    finalUrl = resolveRelativeUrl(finalUrl, item, feedUrl);
-                }
-
-                if (finalUrl && isValidImageUrl(finalUrl)) {
-                    if (!uniqueUrls.has(finalUrl) || uniqueUrls.get(finalUrl).score < img.score) {
-                        uniqueUrls.set(finalUrl, { ...img, url: finalUrl });
-                    }
-                }
-            });
-
-            const sortedImages = Array.from(uniqueUrls.values())
-                .sort((a, b) => b.score - a.score);
-
-            if (sortedImages.length > 0) {
-                console.log(`Found ${sortedImages.length} images, best: ${sortedImages[0].source}`);
-                return sortedImages[0].url;
             }
-
+            const contentFields = ['description', 'content', 'summary', 'encoded', 'content\:encoded'];
+            contentFields.forEach(field => {
+                try {
+                    const content = item.querySelector(field)?.textContent || '';
+                    if (content) {
+                        const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+                        let match;
+                        while ((match = imgRegex.exec(content)) !== null) {
+                            if (match[1]) {
+                                images.add(cleanUrl(match[1]));
+                            }
+                        }
+                        const urlRegex = /(https?:\/\/[^\s<>"']+\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s<>"']*)?)/gi;
+                        const urls = content.match(urlRegex);
+                        if (urls) {
+                            urls.forEach(url => images.add(cleanUrl(url)));
+                        }
+                    }
+                } catch (e) {}
+            });
+            const imageArray = Array.from(images);
+            if (imageArray.length > 0) {
+                return getProxiedImageUrl(imageArray[0]);
+            }
             return null;
         }
 
-        // Helper to resolve relative URLs
-        function resolveRelativeUrl(relativeUrl, item, feedUrl) {
-            let baseUrl = feedUrl;
-
-            const itemLink = item.querySelector('link')?.textContent ||
-                           item.querySelector('link')?.getAttribute('href');
-            if (itemLink && itemLink.startsWith('http')) {
-                try {
-                    const url = new URL(itemLink);
-                    baseUrl = `${url.protocol}//${url.host}`;
-                } catch (e) {
-                    // Use feed URL as fallback
-                }
+        function cleanUrl(url) {
+            if (!url) return null;
+            url = url.replace(/&amp;/g, '&')
+                     .replace(/&#x27;/g, "'")
+                     .replace(/&quot;/g, '"')
+                     .replace(/&lt;/g, '<')
+                     .replace(/&gt;/g, '>')
+                     .trim();
+            if (url.startsWith('//')) {
+                url = 'https:' + url;
             }
-
-            if (!baseUrl) {
-                const feedLink = item.ownerDocument?.querySelector('channel > link')?.textContent;
-                if (feedLink) baseUrl = feedLink;
-            }
-
-            if (baseUrl) {
-                try {
-                    if (relativeUrl.startsWith('//')) {
-                        return 'https:' + relativeUrl;
-                    }
-
-                    if (relativeUrl.startsWith('/')) {
-                        const base = new URL(baseUrl);
-                        return `${base.protocol}//${base.host}${relativeUrl}`;
-                    }
-
-                    return new URL(relativeUrl, baseUrl).href;
-                } catch (e) {
-                    console.error('Failed to resolve URL:', relativeUrl, 'with base:', baseUrl);
-                }
-            }
-
-            return relativeUrl;
+            return url;
         }
 
-        // Enhanced URL validation
-        function isValidImageUrl(url) {
-            if (!url || typeof url !== 'string') return false;
-
-            if (!url.match(/^https?:\/\//i)) return false;
-
-            const excludePatterns = [
-                /1x1/i, /pixel/i, /tracking/i, /analytics/i,
-                /favicon/i, /icon-\d+/i, /badge/i,
-                /feeds\.feedburner/i, /feedburner\.com\/~ff/i
-            ];
-
-            if (excludePatterns.some(pattern => pattern.test(url))) {
-                return false;
-            }
-
-            return true;
-        }
-
-        // Simplified image URL check
         function isImageUrl(str) {
             if (!str || typeof str !== 'string') return false;
-
-            if (/(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.svg)(\?|#|$)/i.test(str)) {
-                return true;
-            }
-
-            const imagePatterns = [
-                /cloudinary/i, /imgur/i, /wp-content\/uploads/i,
-                /media\//i, /images?\//i, /photo/i,
-                /\.wordpress\.com.*\?/i, /blogspot/i
-            ];
-
-            return imagePatterns.some(pattern => pattern.test(str));
+            const lower = str.toLowerCase();
+            return /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.svg|\.bmp)(\?|#|$)/.test(lower) ||
+                   /\/(image|media|photo|pic|thumbnail|upload|wp-content)/.test(lower);
         }
 
         function parseRSSFeed(xmlText, sourceName, sourceId, feedUrl) {
             const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
+            let xml = parser.parseFromString(xmlText, 'text/xml');
+
+            const parseError = xml.querySelector('parsererror');
+            if (parseError) {
+                xmlText = xmlText.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+                xml = parser.parseFromString(xmlText, 'text/xml');
+                if (xml.querySelector('parsererror')) {
+                    console.error('Invalid XML for feed:', sourceName);
+                    return [];
+                }
+            }
+
+            if (xmlText.includes('<!DOCTYPE html') || xmlText.includes('<html')) {
+                console.error('Feed returned HTML instead of RSS:', sourceName);
+                return [];
+            }
+
             const articles = [];
-
-            // Get the feed's base URL for relative URL resolution
-            const channelLink = xml.querySelector('channel > link')?.textContent || feedUrl;
-
             const items = xml.querySelectorAll('item, entry');
 
             items.forEach(item => {
                 const title = item.querySelector('title')?.textContent || '';
                 const link = item.querySelector('link')?.textContent ||
                            item.querySelector('link')?.getAttribute('href') || '';
-                const description = item.querySelector('description, summary')?.textContent || '';
+                const description = item.querySelector('description, summary, content')?.textContent || '';
                 const pubDate = item.querySelector('pubDate, published, updated')?.textContent || '';
-
-                // Extract image with enhanced function
-                const imageUrl = extractImageFromRSSItem(item, channelLink || feedUrl);
+                const imageUrl = extractImageFromRSSItem(item, feedUrl);
 
                 if (title || description) {
                     articles.push({
@@ -1864,11 +1854,13 @@
 
             return articles;
         }
-        
+
         // Clean text
         function cleanText(text) {
             if (!text) return '';
-            return text.replace(/<[^>]*>/g, '').trim();
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent.trim();
         }
         
         // Cache articles
