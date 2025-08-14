@@ -1299,6 +1299,7 @@
                         <button class="feed-manager-btn" onclick="cancelFeedEdit()">Cancel</button>
                     </div>
                 </div>
+                <div id="analysisOutput" class="test-results" style="display:none;"></div>
                 <div class="feed-list" id="feedList">
                     <!-- Feed items will be loaded here -->
                 </div>
@@ -2840,11 +2841,18 @@
                     body: JSON.stringify({ feed_url: url })
                 });
                 const data = await res.json();
-                console.log('Feed analysis result:', data);
-                alert('Feed analysis complete. Check console for details.');
+                const out = document.getElementById('analysisOutput');
+                if (data.success) {
+                    out.style.display = 'block';
+                    out.innerHTML = `<h4>📊 Analysis Results</h4><pre>${escapeHtml(JSON.stringify(data.recommended_mappings, null, 2))}</pre>`;
+                } else {
+                    out.style.display = 'block';
+                    out.innerHTML = `<p>Analysis failed: ${escapeHtml(data.error || 'Unknown error')}</p>`;
+                }
             } catch (err) {
-                console.error('Feed analysis failed', err);
-                alert('Feed analysis failed. See console for details.');
+                const out = document.getElementById('analysisOutput');
+                out.style.display = 'block';
+                out.innerHTML = `<p>Analysis failed: ${escapeHtml(err.message)}</p>`;
             }
         }
 
