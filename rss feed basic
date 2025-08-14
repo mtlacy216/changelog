@@ -2673,7 +2673,11 @@
         }
 
         function editFeed(sourceId) {
-            const feed = feedSources.find(f => (f.id || f.url) === sourceId);
+            // Normalize identifiers to strings before comparison so
+            // numeric IDs and URL strings are matched consistently
+            const feed = feedSources.find(
+                f => String(f.id || f.url) === String(sourceId)
+            );
             if (feed) {
                 openFeedEditor(feed);
             }
