@@ -1294,6 +1294,7 @@
                         <label><input type="checkbox" id="feedActive" checked> Active</label>
                     </div>
                     <div class="feed-form-actions">
+                        <button class="feed-manager-btn" onclick="analyzeFeed()">Analyze</button>
                         <button class="feed-manager-btn" onclick="saveFeed()">Save</button>
                         <button class="feed-manager-btn" onclick="cancelFeedEdit()">Cancel</button>
                     </div>
@@ -1445,6 +1446,7 @@
         const XANO_API = 'https://xvkq-pq7i-idtl.n7d.xano.io/api:Hj4C6PGO';
         const SOURCES_API = `${XANO_API}/rss_feed`;
         const CONTENT_API = `${XANO_API}/content`;
+        const ANALYZER_API = `${XANO_API}/rss_feed_analyzer`;
         const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         const IMAGE_PROXY = 'https://images.weserv.nl/?url=';
         
@@ -2814,11 +2816,35 @@
         }
 
         function editFeed(sourceId) {
+
+            // Normalize identifiers to strings before comparison so
+            // numeric IDs and URL strings are matched consistently
             const feed = feedSources.find(
                 f => String(f.id || f.url) === String(sourceId)
             );
             if (feed) {
                 openFeedEditor(feed);
+            }
+        }
+
+        async function analyzeFeed() {
+            const url = document.getElementById('feedUrl').value.trim();
+            if (!url) {
+                alert('Please enter a feed URL to analyze');
+                return;
+            }
+            try {
+                const res = await fetch(ANALYZER_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feed_url: url })
+                });
+                const data = await res.json();
+                console.log('Feed analysis result:', data);
+                alert('Feed analysis complete. Check console for details.');
+            } catch (err) {
+                console.error('Feed analysis failed', err);
+                alert('Feed analysis failed. See console for details.');
             }
         }
 
