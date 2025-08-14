@@ -717,17 +717,62 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
+        .feed-manager-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .feed-manager-title {
             font-size: 24px;
             font-weight: 700;
             color: var(--dark);
         }
-        
+
         .feed-manager-body {
             overflow-y: auto;
             flex: 1;
             padding: 24px;
+        }
+
+        .feed-form {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--light);
+            border-radius: 12px;
+        }
+
+        .feed-form .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .feed-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .feed-form-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .feed-edit-btn {
+            margin-right: 8px;
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .feed-edit-btn:hover {
+            background: var(--light);
         }
         
         .feed-list {
@@ -1220,10 +1265,39 @@
         <div class="feed-manager-container">
             <div class="feed-manager-header">
                 <h2 class="feed-manager-title">📡 RSS Feed Manager</h2>
-                <button class="modal-close" onclick="closeFeedManager()">✕</button>
+                <div class="feed-manager-header-actions">
+                    <button class="feed-manager-btn" onclick="openFeedEditor()">＋ Add Feed</button>
+                    <button class="modal-close" onclick="closeFeedManager()">✕</button>
+                </div>
             </div>
-            
+
             <div class="feed-manager-body">
+                <div class="feed-form" id="feedForm" style="display:none;">
+                    <input type="hidden" id="feedId">
+                    <div class="form-group">
+                        <label for="feedName">Name</label>
+                        <input type="text" id="feedName">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedUrl">URL</label>
+                        <input type="text" id="feedUrl">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedDescription">Description</label>
+                        <input type="text" id="feedDescription">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedCategory">Category</label>
+                        <input type="text" id="feedCategory">
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="feedActive" checked> Active</label>
+                    </div>
+                    <div class="feed-form-actions">
+                        <button class="feed-manager-btn" onclick="saveFeed()">Save</button>
+                        <button class="feed-manager-btn" onclick="cancelFeedEdit()">Cancel</button>
+                    </div>
+                </div>
                 <div class="feed-list" id="feedList">
                     <!-- Feed items will be loaded here -->
                 </div>
@@ -2515,15 +2589,16 @@
                             </div>
                         </div>
                         <div class="feed-controls">
+                            <button class="feed-edit-btn" onclick="editFeed('${sourceId}')">Edit</button>
                             <label class="feed-toggle">
-                                <input type="checkbox" 
-                                       ${settings.enabled ? 'checked' : ''} 
+                                <input type="checkbox"
+                                       ${settings.enabled ? 'checked' : ''}
                                        onchange="toggleFeed('${sourceId}', this.checked)">
                                 <span class="feed-toggle-slider"></span>
                             </label>
                             <div class="feed-priority">
                                 <span class="feed-priority-label">Priority:</span>
-                                <select class="feed-priority-select" 
+                                <select class="feed-priority-select"
                                         onchange="updateFeedPriority('${sourceId}', this.value)"
                                         ${!settings.enabled ? 'disabled' : ''}>
                                     <option value="high" ${settings.priority === 'high' ? 'selected' : ''}>High (5 min)</option>
@@ -2582,6 +2657,65 @@
             feedSettings[sourceId].priority = priority;
             saveSettings();
             showUpdateToast(`Priority updated to ${priority}`);
+        }
+
+        function openFeedEditor(feed = null) {
+            document.getElementById('feedForm').style.display = 'block';
+            document.getElementById('feedId').value = feed?.id || '';
+            document.getElementById('feedName').value = feed?.name || '';
+            document.getElementById('feedUrl').value = feed?.url || '';
+            document.getElementById('feedDescription').value = feed?.description || '';
+            document.getElementById('feedCategory').value = feed?.category || '';
+            document.getElementById('feedActive').checked = feed?.is_active !== false;
+        }
+
+        function cancelFeedEdit() {
+            document.getElementById('feedForm').style.display = 'none';
+        }
+
+        function editFeed(sourceId) {
+            const feed = feedSources.find(f => (f.id || f.url) === sourceId);
+            if (feed) {
+                openFeedEditor(feed);
+            }
+        }
+
+        async function saveFeed() {
+            const id = document.getElementById('feedId').value;
+            const url = document.getElementById('feedUrl').value;
+            let source_domain = '';
+            try {
+                source_domain = new URL(url).hostname;
+            } catch {}
+
+            const payload = {
+                name: document.getElementById('feedName').value,
+                url,
+                description: document.getElementById('feedDescription').value,
+                category: document.getElementById('feedCategory').value,
+                is_active: document.getElementById('feedActive').checked,
+                fetch_interval_minutes: 60,
+                source_domain,
+                Political_Valence: 0
+            };
+
+            const endpoint = id ? `${SOURCES_API}/${id}` : SOURCES_API;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const resp = await fetch(endpoint, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error('Failed to save feed');
+                await loadSources();
+                loadFeedList();
+                cancelFeedEdit();
+                showUpdateToast(`Feed ${id ? 'updated' : 'added'}`);
+            } catch (error) {
+                console.error('Error saving feed:', error);
+            }
         }
         
         // Update sync indicator
