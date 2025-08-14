@@ -101,6 +101,38 @@
             opacity: 1;
         }
         
+        .popup-toggle {
+            width: 32px;
+            height: 32px;
+            background: var(--light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .popup-toggle:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .popup-toggle.tabs-mode {
+            background: var(--gray);
+            border-color: var(--gray);
+            color: white;
+        }
+        
+        .popup-toggle.tabs-mode:hover {
+            background: var(--dark);
+            border-color: var(--dark);
+        }
+        
         .feed-manager-btn {
             padding: 8px 16px;
             background: var(--primary);
@@ -413,6 +445,34 @@
         .article-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-hover);
+        }
+        
+        .article-card::after {
+            content: '↗';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .article-card:hover::after {
+            opacity: 1;
+        }
+        
+        body.tabs-mode .article-card::after {
+            content: '⧉';
         }
         
         .article-card.skeleton {
@@ -1027,6 +1087,9 @@
                 <button class="debug-toggle" id="debugToggle" onclick="toggleDebugMode()">
                     DEBUG
                 </button>
+                <button class="popup-toggle" id="popupToggle" onclick="togglePopupMode()" title="Toggle popup/tab mode">
+                    <span id="popupIcon">↗</span>
+                </button>
                 <button class="feed-manager-btn" onclick="openFeedManager()">
                     ⚙️ Manage Feeds
                 </button>
@@ -1204,6 +1267,8 @@
         let isLoadingMore = false;
         let currentPage = 0;
         let debugMode = false;
+        let articlePopup = null; // Track popup window
+        let usePopups = true; // Default to popups
         const articlesPerPage = 12;
         
         // Loading states
@@ -1227,6 +1292,13 @@
         document.addEventListener('DOMContentLoaded', async () => {
             loadSettings();
             initializeEventListeners();
+            // Set initial popup button state
+            const popupBtn = document.getElementById('popupToggle');
+            if (popupBtn) {
+                popupBtn.title = usePopups ? 
+                    'Articles open in popups (click to switch to tabs)' : 
+                    'Articles open in tabs (click to switch to popups)';
+            }
             await loadInitialContent();
             startBackgroundSync();
         });
@@ -1248,6 +1320,24 @@
                 debugMode = true;
                 document.body.classList.add('debug-mode');
                 document.getElementById('debugToggle').classList.add('active');
+            }
+            // Popup preference
+            const savedPopupPref = localStorage.getItem('usePopups');
+            if (savedPopupPref !== null) {
+                usePopups = savedPopupPref === 'true';
+            }
+            // Update popup toggle button state
+            if (!usePopups) {
+                document.body.classList.add('tabs-mode');
+                const btn = document.getElementById('popupToggle');
+                const icon = document.getElementById('popupIcon');
+                if (btn) {
+                    btn.classList.add('tabs-mode');
+                    btn.title = 'Articles open in tabs (click to switch to popups)';
+                }
+                if (icon) {
+                    icon.textContent = '⧉';
+                }
             }
         }
         
@@ -1271,6 +1361,29 @@
             // Refresh article display to show/hide debug badges
             const articles = displayedArticles.slice();
             displayArticles(articles);
+        }
+        
+        // Toggle popup/tab mode
+        function togglePopupMode() {
+            usePopups = !usePopups;
+            const btn = document.getElementById('popupToggle');
+            const icon = document.getElementById('popupIcon');
+            
+            if (usePopups) {
+                document.body.classList.remove('tabs-mode');
+                btn.classList.remove('tabs-mode');
+                btn.title = 'Articles open in popups (click to switch to tabs)';
+                icon.textContent = '↗';
+                localStorage.setItem('usePopups', 'true');
+                showUpdateToast('Articles will open in popups');
+            } else {
+                document.body.classList.add('tabs-mode');
+                btn.classList.add('tabs-mode');
+                btn.title = 'Articles open in tabs (click to switch to popups)';
+                icon.textContent = '⧉';
+                localStorage.setItem('usePopups', 'false');
+                showUpdateToast('Articles will open in new tabs');
+            }
         }
         
         // Save settings to localStorage
@@ -1688,12 +1801,147 @@
             };
         }
         
+        // Open article in a sized popup window with loading state
+        function openArticlePopup(url, title = 'Article') {
+            const width = 900;
+            const height = 1000;
+            const left = Math.max(0, (window.screen.width - width) / 2);
+            const top = Math.max(0, (window.screen.height - height) / 2);
+            
+            const features = [
+                `width=${width}`,
+                `height=${height}`,
+                `left=${left}`,
+                `top=${top}`,
+                'scrollbars=yes',
+                'resizable=yes',
+                'status=no',
+                'toolbar=no',
+                'menubar=no',
+                'location=yes'
+            ].join(',');
+            
+            // Escape title and URL for safe use in HTML
+            const safeTitle = (title || 'Article')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            
+            const safeUrl = (url || '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"');
+            
+            // Create a loading HTML page with Nashville theme
+            const loadingHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${safeTitle}</title>
+                    <style>
+                        body {
+                            margin: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                        }
+                        .loader {
+                            text-align: center;
+                            max-width: 80%;
+                        }
+                        .spinner {
+                            width: 50px;
+                            height: 50px;
+                            border: 4px solid rgba(255,255,255,0.3);
+                            border-top-color: white;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 20px;
+                        }
+                        @keyframes spin {
+                            to { transform: rotate(360deg); }
+                        }
+                        h2 {
+                            font-weight: 300;
+                            margin-bottom: 10px;
+                        }
+                        p {
+                            opacity: 0.9;
+                            font-size: 18px;
+                            line-height: 1.4;
+                            margin: 0;
+                        }
+                        .source {
+                            margin-top: 20px;
+                            font-size: 14px;
+                            opacity: 0.7;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="loader">
+                        <div class="spinner"></div>
+                        <h2>Loading Article...</h2>
+                        <p>${safeTitle}</p>
+                        <div class="source">Nashville Civic News</div>
+                    </div>
+                    <script>
+                        // Redirect to actual article after brief loading state
+                        setTimeout(() => {
+                            window.location.href = "${safeUrl}";
+                        }, 300);
+                    <\/script>
+                </body>
+                </html>
+            `;
+            
+            // Check if popup exists and is not closed
+            if (articlePopup && !articlePopup.closed) {
+                // Reuse existing popup
+                articlePopup.document.open();
+                articlePopup.document.write(loadingHTML);
+                articlePopup.document.close();
+                articlePopup.focus();
+            } else {
+                // Create new popup
+                articlePopup = window.open('', 'articleViewer', features);
+                
+                if (articlePopup) {
+                    articlePopup.document.open();
+                    articlePopup.document.write(loadingHTML);
+                    articlePopup.document.close();
+                    articlePopup.focus();
+                } else {
+                    // Popup was blocked
+                    showUpdateToast('Popup blocked! Please allow popups for this site.');
+                    // Fallback to regular tab
+                    window.open(url, '_blank');
+                }
+            }
+            
+            return articlePopup;
+        }
+        
         // Create article card with debug badges and headline overlay
         function createArticleCard(article) {
             const card = document.createElement('div');
             card.className = 'article-card';
             card.dataset.articleId = article.id;
-            card.onclick = () => window.open(article.link || article.url, '_blank');
+            card.onclick = () => {
+                if (usePopups) {
+                    openArticlePopup(article.link || article.url, article.title);
+                } else {
+                    window.open(article.link || article.url, '_blank');
+                }
+            };
             
             const themeColor = article.themes?.primary ? THEMES[article.themes.primary]?.color : '#666';
             const themeName = article.themes?.primary ? THEMES[article.themes.primary]?.name : 'News';
@@ -2437,6 +2685,18 @@
                 if (document.getElementById('feedManagerModal').classList.contains('active')) {
                     closeFeedManager();
                 }
+                // Also close article popup if open
+                if (e.ctrlKey && articlePopup && !articlePopup.closed) {
+                    articlePopup.close();
+                    showUpdateToast('Article popup closed');
+                }
+            }
+        });
+        
+        // Close popup when main window closes
+        window.addEventListener('beforeunload', () => {
+            if (articlePopup && !articlePopup.closed) {
+                articlePopup.close();
             }
         });
     </script>
