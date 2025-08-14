@@ -2673,7 +2673,9 @@
         }
 
         function editFeed(sourceId) {
-            const feed = feedSources.find(f => (f.id || f.url) === sourceId);
+            const feed = feedSources.find(
+                f => String(f.id || f.url) === String(sourceId)
+            );
             if (feed) {
                 openFeedEditor(feed);
             }
